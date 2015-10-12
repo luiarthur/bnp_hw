@@ -1,0 +1,93 @@
+% To compile: pdflatex file.tex
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{pgffor}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{verbatim}
+\usepackage{appendix}
+\usepackage{graphicx}
+\usepackage[UKenglish]{isodate} % for: \today
+\cleanlookdateon                % for: \today
+
+\def\wl{\par \vspace{\baselineskip}\noindent}
+\def\beginmyfig{\begin{figure}[htbp]\begin{center}}
+\def\endmyfig{\end{center}\end{figure}}
+%\def\prodl{\prod\limits_{i=1}^n}
+\def\suml{\sum\limits_{i=1}^n}
+\def\ds{\displaystyle}
+\def\tu{\textunderscore}
+
+\begin{document}
+% my title:
+\begin{center}
+  %\section*{\textbf{Stat637 Homework 8}
+  %  \footnote{https://github.com/luiarthur/Fall2014/blob/master/Stat637/8}
+  %}  
+  \section*{\textbf{AMS 241 Homework 1 - DP Priors}
+    \footnote{https://github.com/luiarthur/bnp\tu hw\01\tu dp\tu priors}
+  } 
+  \subsection*{\textbf{Arthur Lui}}
+  \subsection*{\noindent\today}
+\end{center}
+
+
+\section*{Q1}
+\subsection*{a:}
+$\hat\phi = 1.294 > \frac{\chi^2_{n-p}(.95)}{n-p} =
+\frac{\chi^2_{73}(.95)}{73} = 1.287$. At the 95\% confidence level, we
+conclude that the there is overdispersion. The variance in the model is
+higher than that if we do not model overdispersion.
+
+\subsection*{b:}
+The coefficient for group is significant. The log odds of death in the
+treatment group is $1-e^{-.9289}=60.5\%$ \textbf{less} than that of the
+control group. This is desired as the treatment is supposed to reduce the
+likelihood of death.
+
+\section*{Q2:}
+\subsection*{a:}
+The overdispersion parameter is $\hat\phi=0.05602$, which is significant at
+the .05 $\alpha$ level. We conclude that there is overdispersion. The
+variance of the parameters in the model is higher that that if we do not
+model overdispersion.
+
+\subsection*{b:}
+The expected mean number of deaths in the treatment group is $1-e^{-.8522}
+= 57\%$ \textbf{less} than that of the control group. This is expected for
+the same reason in Q1. The effect of group is significant.
+
+\section*{Q3:}
+\subsection*{a:}
+The overdispersion parameter is $\hat\phi=2.313 > 1.28$, which is
+significant at the .05 $\alpha$ level. We conclude that there is
+overdispersion. The variance of the parameters in the model is higher that
+that if we do not model overdispersion.
+
+\subsection*{b:}
+The expected mean number of deaths in the treatment group is $1-e^{-.8754}
+= 58\%$ \textbf{less} than that of the control group. This is expected for
+the same reason in Q1. The effect of group is significant.
+
+\section*{Q4:}
+\subsection*{a:}
+The overdispersion parameter is $\hat\phi=1.090 < 1.28$, which is not
+significant at the .05 $\alpha$ level. We conclude that there is not
+overdispersion. The variance of the parameters in the model is not significantly higher than that if we do not model overdispersion.
+
+\subsection*{b:}
+The expected mean number of deaths in the treatment group is $1-e^{-1.036}
+= 65\%$ \textbf{less} than that of the control group. This is expected for
+the same reason in Q1. The effect of group is significant.
+
+\section*{Q4:}
+I prefer the quasi-binomial model because we can make inference about the odds of death given a lamb received the treatment. I think this may be more useful than knowing the number of deaths because we can convert odds to probabilities, and use the probabilities to estimates of the number of deaths.
+
+%\section*{Plots}
+%\beginmyfig
+%  \caption{}
+%  %\includegraphics{../pics/postGibbs.pdf}
+%\endmyfig
+
+\end{document}
