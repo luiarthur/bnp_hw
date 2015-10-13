@@ -1,3 +1,0 @@
-#!/bin/bash
-pdflatex 01_dp_priors.tex
-rm -f *.log *.aux
