@@ -26,38 +26,46 @@ dp <- function(N=1,a,pG,xlim=c(0,1),n=1000) {
   list("G"=G, "x"= x[-1])
 }
 
-# DP using Sethuraman's construction
-dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1),J=1000) {
-  x <- seq(xlim[1],xlim[2],length=J)
-
-  z <- rbeta(J,1,a)
-  th <- rG(J)
-  w <- rep(0,J)
-  w[1] <- z[1]
-  for (l in 2:J) { # OPTIMIZE?
-    w[l] <- z[l] * prod(1-z[1:(l-1)])
+### Plotting Function
+dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
+  plot(0,xlim=xlim.def,ylim=c(0,1),cex=0,bty="n",las=1,
+       col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
+       col.main=rgb(.3,.3,.5),...)
+  xx <- X$x
+  print(nrow(X$G))
+  for (i in 1:nrow(X$G)) {
+    lines(xx,X$G[i,],type="l",col=col.lines)
   }
-  # v1
-  #G <- sample(th,J,replace=T,prob=w)
-  #G
- 
+}
+
+# DP using Sethuraman's construction
+dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
+  if (is.null(J)) {
+    J <- log(eps) / (log(a) - log(a+1))
+    J <- round(J)
+    print(J)
+  }
+
+  x <- seq(xlim[1],xlim[2],length=J)
+  Z <- matrix(rbeta(J*N,1,a),N,J)
+  th <- matrix(rG(J*N),N,J)
+  W <- matrix(0,N,J)
   G <- matrix(0,N,J)
+  W[,1] <- Z[,1]
+
   for (i in 1:N) {
-    for (l in 1:J) {
-      G[i,l] <- sum(w[th <= x[l]])
+    for (l in 1:J) { # OPTIMIZE?
+      if (l>1) W[i,l] <- Z[i,l] * prod(1-Z[i,1:(l-1)])
+      G[i,l] <- sum(W[i,th[i,] <= x[l]])
+      it <- (i-1)*J+l
+      if (printProg) cat("\r Progress: ", it/(N*J) )
     }
   }
 
-  out <- list("G"=G, "x"=th)
-  #plot(x,G,type="l")
+  out <- list("G"=G, "x"=x, "J"=J)
   out
 }
-gx <- dp_stickbreak(a=1,rG=function(n) rnorm(n))
+gx <- dp_stickbreak(N=1000, a=3,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
+dp.post(gx,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",main="DP")
 
-### Plotting Function
-dp.post <- function(X,...) {
-  plot(0,xlim=range(X$x),ylim=c(0,1),cex=0,...)
-  for (i in 1:nrow(X$G)) {
-    lines(X$x,X$G[i,],type="l",col=rgb(.4,.4,.4,.1))
-  }
-}
+#source("dpPrior.R")
