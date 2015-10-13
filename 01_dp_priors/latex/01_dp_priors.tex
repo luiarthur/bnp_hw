@@ -8,6 +8,7 @@
 \usepackage{verbatim}
 \usepackage{appendix}
 \usepackage{graphicx}
+\usepackage{url} % for underscore in footnote
 \usepackage[UKenglish]{isodate} % for: \today
 \cleanlookdateon                % for: \today
 
@@ -26,63 +27,76 @@
   %  \footnote{https://github.com/luiarthur/Fall2014/blob/master/Stat637/8}
   %}  
   \section*{\textbf{AMS 241 Homework 1 - DP Priors}
-  %  \footnote{https://github.com/luiarthur/bnp\_hw\01\_dp\_priors}
+    \footnote{\url{https://github.com/luiarthur/bnp_hw/01_dp_priors}}
   } 
   \subsection*{\textbf{Arthur Lui}}
   \subsection*{\noindent\today}
 \end{center}
 
-
+\noindent
 \section*{Q1}
-\subsection*{a:}
-$\hat\phi = 1.294 > \frac{\chi^2_{n-p}(.95)}{n-p} =
-\frac{\chi^2_{73}(.95)}{73} = 1.287$. At the 95\% confidence level, we
-conclude that the there is overdispersion. The variance in the model is
-higher than that if we do not model overdispersion.
+Assume a Dirichlet process (DP) prior, DP($\alpha,G_0$), for distributions $G$
+on $\mathcal X$ . Show that for any (measurable) disjoint subsets $B_1$ and
+$B_2$ of $\mathcal X$ , Corr($G(B_1),G(B_2)$) is negative. Is the negative
+correlation for random probabilities induced by the DP prior a restriction?
+Discuss.\\
 
-\subsection*{b:}
-The coefficient for group is significant. The log odds of death in the
-treatment group is $1-e^{-.9289}=60.5\%$ \textbf{less} than that of the
-control group. This is desired as the treatment is supposed to reduce the
-likelihood of death.
+\noindent $Proof:$\\
 
-\section*{Q2:}
-\subsection*{a:}
-The overdispersion parameter is $\hat\phi=0.05602$, which is significant at
-the .05 $\alpha$ level. We conclude that there is overdispersion. The
-variance of the parameters in the model is higher that that if we do not
-model overdispersion.
+\noindent
+Let $B_3$ = $(B_1 \cap B_2)^C$, and $U_i = G(B_i)$, for $i=1,2,3$.
+Furthermore, let $v_i = G_0(B_i)$, for $i=1,2,3$. Then, Corr($G(B_1),G(B_2)$) =
+Corr($U_1,U_2$). Note that Sign(Corr($U_1,U_2$)) = Sign(Cov($U_1,U_2$)). So,
+all we need to do is show that the covariance is negative. Finally, let
+$f(u_1,u_2,u_3)$ be the pdf for the Dirichlet distribution, with parameters
+$(\alpha v_1, \alpha v_2, \alpha v_3)$. \\
+\[
+  \begin{array}{rcl}
+                            \vspace{.5em}
+    \text{Cov}(U_1,U_2) &=& \text{E}[U_1 U_2] - \text{E}[U_1]\text{E}[U_2] \\
+                            \vspace{.5em}
+                        &=& \ds\int\int\int u_1u_2~f(u_1,u_2,u_3)~du_3~du_2~du_1 - v_1 v_2 \\
+                            \vspace{.5em}
+                        &=& \ds\int u_1u_2~
+                            \frac{\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
+                            {\Gamma(\alpha v_1)\Gamma(\alpha v_2)\Gamma(\alpha v_3)}
+                            u_1^{\alpha v_1 - 1} u_2^{\alpha v_2 - 1} u_3^{\alpha v_3 - 1}
+                            ~d\mathbf u - v_1 v_2 \\
+                            \vspace{.5em}
+                        &=& \frac{\Gamma(\alpha v_1 +1)\Gamma(\alpha v_2 +1)}
+                            {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
+                            \frac {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
+                            {\Gamma(\alpha v_1)\Gamma(\alpha v_2)}
+                            \ds\int\frac{\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
+                            {\Gamma(\alpha v_1+1)\Gamma(\alpha v_2+1)\Gamma(\alpha v_3)}
+                            u_1^{(\alpha v_1 + 1) - 1} u_2^{(\alpha v_2 + 1) - 1} u_3^{\alpha v_3 - 1}
+                            ~d\mathbf u - v_1 v_2 \\
+                            \vspace{.5em}
+                        &=& \ds\frac{\Gamma(\alpha v_1 +1)\Gamma(\alpha v_2 +1)}
+                            {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
+                            \ds\frac {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
+                            {\Gamma(\alpha v_1)\Gamma(\alpha v_2)} - v_1 v_2\\
+                            \vspace{.5em}
+                        &=& \ds\frac{\Gamma(\alpha)}{\Gamma(\alpha+2)}
+                            \ds\frac{\alpha v_1\Gamma(\alpha v_1) \cdot \alpha v_2\Gamma(\alpha v_2)}
+                            {\Gamma(\alpha v_1)\Gamma(\alpha v_2)} - v_1 v_2\\
+                            \vspace{.5em}
+                        &=& \ds\frac{\alpha v_1 v_2}{(\alpha +1)} - v_1 v_2 \\
+                            \vspace{.5em}
+                        &=& v_1 v_2 \ds\frac{\alpha - \alpha - 1}{(\alpha +1)} \\
+                            \vspace{.5em}
+                        &=& -\ds\frac{v_1 v_2 }{(\alpha +1)} \\
+                            \vspace{.5em}
+                        &=& -\ds\frac{G_0(B_1) G_0(B_2) }{(\alpha +1)} \\
+                        &<& 0 \\
+  \end{array}
+\]
+Therefore, Corr($G(B_1),G(B_2)$) is negative. This result is intuitive and not necessarily a restriction.
+We want it to be the case that as more weight is given to a partition $B_i$, then less weight is
+given to the partition $B_j$, if $B_i$ and $B_j$ are disjoint.
 
-\subsection*{b:}
-The expected mean number of deaths in the treatment group is $1-e^{-.8522}
-= 57\%$ \textbf{less} than that of the control group. This is expected for
-the same reason in Q1. The effect of group is significant.
 
-\section*{Q3:}
-\subsection*{a:}
-The overdispersion parameter is $\hat\phi=2.313 > 1.28$, which is
-significant at the .05 $\alpha$ level. We conclude that there is
-overdispersion. The variance of the parameters in the model is higher that
-that if we do not model overdispersion.
 
-\subsection*{b:}
-The expected mean number of deaths in the treatment group is $1-e^{-.8754}
-= 58\%$ \textbf{less} than that of the control group. This is expected for
-the same reason in Q1. The effect of group is significant.
-
-\section*{Q4:}
-\subsection*{a:}
-The overdispersion parameter is $\hat\phi=1.090 < 1.28$, which is not
-significant at the .05 $\alpha$ level. We conclude that there is not
-overdispersion. The variance of the parameters in the model is not significantly higher than that if we do not model overdispersion.
-
-\subsection*{b:}
-The expected mean number of deaths in the treatment group is $1-e^{-1.036}
-= 65\%$ \textbf{less} than that of the control group. This is expected for
-the same reason in Q1. The effect of group is significant.
-
-\section*{Q4:}
-I prefer the quasi-binomial model because we can make inference about the odds of death given a lamb received the treatment. I think this may be more useful than knowing the number of deaths because we can convert odds to probabilities, and use the probabilities to estimates of the number of deaths.
 
 %\section*{Plots}
 %\beginmyfig
