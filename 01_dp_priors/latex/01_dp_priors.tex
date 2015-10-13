@@ -56,31 +56,32 @@ $(\alpha v_1, \alpha v_2, \alpha v_3)$. \\
     \text{Cov}(U_1,U_2) &=& \text{E}[U_1 U_2] - \text{E}[U_1]\text{E}[U_2] \\
                             \vspace{.5em}
                         &=& \ds\int\int\int u_1u_2~f(u_1,u_2,u_3)~du_3~du_2~du_1 - v_1 v_2 \\
-                            \vspace{.5em}
+                            \vspace{.7em}
                         &=& \ds\int u_1u_2~
                             \frac{\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
                             {\Gamma(\alpha v_1)\Gamma(\alpha v_2)\Gamma(\alpha v_3)}
                             u_1^{\alpha v_1 - 1} u_2^{\alpha v_2 - 1} u_3^{\alpha v_3 - 1}
                             ~d\mathbf u - v_1 v_2 \\
                             \vspace{.5em}
-                        &=& \frac{\Gamma(\alpha v_1 +1)\Gamma(\alpha v_2 +1)}
+                        &=& \ds\frac{\Gamma(\alpha v_1 +1)\Gamma(\alpha v_2 +1)}
                             {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
-                            \frac {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
-                            {\Gamma(\alpha v_1)\Gamma(\alpha v_2)}
-                            \ds\int\frac{\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
+                            \ds\frac {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
+                            {\Gamma(\alpha v_1)\Gamma(\alpha v_2)} \times\\
+                            \vspace{.9em}
+                        &&  \ds\int\frac{\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
                             {\Gamma(\alpha v_1+1)\Gamma(\alpha v_2+1)\Gamma(\alpha v_3)}
                             u_1^{(\alpha v_1 + 1) - 1} u_2^{(\alpha v_2 + 1) - 1} u_3^{\alpha v_3 - 1}
                             ~d\mathbf u - v_1 v_2 \\
-                            \vspace{.5em}
+                            \vspace{.7em}
                         &=& \ds\frac{\Gamma(\alpha v_1 +1)\Gamma(\alpha v_2 +1)}
                             {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3 + 2)}
                             \ds\frac {\Gamma(\alpha v_1 + \alpha v_2 + \alpha v_3)}
                             {\Gamma(\alpha v_1)\Gamma(\alpha v_2)} - v_1 v_2\\
-                            \vspace{.5em}
+                            \vspace{.7em}
                         &=& \ds\frac{\Gamma(\alpha)}{\Gamma(\alpha+2)}
                             \ds\frac{\alpha v_1\Gamma(\alpha v_1) \cdot \alpha v_2\Gamma(\alpha v_2)}
                             {\Gamma(\alpha v_1)\Gamma(\alpha v_2)} - v_1 v_2\\
-                            \vspace{.5em}
+                            \vspace{.7em}
                         &=& \ds\frac{\alpha v_1 v_2}{(\alpha +1)} - v_1 v_2 \\
                             \vspace{.5em}
                         &=& v_1 v_2 \ds\frac{\alpha - \alpha - 1}{(\alpha +1)} \\
