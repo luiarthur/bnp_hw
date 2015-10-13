@@ -1,4 +1,5 @@
 # Simulation of Dirichlet process prior realizations
+system("mkdir -p pdfs") # mkdir pdfs if it doesn't exist.
 
 color.btwn <- function(x,ylo,yhi,from,to,col.area="grey") {
   x <- c(x,rev(x))
@@ -65,6 +66,7 @@ dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
   out <- list("G"=G, "x"=x, "J"=J)
   out
 }
+
 gx <- dp_stickbreak(N=1000, a=3,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
 dp.post(gx,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",main="DP")
 
