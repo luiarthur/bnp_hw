@@ -95,7 +95,7 @@ dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
     print(J)
   }
 
-  x <- seq(xlim[1],xlim[2],length=J)
+  x <- seq(xlim[1],xlim[2],length=J) # Change J to something else.
   Z <- matrix(rbeta(J*N,1,a),N,J)
   th <- matrix(rG(J*N),N,J)
   W <- matrix(0,N,J)
