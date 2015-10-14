@@ -121,7 +121,7 @@ dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
 # a) DP Sethuraman & Ferguson
 
 # Setharuman
-pdf("pdfs/sethDP.pdf")
+pdf("pdfs/sethDP.pdf",width=15,height=9)
 par(mfrow=c(1,3))
 avec <- c(1,10,100)
 for (a in avec) {
@@ -134,7 +134,7 @@ par(mfrow=c(1,1))
 dev.off()
 
 # Ferguson
-pdf("pdfs/fergusonDP.pdf")
+pdf("pdfs/fergusonDP.pdf",width=15,height=9)
 par(mfrow=c(1,3))
 for (a in avec) {
   gf <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
@@ -181,7 +181,7 @@ r.a.prior <- function(n) {
 rA <- list(function(n) rgamma(n,3,sc=2),
            function(n) rgamma(n,6,sc=4),
            function(n) rgamma(n,10,sc=1))
-pdf("pdfs/priorMDP.pdf")
+pdf("pdfs/priorMDP.pdf",width=15,height=9)
 par(mfrow=c(1,3))
 for (ra in rA) {
   gmdp <- mdp(N=1000, rA=ra, pG=function(n) pnorm(n), xlim=c(-3,3))
