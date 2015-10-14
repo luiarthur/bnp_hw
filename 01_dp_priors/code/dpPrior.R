@@ -1,5 +1,6 @@
 # Simulation of Dirichlet process prior realizations
 system("mkdir -p pdfs") # mkdir pdfs if it doesn't exist.
+source("../../R_Functions/plotinplot.R")
 
 color.btwn <- function(x,ylo,yhi,from,to,col.area="grey") {
   x <- c(x,rev(x))
@@ -44,6 +45,11 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
 
   lines(xx,apply(X$G,2,mean),col="blue",lwd=2)
   lines(xx,apply(X$G,2,var),col="red",lwd=2)
+  minor <- function() 
+    plot(xx,apply(X$G,2,var),col="red",lwd=1,bty="n",type="l",
+         col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
+         col.main=rgb(.3,.3,.5))
+  plot.in.plot(minor,"topleft")
 }
 
 # DP using Sethuraman's construction
@@ -90,7 +96,7 @@ for (a in avec) {
 }
 par(mfrow=c(1,1))
 
-# Gerguson
+# Ferguson
 par(mfrow=c(1,3))
 avec <- c(1,10,100)
 for (a in avec) {
