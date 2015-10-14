@@ -28,6 +28,27 @@ dp <- function(N=1,a,pG,xlim=c(0,1),n=100) {
   list("G"=G, "x"= x[-1])
 }
 
+# MDP (Ferguson)
+#N = 2
+#rA <- r.a.prior
+#pG <- function(x) pnorm(x)
+#xlim = c(-3,3)
+#n <- 100
+mdp <- function(N=1,rA,pG,xlim=c(0,1),n=100) {
+  x <- seq(xlim[1],xlim[2],length=n)
+  x <- c(-1e1000,x)
+  a <- rA(N) # prior for alpha
+  adG0 <- apply(matrix(a),1, function(aa) aa*pG(x[-1]) - aa*pG(x[-length(x)]))
+  #out <- rdir(N,c(adG0))
+
+  y <- matrix(rgamma(n*N, adG0, 1), N, n, byrow=T)
+  rowsums <- y %*% rep(1,n)
+  out <- y / as.vector(rowsums)
+
+  G <- t(apply(out,1,cumsum))
+  list("G"=G, "x"= x[-1],"a"=a)
+}
+
 ### Plotting Function
 dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   plot(0,xlim=xlim.def,ylim=c(0,1),cex=0,bty="n",las=1,
@@ -44,11 +65,25 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   }
 
   lines(xx,apply(X$G,2,mean),col="blue",lwd=2)
+}
+
+dp.post.extra <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
+  dp.post(X,...)
+  xx <- X$x
+
   lines(xx,apply(X$G,2,var),col="red",lwd=2)
-  minor <- function() 
+
+  legend("right",legend=c("Random draws from the DP",
+                          "A particular draw from the DP",
+                          "E[G]","Var[G]"),
+         col=c("grey","black","blue","red"),lwd=3,
+         bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5) )
+
+  minor <- function() {
     plot(xx,apply(X$G,2,var),col="red",lwd=1,bty="n",type="l",
          col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
-         col.main=rgb(.3,.3,.5))
+         col.main=rgb(.3,.3,.5),cex.axis=.5)
+  }
   plot.in.plot(minor,"topleft")
 }
 
@@ -79,32 +114,78 @@ dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
   out <- list("G"=G, "x"=x, "J"=J)
   out
 }
-# Example
-# gx <- dp_stickbreak(N=1000, a=3,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
-# dp.post(gx,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",main="DP")
+
+# MAIN:
 
 
-# 2a
+# a) DP Sethuraman & Ferguson
+
 # Setharuman
+pdf("pdfs/sethDP.pdf")
 par(mfrow=c(1,3))
 avec <- c(1,10,100)
 for (a in avec) {
   gs <- dp_stickbreak(N=1000, a=a,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
   #main <- bquote(paste("DP(",.(al),"G"[0],")"))
-  dp.post(gs,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
+  dp.post.extra(gs,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
           main=bquote("G ~ DP("~.(a)~","~G[0]~")"~" - Sethuraman's Construction"))
 }
 par(mfrow=c(1,1))
+dev.off()
 
 # Ferguson
+pdf("pdfs/fergusonDP.pdf")
 par(mfrow=c(1,3))
-avec <- c(1,10,100)
 for (a in avec) {
-  gs <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
-  #main <- bquote(paste("DP(",.(al),"G"[0],")"))
-  dp.post(gs,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
+  gf <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
+  dp.post.extra(gf,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
           main=bquote("G ~ DP("~.(a)~","~G[0]~")"~" - Ferguson's Construction"))
 }
 par(mfrow=c(1,1))
+dev.off()
 
-#source("dpPrior.R")
+# b) Mixture of DPs prior (MDP):  
+# G|a ∼ DP[a, N(0,1)]
+#   a ~ .3G(3,2) + .6G(9,6) + .1G(1,9)
+
+mdp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
+  dp.post(X,...)
+  xx <- X$x
+  lines(xx,apply(X$G,2,var),col="red",lwd=2)
+
+  legend(0,.2,legend=c("Random draws from the DP",
+                          "A particular draw from the DP",
+                          "E[G]","Var[G]",expression(paste("Density of ",alpha))),
+         col=c("grey","black","blue","red","orange"),lwd=3,
+         bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5) )
+
+  if (!is.null(gmdp$a)) {
+    minor <- function() {
+      plot(density(gmdp$a),col="orange",lwd=1,bty="n",type="l",main="",
+           col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
+           col.main=rgb(.3,.3,.5),cex.axis=.5)
+    }
+    plot.in.plot(minor,"topleft")
+  }
+}
+
+r.a.prior <- function(n) {
+  count.of.each.dist <- c(rmultinom(1,n,c(.3,.6,.1)))
+  r1 <- rgamma(count.of.each.dist[1],3,scale=2)
+  r2 <- rgamma(count.of.each.dist[2],9,scale=6)
+  r3 <- rgamma(count.of.each.dist[3],1,scale=9)
+  out <- c(r1,r2,r3)
+  out
+}
+
+rA <- list(function(n) rgamma(n,3,sc=2),
+           function(n) rgamma(n,6,sc=4),
+           function(n) rgamma(n,10,sc=1))
+pdf("pdfs/priorMDP.pdf")
+par(mfrow=c(1,3))
+for (ra in rA) {
+  gmdp <- mdp(N=1000, rA=ra, pG=function(n) pnorm(n), xlim=c(-3,3))
+  mdp.post(gmdp,main=bquote("G|a ~ DP(a,"~G[0]~")"))
+}
+par(mfrow=c(1,1))
+dev.off()
