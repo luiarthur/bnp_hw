@@ -18,7 +18,7 @@ rdir <- function(N,a) {
 }
 
 # Using the dirichlet distribution (Ferguson)
-dp <- function(N=1,a,pG,xlim=c(0,1),n=1000) {
+dp <- function(N=1,a,pG,xlim=c(0,1),n=100) {
   x <- seq(xlim[1],xlim[2],length=n)
   x <- sort(c(-1e1000,x))
   dG0 <- pG(x[-1]) - pG(x[-length(x)])
@@ -35,8 +35,15 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   xx <- X$x
   print(nrow(X$G))
   for (i in 1:nrow(X$G)) {
-    lines(xx,X$G[i,],type="l",col=col.lines)
+    if (i<=3) {
+      lines(xx,X$G[i,],type="l",col=rgb(.2,.2,.2))
+    } else {
+      lines(xx,X$G[i,],type="l",col=col.lines)
+    }
   }
+
+  lines(xx,apply(X$G,2,mean),col="blue",lwd=2)
+  lines(xx,apply(X$G,2,var),col="red",lwd=2)
 }
 
 # DP using Sethuraman's construction
@@ -66,8 +73,32 @@ dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
   out <- list("G"=G, "x"=x, "J"=J)
   out
 }
+# Example
+# gx <- dp_stickbreak(N=1000, a=3,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
+# dp.post(gx,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",main="DP")
 
-gx <- dp_stickbreak(N=1000, a=3,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
-dp.post(gx,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",main="DP")
+
+# 2a
+# Setharuman
+par(mfrow=c(1,3))
+avec <- c(1,10,100)
+for (a in avec) {
+  gs <- dp_stickbreak(N=1000, a=a,rG=function(n) rnorm(n), xlim=c(-3,3), eps=1e-4)
+  #main <- bquote(paste("DP(",.(al),"G"[0],")"))
+  dp.post(gs,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
+          main=bquote("G ~ DP("~.(a)~","~G[0]~")"~" - Sethuraman's Construction"))
+}
+par(mfrow=c(1,1))
+
+# Gerguson
+par(mfrow=c(1,3))
+avec <- c(1,10,100)
+for (a in avec) {
+  gs <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
+  #main <- bquote(paste("DP(",.(al),"G"[0],")"))
+  dp.post(gs,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
+          main=bquote("G ~ DP("~.(a)~","~G[0]~")"~" - Ferguson's Construction"))
+}
+par(mfrow=c(1,1))
 
 #source("dpPrior.R")
