@@ -56,14 +56,14 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
     }
   }
 
-  lines(xx,apply(X$G,2,mean),col="blue",lwd=2)
+  lines(xx,apply(X$G,2,function(x) mean(x,na.rm=T)),col="blue",lwd=2)
 }
 
 dp.post.extra <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   dp.post(X,...)
   xx <- X$x
 
-  lines(xx,apply(X$G,2,var),col="red",lwd=2)
+  lines(xx,apply(X$G,2,function(x) var(x,na.rm=T)),col="red",lwd=2)
 
   legend("right",legend=c("Draws from the DP",
                           "Particular draws from the DP",
@@ -72,7 +72,7 @@ dp.post.extra <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) 
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5) )
 
   minor <- function() {
-    plot(xx,apply(X$G,2,var),col="red",lwd=1,bty="n",type="l",
+    plot(xx,apply(X$G,2,function(x) var(x,na.rm=T) ),col="red",lwd=1,bty="n",type="l",
          col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
          col.main=rgb(.3,.3,.5),cex.axis=.8)
   }
@@ -117,7 +117,7 @@ dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T, K=
 # a) DP Sethuraman & Ferguson
 
 # Setharuman
-pdf("pdfs/sethDP.pdf",width=15,height=9)
+pdf("pdfs/sethDP.pdf",width=15,height=7)
 par(mfrow=c(1,3))
 avec <- c(1,10,100)
 for (a in avec) {
@@ -130,11 +130,11 @@ par(mfrow=c(1,1))
 dev.off()
 
 # Ferguson
-pdf("pdfs/fergusonDP.pdf",width=15,height=9)
+pdf("pdfs/fergusonDP.pdf",width=15,height=7)
 source("../../R_Functions/plotinplot.R")
 par(mfrow=c(1,3))
 for (a in avec) {
-  gf <- dp(N=100, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
+  gf <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
   dp.post.extra(gf,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
           main=bquote("G ~ DP("~.(a)~","~G[0]~")"~" - Ferguson's Construction"))
 }
@@ -146,9 +146,9 @@ dev.off()
 #   a ~ .3G(3,2) + .6G(9,6) + .1G(1,9)
 
 mdp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
-  dp.post(X,...)
+  dp.post(X,col.lines=col.lines,...)
   xx <- X$x
-  lines(xx,apply(X$G,2,var),col="red",lwd=2)
+  lines(xx,apply(X$G,2,function(x) var(x,na.rm=T)),col="red",lwd=2)
 
   legend(0,.2,legend=c("Draws from the DP",
                        "Particular draws from the DP",
@@ -166,23 +166,34 @@ mdp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   }
 }
 
+# a = mu^2 / sig2, b = sig^2 / mu
+get.ab <- function(m,v) {
+  c(m^2/v, v/m)
+}
+
+(ab <- rbind(get.ab(1,1),
+             get.ab(5,1),
+             get.ab(5,1000)))
+
 r.a.prior <- function(n) {
   count.of.each.dist <- c(rmultinom(1,n,c(.3,.6,.1)))
-  r1 <- rgamma(count.of.each.dist[1],3,scale=2)
-  r2 <- rgamma(count.of.each.dist[2],9,scale=6)
-  r3 <- rgamma(count.of.each.dist[3],1,scale=9)
+  r1 <- rgamma(count.of.each.dist[1],ab[1,1],sc=ab[1,2])
+  r2 <- rgamma(count.of.each.dist[2],ab[2,1],sc=ab[2,2])
+  r3 <- rgamma(count.of.each.dist[3],ab[3,1],sc=ab[3,2])
   out <- c(r1,r2,r3)
   out
 }
 
-rA <- list(function(n) rgamma(n,3,sc=2),
-           function(n) rgamma(n,6,sc=4),
-           function(n) rgamma(n,10,sc=1))
-pdf("pdfs/priorMDP.pdf",width=15,height=9)
+rA <- list(function(n) rgamma(n,ab[1,1],sc=ab[1,2]),
+           function(n) rgamma(n,ab[2,1],sc=ab[2,2]),
+           function(n) rgamma(n,ab[3,1],sc=ab[3,2]))
+pdf("pdfs/priorMDP.pdf",width=15,height=7)
 par(mfrow=c(1,3))
-for (ra in rA) {
-  gmdp <- mdp(N=1000, rA=ra, pG=function(n) pnorm(n), xlim=c(-3,3))
-  mdp.post(gmdp,main=bquote("G|a ~ DP(a,"~G[0]~")"),xlab="x",ylab="F(x)")
+for (i in 1:nrow(ab)) {
+  gmdp <- mdp(N=1000, rA=rA[[i]], pG=function(n) pnorm(n), xlim=c(-3,3))
+  mdp.post(gmdp,xlab="x",ylab="F(x)",
+           main=bquote("G|"~alpha~"~ DP("~alpha~","~G[0]~"),"
+                       ~alpha~"~"~Gamma~"("~.(ab[i,1])~","~.(ab[i,2])~")"))
 }
 par(mfrow=c(1,1))
-dev.off()
+dev.off(); system("cd ../latex; comptex")
