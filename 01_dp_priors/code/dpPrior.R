@@ -55,10 +55,11 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
        col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
        col.main=rgb(.3,.3,.5),...)
   xx <- X$x
-  print(nrow(X$G))
-  for (i in 1:nrow(X$G)) {
-    if (i<=3) {
-      lines(xx,X$G[i,],type="l",col=rgb(.2,.2,.2))
+  N <- nrow(X$G)
+  for (i in 1:N) {
+    if (i > N - 3) {
+      #lines(xx,X$G[i,],type="l",col=rgb(.2,.2,.2))
+      lines(xx,X$G[i,],type="l",col="black")
     } else {
       lines(xx,X$G[i,],type="l",col=col.lines)
     }
@@ -73,8 +74,8 @@ dp.post.extra <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) 
 
   lines(xx,apply(X$G,2,var),col="red",lwd=2)
 
-  legend("right",legend=c("Random draws from the DP",
-                          "A particular draw from the DP",
+  legend("right",legend=c("Draws from the DP",
+                          "Particular draws from the DP",
                           "E[G]","Var[G]"),
          col=c("grey","black","blue","red"),lwd=3,
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5) )
@@ -82,32 +83,36 @@ dp.post.extra <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) 
   minor <- function() {
     plot(xx,apply(X$G,2,var),col="red",lwd=1,bty="n",type="l",
          col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
-         col.main=rgb(.3,.3,.5),cex.axis=.5)
+         col.main=rgb(.3,.3,.5),cex.axis=.8)
   }
-  plot.in.plot(minor,"topleft")
+  plot.in.plot(minor,"topleft",bg.col=rgb(.9,.9,.9,.5))
 }
 
 # DP using Sethuraman's construction
-dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T) {
+dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T, K=100) {
   if (is.null(J)) {
     J <- log(eps) / (log(a) - log(a+1))
     J <- round(J)
     print(J)
   }
 
-  x <- seq(xlim[1],xlim[2],length=J) # Change J to something else.
+  #x <- seq(xlim[1],xlim[2],length=J) # Change J to something else.
+  x <- seq(xlim[1],xlim[2],length=K)
   Z <- matrix(rbeta(J*N,1,a),N,J)
   th <- matrix(rG(J*N),N,J)
   W <- matrix(0,N,J)
-  G <- matrix(0,N,J)
+  #G <- matrix(0,N,J)
+  G <- matrix(0,N,K)
   W[,1] <- Z[,1]
 
   for (i in 1:N) {
     for (l in 1:J) { # OPTIMIZE?
       if (l>1) W[i,l] <- Z[i,l] * prod(1-Z[i,1:(l-1)])
-      G[i,l] <- sum(W[i,th[i,] <= x[l]])
-      it <- (i-1)*J+l
-      if (printProg) cat("\r Progress: ", it/(N*J) )
+    }
+    for (k in 1:K) { # OPTIMIZE?
+      G[i,k] <- sum(W[i,th[i,] <= x[k]])
+      it <- (i-1)*K+l
+      if (printProg) cat("\r Progress: ", it/(N*K) )
     }
   }
 
@@ -135,9 +140,10 @@ dev.off()
 
 # Ferguson
 pdf("pdfs/fergusonDP.pdf",width=15,height=9)
+source("../../R_Functions/plotinplot.R")
 par(mfrow=c(1,3))
 for (a in avec) {
-  gf <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
+  gf <- dp(N=100, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
   dp.post.extra(gf,col.lines=rgb(.4,.4,.4,.05),ylab="F(x)",xlab="x",
           main=bquote("G ~ DP("~.(a)~","~G[0]~")"~" - Ferguson's Construction"))
 }
@@ -153,9 +159,9 @@ mdp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   xx <- X$x
   lines(xx,apply(X$G,2,var),col="red",lwd=2)
 
-  legend(0,.2,legend=c("Random draws from the DP",
-                          "A particular draw from the DP",
-                          "E[G]","Var[G]",expression(paste("Density of ",alpha))),
+  legend(0,.2,legend=c("Draws from the DP",
+                       "Particular draws from the DP",
+                       "E[G]","Var[G]",expression(paste("Density of ",alpha))),
          col=c("grey","black","blue","red","orange"),lwd=3,
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5) )
 
@@ -163,9 +169,9 @@ mdp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
     minor <- function() {
       plot(density(gmdp$a),col="orange",lwd=1,bty="n",type="l",main="",
            col.axis=rgb(.3,.3,.3),fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),
-           col.main=rgb(.3,.3,.5),cex.axis=.5)
+           col.main=rgb(.3,.3,.5),cex.axis=.8)
     }
-    plot.in.plot(minor,"topleft")
+    plot.in.plot(minor,"topleft",bg.col=rgb(.9,.9,.9,.5))
   }
 }
 
@@ -185,7 +191,7 @@ pdf("pdfs/priorMDP.pdf",width=15,height=9)
 par(mfrow=c(1,3))
 for (ra in rA) {
   gmdp <- mdp(N=1000, rA=ra, pG=function(n) pnorm(n), xlim=c(-3,3))
-  mdp.post(gmdp,main=bquote("G|a ~ DP(a,"~G[0]~")"))
+  mdp.post(gmdp,main=bquote("G|a ~ DP(a,"~G[0]~")"),xlab="x",ylab="F(x)")
 }
 par(mfrow=c(1,1))
 dev.off()
