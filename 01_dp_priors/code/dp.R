@@ -6,8 +6,8 @@ rdir <- function(N,a) {
 }
 
 # Using the dirichlet distribution (Ferguson)
-dp <- function(N=1,a,pG,xlim=c(0,1),n=100) {
-  x <- seq(xlim[1],xlim[2],length=n)
+dp <- function(N=1,a,pG,xlim=c(0,1),J=100) {
+  x <- seq(xlim[1],xlim[2],length=J)
   x <- sort(c(-1e1000,x))
   dG0 <- pG(x[-1]) - pG(x[-length(x)])
   out <- rdir(N,a*dG0)

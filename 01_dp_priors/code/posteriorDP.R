@@ -1,81 +1,64 @@
 # Posterior Inference for one-sample problems using DP Priors
 system("mkdir -p pdfs") # mkdir pdfs if it doesn't exist.
 source("../../R_Functions/plotinplot.R")
+source("../../R_Functions/colorUnderCurve.R")
 source("dp.R")
-
-color.btwn <- function(x,ylo,yhi,from,to,col.area="grey") {
-  x <- c(x,rev(x))
-  y <- c(yhi,rev(ylo))
-
-  polygon(c(x[x>=from & x<= to]),
-          c(y[x>=from & x<=to]),
-          col=col.area,border=F)
-}
-
-rdir <- function(N,a) {
-  k <- length(a)
-  x <- matrix(rgamma(k*N, a, 1), N, k, byrow=T)
-  rowsums <- x %*% rep(1,k)
-  x / as.vector(rowsums)
-}
-
-# Using the dirichlet distribution from gamma's
-dp <- function(N=1,pG,a,xlim=c(0,1),n=1000) {
-  x <- seq(xlim[1],xlim[2],length=n)
-  x <- sort(c(-1e1000,x))
-  dG0 <- pG(x[-1]) - pG(x[-length(x)])
-  out <- rdir(N,a*dG0)
-  G <- t(apply(out,1,cumsum))
-  list("G"=G, "x"= x[-1])
-}
-
-### Plotting Function
-dp.post <- function(X,...) {
-  plot(0,xlim=range(X$x),ylim=c(0,1),cex=0,...)
-  for (i in 1:nrow(X$G)) {
-    lines(X$x,X$G[i,],type="l",col=rgb(.4,.4,.4,.1))
-  }
-}
 
 # Posterior Simulation ################
 # y_i | G ~ G
-# G ~ DP(G_0,a)
-n1 <- 1*5 
-n2 <- 2*5
-n <- n1+n2
-y <- c(rgamma(n1,4,2),rgamma(n2,2,3))
-pT <- function(x) (n1*pgamma(x,4,2) + n2*pgamma(x,2,3)) / n
+# G ~ DP(a,G_0)
+
+pT1 <- function(x) pnorm(x) # First True distribution (CDF) of y_i
+pT2 <- function(x) { # 2. Second True distribution (CDF) of y_i
+  .5*pnorm(x,-2.5,.5) + 0.3*pnorm(x,.5,.7) + 0.2*pnorm(x,1.5,2)
+}
+
+# Fix:
+# G0 = N(m,s)
+# Pick one set: (m, s, a)
+a <- 5 # Later, put a prior. Large => More faith in prior.
+m <- 7
+s <- 3
+pG0 <- function(x) pnorm(x,m,s)
+
+# Select sample size:
+i <- 2 # 1,2,3
+n <- c(20,200,2000)
+y1 <- rnorm(n[i])
+r <- rmultinom(1:3,n[i],prob=c(.5,.3,.2))
+y2 <- c( rnorm(r[1],-2.5,.5), rnorm(r[2],.5,.7), rnorm(r[3],1.5,2))
 
 # Gibbs
 B <- 1000 # Big number for MCMC
-k <- 100 # Number of obs for each DP draw, should be LARGE
-alpha <- 10 # Later, put a prior. Large => More faith in prior.
-pG <- function(x) pnorm(x,2,2)
-pG1 <- function(x) {
+J <- 1000 # Number of obs for each DP draw, should be LARGE
+
+y <- y2 # change this y1 or y2
+pG_new <- function(x) {
   s <- sapply(x,function(w) sum(w >= y))
-  (alpha * pG(x) +  s) / (alpha + n)
+  (a * pG0(x) +  s) / (a + n[i])
 }
+
 # Draw from G | y
-G <- dp(N=B,pG1,a=alpha+n,xlim=c(-10,10),n=k)
+xlim <- c(-5,10)
+G <- dp(N=B,pG_new,a=a+n[i],xlim=xlim,J=J)
 EG <- apply(G$G,2,mean)
 
-#pdf("~/temp/pdf/dp_post.pdf")
-#svg("../../../../assets/ams241/03/plots/dp_post.svg")
-  #dp.post(G,xlab='y',ylab="Fn(y)")
-  plot(0,cex=.001,ylim=c(0,1),xlim=c(-10,10),main=paste("alpha =",alpha),
-       ylab="Fn(y)",xlab="y")
+  plot(0,cex=0,ylim=c(0,1),xlim=xlim,
+       #main=bquote(alpha~"="~.(a)~","~G[0]~"="~"N("~.(m)~","~.(s)~");"~" n ="~.(n[i])),
+       main=bquote("G ~ DP("~.(a)~","~"N("~.(m)~','~.(s)~"));"~" n ="~.(n[i])),
+       ylab="Fn(y)",xlab="y", bty="n",las=1, col.axis=rgb(.3,.3,.3),
+       fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),col.main=rgb(.3,.3,.4))
   lines(ecdf(y),cex=.5)
-  curve(pG,add=T,col="red",lwd=3)
+  curve(pG0,add=T,col="red",lwd=3)
   lines(G$x,EG,col=rgb(0,0,1,.3),lwd=10)
-  curve(pT,add=T,col="green",lwd=3)
-  legend("bottomright",
-         legend=c('Truth','Data','G0','Posterior:\n 95% C.I.','E[G|y]',''),
-         col=c('green','black','red','grey','blue',rgb(0,0,0,0)),lwd=3)
+  curve(pT2,add=T,col="green",lwd=3) # change pT1, pT2
   qG <- apply(G$G,2,function(x) quantile(x,c(.025,.5,.975)))
-  #apply(qG,1,function(x) lines(G$x,x))
   glo <- qG[1,]
   ghi <- qG[3,]
   color.btwn(G$x,glo,ghi,-100,100,col.area=rgb(.2,.2,.2,.5))
-#dev.off()
 
-#source("dp_posterior.R")
+  legend("bottomright",lwd=3,bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
+         legend=c('Truth','Data',paste0('G0 = N(',m,',',s,')'),
+                  'Posterior:\n 95% C.I.','E[G|y]',''),
+         col=c('green','black','red',rgb(.3,.3,.3),'blue','transparent'))
+
