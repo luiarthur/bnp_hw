@@ -1,3 +1,8 @@
+# Posterior Inference for one-sample problems using DP Priors
+system("mkdir -p pdfs") # mkdir pdfs if it doesn't exist.
+source("../../R_Functions/plotinplot.R")
+source("dp.R")
+
 color.btwn <- function(x,ylo,yhi,from,to,col.area="grey") {
   x <- c(x,rev(x))
   y <- c(yhi,rev(ylo))
