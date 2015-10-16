@@ -136,6 +136,13 @@ given to the partition $B_j$, if $B_i$ and $B_j$ are disjoint.
 
 \newpage
 \section{Posterior Inference for Count Data using MDP Priors}
-
+\[
+  \begin{array}{rclcl}
+    y_i &|& F &\sim & F \\
+    F &|& \alpha, \lambda &\sim& \text{DP}(\alpha,\text{Poi}(\lambda)) \\
+      && \lambda &\sim& \Gamma(a_\lambda,b_\lambda) \\
+      && \alpha &\sim& \Gamma(a_\alpha,b_\alpha) \\
+  \end{array}
+\]
 
 \end{document}
