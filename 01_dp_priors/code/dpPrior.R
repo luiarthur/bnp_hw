@@ -131,7 +131,6 @@ dev.off()
 
 # Ferguson
 pdf("pdfs/fergusonDP.pdf",width=15,height=7)
-source("../../R_Functions/plotinplot.R")
 par(mfrow=c(1,3))
 for (a in avec) {
   gf <- dp(N=1000, a=a,pG=function(n) pnorm(n), xlim=c(-3,3))
