@@ -76,7 +76,11 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   }
 }
 
-dp.post.ci <- function(G, col.ci=rgb(.2,.2,.2,.5),xlim.def=range(G$x),...) {
+# dp(N=1000, a=1, pG = function(x) pnorm(x), xlim=c(-3,3), n=100)
+# dp_stickbreak(N=1000, a=1, rG = function(n) rnorm(n), xlim=c(-3,3), K=100)
+# mdp(N=1000, rA=function(n) rgamma(n,1,2), pG=function(x) pnorm(x), xlim=c(-3,3))
+
+dp.post.ci <- function(G, col.ci=rgb(.2,.2,.2,.5),xlim.def=range(G$x),lwd.EG=2,...) {
   EG <- apply(G$G,2,function(x) mean(x,na.rm=T))
   VG <- apply(G$G,2,function(x) var(x,na.rm=T))
   qG <- apply(G$G,2,function(x) quantile(x,c(.025,.975),na.rm=T))
@@ -84,13 +88,38 @@ dp.post.ci <- function(G, col.ci=rgb(.2,.2,.2,.5),xlim.def=range(G$x),...) {
   plot(0,cex=0,ylim=c(0,1),xlim=xlim.def,
        bty="n",las=1, col.axis=rgb(.3,.3,.3),
        fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),col.main=rgb(.3,.3,.4),...)
-  lines(G$x,EG,col="blue",lwd=2) # E[G|y]
+  lines(G$x,EG,col="blue",lwd=lwd.EG) # E[G|y]
   glo <- qG[1,]
   ghi <- qG[2,]
   color.btwn(G$x,glo,ghi,-100,100,col.area=col.ci)
 }
 
+plot.cdf <- function(x,add=F,printProgress=F,...) {
+  ux <- sort(unique(x))
+  lux <- length(ux)
+  cdf <- matrix(0,lux,2)
 
-# dp(N=1000, a=1, pG = function(x) pnorm(x), xlim=c(-3,3), n=100)
-# dp_stickbreak(N=1000, a=1, rG = function(n) rnorm(n), xlim=c(-3,3), K=100)
-# mdp(N=1000, rA=function(n) rgamma(n,1,2), pG=function(x) pnorm(x), xlim=c(-3,3))
+  for (i in 1:lux) {
+    cdf[i,1] <- ux[i]
+    if (i>1) cdf[i-1,2] <- sum(ux[i] > x)
+    if (printProgress) cat("\r Progress: ",i,"/",lux)
+  }
+  if (printProgress) cat("\n")
+
+  cdf[,2] <- cdf[,2] / length(x)
+  cdf[lux,2] <- 1
+
+  if (add) {
+    lines(cdf[,1],cdf[,2],...)
+  } else {
+    plot(cdf[,1],cdf[,2],...)
+  }
+}
+
+# Example:
+#plot.cdf(rnorm(2e4),col="black",discrete=F,lwd=3)
+#for (i in 1:1000) {
+#  plot.cdf(rnorm(1e2),col=rgb(.5,.5,.5,.1),cex=.5,pch=20,add=T,print=F)
+#  cat("\r Progress: ",i,"/",1000)
+#}
+
