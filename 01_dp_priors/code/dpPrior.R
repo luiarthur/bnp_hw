@@ -195,4 +195,4 @@ for (i in 1:nrow(ab)) {
                        ~alpha~"~"~Gamma~"("~.(ab[i,1])~","~.(ab[i,2])~")"))
 }
 par(mfrow=c(1,1))
-dev.off(); system("cd ../latex; comptex")
+dev.off(); #system("cd ../latex; comptex")
