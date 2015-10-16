@@ -8,57 +8,85 @@ source("dp.R")
 # y_i | G ~ G
 # G ~ DP(a,G_0)
 
-pT1 <- function(x) pnorm(x) # First True distribution (CDF) of y_i
-pT2 <- function(x) { # 2. Second True distribution (CDF) of y_i
+# True distributions for data
+
+pD1 <- function(x) pnorm(x) # First True distribution (CDF) of y_i
+pD2 <- function(x) { # 2. Second True distribution (CDF) of y_i
   .5*pnorm(x,-2.5,.5) + 0.3*pnorm(x,.5,.7) + 0.2*pnorm(x,1.5,2)
 }
+
+rD1 <- function(n) rnorm(n)
+rD2 <- function (n) {
+  r <- rmultinom(1:3,n,prob=c(.5,.3,.2))
+  c(rnorm(r[1],-2.5,.5), rnorm(r[2],.5,.7), rnorm(r[3],1.5,2))
+}
+pData <- list(pD1,pD2)
+rData <- list(rD1,rD2)
+
+data.distribution <- list("cdf"=pData,"sampler"=rData)
+
+# ams is alpha, m, and s. I'll have 8 rows. I want every 
+# combination of big and small (or near and far).
+ams <- matrix(0,8,3)
+sb <- rbind("a"= c(1,10), "m"= c(0,3), "s"= c(1,3))
+ams <- matrix(c(sb[1,1],sb[2,1],sb[3,1],
+                sb[1,1],sb[2,1],sb[3,2],
+                sb[1,1],sb[2,2],sb[3,1],
+                sb[1,1],sb[2,2],sb[3,2],
+                sb[1,2],sb[2,1],sb[3,1],
+                sb[1,2],sb[2,1],sb[3,2],
+                sb[1,2],sb[2,2],sb[3,1],
+                sb[1,2],sb[2,2],sb[3,2]), 8,3,byrow=T)
+colnames(ams) <- c("a","m","s")
+ns <- c(20,200,2000)
 
 # Fix:
 # G0 = N(m,s)
 # Pick one set: (m, s, a)
-a <- 5 # Later, put a prior. Large => More faith in prior.
-m <- 7
-s <- 3
-pG0 <- function(x) pnorm(x,m,s)
 
-# Select sample size:
-i <- 2 # 1,2,3
-n <- c(20,200,2000)
-y1 <- rnorm(n[i])
-r <- rmultinom(1:3,n[i],prob=c(.5,.3,.2))
-y2 <- c( rnorm(r[1],-2.5,.5), rnorm(r[2],.5,.7), rnorm(r[3],1.5,2))
+par(mfrow=c(length(ns),nrow(ams)))
+B <- 1000; J <- 1000
+pG0.ms <- function(x,m,s) pnorm(x,m,s)
+for (mod.num in 1:length(data.distribution[[1]])) { #2
+  pD <- data.distribution$cdf[[mod.num]] 
+  rD <- data.distribution$sampler[[mod.num]] 
 
-# Gibbs
-B <- 1000 # Big number for MCMC
-J <- 1000 # Number of obs for each DP draw, should be LARGE
+  for (n.num in 1:length(ns)) { #3
+    n <- ns[n.num]
+    y <- rD(n)
 
-y <- y2 # change this y1 or y2
-pG_new <- function(x) {
-  s <- sapply(x,function(w) sum(w >= y))
-  (a * pG0(x) +  s) / (a + n[i])
+    for (ams.num in 1:nrow(ams)){ #8
+      a <- ams[ams.num,1] 
+      m <- ams[ams.num,2] 
+      s <- ams[ams.num,3] 
+     
+      pG0 <- function(x) pG0.ms(x,m,s)
+      pG0_new <- function(x) {
+        s <- sapply(x,function(w) sum(w >= y))
+        (a * pG0(x) +  s) / (a + n)
+      }
+
+      # Draw from G | y
+      xlim <- c(-9,9)
+      G <- dp(N=B,pG0_new,a=a+n,xlim=xlim,J=J)
+      EG <- apply(G$G,2,mean)
+
+      dp.post.ci(G,ylab="Fn(y)",xlab="y",
+                 main=bquote("("~alpha~"="~.(a)~", m ="~.(m)~", s="~.(s)~")"))
+      lines(ecdf(y))
+      curve(pG0,add=T,col="red",lwd=2)  # prior G0
+      curve(pD,add=T,col="green",lwd=2) # True Distribution of Data
+      
+      legend("bottomright",lwd=2,bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
+             legend=c('Truth','Data',paste0('G0 = N(',m,',',s,')'),
+                      'Posterior:\n 95% C.I.','E[G|y]',''),cex=.5,
+             col=c('green','black','red',rgb(.3,.3,.3),'blue','transparent'))
+ 
+      cat("\r Model:", mod.num, "/2",
+          "\n size: ",n.num, "/3",
+          "\n ams:", ams.num, "/8")
+    }
+  }
 }
-
-# Draw from G | y
-xlim <- c(-5,10)
-G <- dp(N=B,pG_new,a=a+n[i],xlim=xlim,J=J)
-EG <- apply(G$G,2,mean)
-
-  plot(0,cex=0,ylim=c(0,1),xlim=xlim,
-       #main=bquote(alpha~"="~.(a)~","~G[0]~"="~"N("~.(m)~","~.(s)~");"~" n ="~.(n[i])),
-       main=bquote("G ~ DP("~.(a)~","~"N("~.(m)~','~.(s)~"));"~" n ="~.(n[i])),
-       ylab="Fn(y)",xlab="y", bty="n",las=1, col.axis=rgb(.3,.3,.3),
-       fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),col.main=rgb(.3,.3,.4))
-  lines(ecdf(y),cex=.5)
-  curve(pG0,add=T,col="red",lwd=3)
-  lines(G$x,EG,col=rgb(0,0,1,.3),lwd=10)
-  curve(pT2,add=T,col="green",lwd=3) # change pT1, pT2
-  qG <- apply(G$G,2,function(x) quantile(x,c(.025,.5,.975)))
-  glo <- qG[1,]
-  ghi <- qG[3,]
-  color.btwn(G$x,glo,ghi,-100,100,col.area=rgb(.2,.2,.2,.5))
-
-  legend("bottomright",lwd=3,bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
-         legend=c('Truth','Data',paste0('G0 = N(',m,',',s,')'),
-                  'Posterior:\n 95% C.I.','E[G|y]',''),
-         col=c('green','black','red',rgb(.3,.3,.3),'blue','transparent'))
+par(mfrow=c(1,1))
 

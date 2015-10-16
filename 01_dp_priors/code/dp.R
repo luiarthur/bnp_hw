@@ -76,6 +76,20 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   }
 }
 
+dp.post.ci <- function(G, col.ci=rgb(.2,.2,.2,.5),xlim.def=range(G$x),...) {
+  EG <- apply(G$G,2,function(x) mean(x,na.rm=T))
+  VG <- apply(G$G,2,function(x) var(x,na.rm=T))
+  qG <- apply(G$G,2,function(x) quantile(x,c(.025,.975),na.rm=T))
+  
+  plot(0,cex=0,ylim=c(0,1),xlim=xlim.def,
+       bty="n",las=1, col.axis=rgb(.3,.3,.3),
+       fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),col.main=rgb(.3,.3,.4),...)
+  lines(G$x,EG,col="blue",lwd=2) # E[G|y]
+  glo <- qG[1,]
+  ghi <- qG[2,]
+  color.btwn(G$x,glo,ghi,-100,100,col.area=col.ci)
+}
+
 
 # dp(N=1000, a=1, pG = function(x) pnorm(x), xlim=c(-3,3), n=100)
 # dp_stickbreak(N=1000, a=1, rG = function(n) rnorm(n), xlim=c(-3,3), K=100)
