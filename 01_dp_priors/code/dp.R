@@ -7,12 +7,16 @@ rdir <- function(N,a) {
 
 # Using the dirichlet distribution (Ferguson)
 dp <- function(N=1,a,pG,xlim=c(0,1),J=100) {
-  x <- seq(xlim[1],xlim[2],length=J)
-  x <- sort(c(-1e1000,x))
-  dG0 <- pG(x[-1]) - pG(x[-length(x)])
+  if (length(xlim) <= 2) {
+    x <- seq(xlim[1],xlim[2],length=J)
+  } else {
+    x <- xlim
+  }
+
+  dG0 <- c(pG(x[1]), pG(x[-1]) - pG(x[-length(x)]))
   out <- rdir(N,a*dG0)
   G <- t(apply(out,1,cumsum))
-  list("G"=G, "x"= x[-1])
+  list("G"=G, "x"= x)
 }
 
 dp_stickbreak <- function(N=1,a,rG,xlim=c(0,1), J=NULL, eps=.01, printProg=T, K=100) {
@@ -69,9 +73,9 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
   for (i in 1:N) {
     if (i > N - 3) {
       #lines(xx,X$G[i,],type="l",col=rgb(.2,.2,.2))
-      lines(xx,X$G[i,],type="l",col="black")
+      lines(xx,X$G[i,],type="s",col="black")
     } else {
-      lines(xx,X$G[i,],type="l",col=col.lines)
+      lines(xx,X$G[i,],type="s",col=col.lines)
     }
   }
 }
@@ -123,3 +127,26 @@ plot.cdf <- function(x,add=F,printProgress=F,...) {
 #  cat("\r Progress: ",i,"/",1000)
 #}
 
+ldir <- function(x,a,const=T) { # returns log dirichlet pdf
+  a <- ifelse(a == 0, 1e-200, a)
+  x <- ifelse(x == 0, 1e-200, x)
+  num <- sum((a-1)*log(x))
+
+  B <- 0
+  if (const) {
+    suma <- ifelse(sum(a) == 0, 1e-200, sum(a))
+    B <- sum(lgamma(a)) - lgamma(suma)
+  }
+  out <- num - B
+
+  out
+}
+
+gamma.mv2shsc <- function(m,v) {
+  c("shape"=m^2/v, "scale"=v/m)
+}
+
+cdf2pdf <- function(x) {
+  out <- c(x[1], x[-1] - x[-length(x)])
+  ifelse(out == 0, 1e-200, out)
+}
