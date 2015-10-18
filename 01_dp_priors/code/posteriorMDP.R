@@ -111,11 +111,10 @@ for (b in 2:B) {
 
 #G
 layout(matrix(c(1,1,1,2,3,4),2,byrow=T))
-dp.post(list("G"=G[-c(1:8500),],"x"=xlim))
-lines(ecdf(y),lwd=3)
-lines(xlim,apply(G,2,function(x) mean(x,na.rm=T)),col="blue",type="s")
+dp.post.ci(list("G"=G[-c(1:8500),],"x"=xlim),ylab="Fn(y)",xlab="y",cex.main=.9,type.EG="p",pch=20,cex.EG=3)
+plot.cdf(y,type="s",add=T)
 plot(a[-c(1:200)],type="l",main=paste("alpha", round(100*acc.a/(B),5),"%"))
-plot(a[-c(1:200)],lam[-c(1:200)],type="l",main="alpha vs. lambda", col=rgb(.2,.2,.2,.2))
+plot(a[-c(1:200)],lam[-c(1:200)],type="p",main="alpha vs. lambda", col=rgb(.2,.2,(201:B)/B,.2),cex=.4)
 plot(lam[-c(1:200)],type="l",main=paste("lambda", round(100*acc.l/(B),5),"%"))
 
 #source("posteriorMDP.R")
