@@ -22,7 +22,7 @@ B <- 10000
 xlim <- 0:30
 
 # Start here
-y <- rD1(n) 
+y <- rD2(n) 
 csa <- 1 # cand sig for alpha
 csl <- 1 # cand sig for lambda
 
@@ -111,10 +111,14 @@ for (b in 2:B) {
 
 #G
 layout(matrix(c(1,1,1,2,3,4),2,byrow=T))
-dp.post.ci(list("G"=G[-c(1:8500),],"x"=xlim),ylab="Fn(y)",xlab="y",cex.main=.9,type.EG="p",pch=20,cex.EG=3)
+dp.post.ci(list("G"=G[-c(1:8500),],"x"=xlim),ylab="Fn(y)",xlab="y",type.EG="p",pch=20,cex.EG=3,
+           main=bquote(" G | y,"~alpha~","~lambda ),cex.main=2,EG.col=rgb(.3,.3,.7))
 plot.cdf(y,type="s",add=T)
-plot(a[-c(1:200)],type="l",main=paste("alpha", round(100*acc.a/(B),5),"%"),col="grey",bty="n")
-plot(a[-c(1:200)],lam[-c(1:200)],type="p",main="alpha vs. lambda", col=rgb(.2,.2,(201:B)/B,.2),cex=.4,bty="n")
-plot(lam[-c(1:200)],type="l",main=paste("lambda", round(100*acc.l/(B),5),"%"),col="grey",bty="n")
+plot(a[-c(1:200)],type="l",main=bquote("Trace plot for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"),
+     col="grey",bty="n",ylab=bquote(alpha),xlab='',fg="grey")
+plot(a[-c(1:200)],lam[-c(1:200)],type="p",main=bquote(alpha~" vs "~lambda), col=rgb(.2,.2,(201:B)/B,.2),cex=.4,bty="n",
+     ylab=bquote(alpha),xlab=bquote(lambda),fg='grey')
+plot(lam[-c(1:200)],type="l",main=bquote("Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"),
+     col="grey",bty="n",ylab=bquote(lambda),xlab="",fg='grey')
 
 #source("posteriorMDP.R")
