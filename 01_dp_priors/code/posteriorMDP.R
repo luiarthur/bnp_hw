@@ -110,6 +110,7 @@ for (b in 2:B) {
 #list("G"=G, "a"=a, "lamda"=lam, "acc.a"=acc.a, "acc.l"=acc.l)
 
 #G
+pdf("pdfs/postMDP.pdf")
 layout(matrix(c(1,1,1,2,3,4),2,byrow=T))
 dp.post.ci(list("G"=G[-c(1:8500),],"x"=xlim),ylab="Fn(y)",xlab="y",type.EG="p",pch=20,cex.EG=3,
            main=bquote(" G | y,"~alpha~","~lambda ),cex.main=2,EG.col=rgb(.3,.3,.7))
@@ -120,5 +121,6 @@ plot(a[-c(1:200)],lam[-c(1:200)],type="p",main=bquote(alpha~" vs "~lambda), col=
      ylab=bquote(alpha),xlab=bquote(lambda),fg='grey')
 plot(lam[-c(1:200)],type="l",main=bquote("Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"),
      col="grey",bty="n",ylab=bquote(lambda),xlab="",fg='grey')
+dev.off()
 
 #source("posteriorMDP.R")
