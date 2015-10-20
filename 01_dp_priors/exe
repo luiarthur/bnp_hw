@@ -1,0 +1,22 @@
+#!/bin/bash
+
+argnum=$#
+
+if [ "$argnum" -31 "0" ]
+then
+  echo "You need to enter a file name"
+else
+  gush
+  file="$1"
+  path=`sed 's/home\/arthur/soe\/alui2/'` 
+  pathtofile=$path$file
+
+#ssh alui2@citrisdance.soe.ucsc.edu << EOF
+#  cd ~/bnp_hw/
+#  git pull
+#  R CMD BATCH pwd | $file
+#EOF
+
+fi
+
+`scp -r alui2@citrisdance.soe.ucsc.edu:$file/pdfs pdfs`
