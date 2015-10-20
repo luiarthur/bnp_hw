@@ -1,9 +1,10 @@
 # Posterior Inference for one-sample problems using DP Priors
 system("mkdir -p pdfs") # mkdir pdfs if it doesn't exist.
 source("../../R_Functions/plotinplot.R")
+source("../../R_Functions/plotPost.R",chdir=T)
 source("../../R_Functions/colorUnderCurve.R")
 source("dp.R")
-set.seed(1)
+#set.seed(1)
 
 pD1 <- function(x) ppois(x,5) # First True distribution (CDF) of y_i
 pD2 <- function(x) .7*ppois(x,3) + 0.3*ppois(x,11)
@@ -14,25 +15,34 @@ rD2 <- function (n) {
   c(rpois(r[1],3),rpois(r[2],11))
 }
 
-csa.12 <- c(2,1)
-csl.12 <- c(3,1)
+csa.12 <- c(5,5)
+csl.12 <- c(.5,1)
 pData <- list(pD1,pD2)
 rData <- list(rD1,rD2)
 
 data.distribution <- list("cdf"=pData,"sampler"=rData)
 
 n <- 300
-B <- 3000#0
+B <- 5000
+burn <- B * .2
 xlim <- 0:30
 
 # Start here
 for (mod.num in 1:length(data.distribution[[1]])){
   y <- rData[[mod.num]](n)
+  n.uniq <- length(unique(y))
+
+  table.y <- table(y)
+  y.star <- as.numeric(names(table.y))
+  nj <- as.numeric(table.y)
+
   csa <- csa.12[mod.num] # cand sig for alpha
   csl <- csl.12[mod.num] # cand sig for lambda
   
-  lpa <- function(x) dgamma(x,.1,sc=10,log=T) #log prior for alpha
-  lpl <- function(x) dgamma(x,2.5,sc=2,log=T) #log prior for lambda
+  ppa <- get.ab(5,5)
+  ppl <- get.ab(5,5)
+  lpa <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for alpha
+  lpl <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for lambda
   lq <- function(x,m,v) {
     ss <- gamma.mv2shsc(m,v)
     dgamma(x,ss[1],sc=ss[2],log=T)
@@ -40,6 +50,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
   
   K <- length(xlim)
   G <- matrix(0,B,K)
+  lg0 <- function(x,lam) dpois(x,lam,log=T)
   pG0 <- function(x,lam) ppois(x,lam)
   pGn <- pG0 # this is an initialization
   G[1,] <- dp(N=1,a=1, pG=function(x) pG0(x,1), xlim=xlim)$G
@@ -74,12 +85,20 @@ for (mod.num in 1:length(data.distribution[[1]])){
     #cand <- rgamma(1,ss[1],sc=ss[2]) # gamma proposal
     cand <- rnorm(1,a[b],csa) # Normal
     if (cand > 0) {
-      pg <- cdf2pdf(G[b,])
-      pg01 <- c(pG0(xlim[1],lam[b]),pG0(xlim[-1],lam[b])-pG0(xlim[-length(xlim)],lam[b]))
-      pg02 <- c(pG0(xlim[1],lam[b]),pG0(xlim[-1],lam[b])-pG0(xlim[-length(xlim)],lam[b]))
-  
-      lga1 <- ldir(pg,cand*pg01) + lpa(cand)
-      lga2 <- ldir(pg,a[b]*pg02) + lpa(a[b])
+      #pg <- cdf2pdf(G[b,])
+      #pg01 <- c(pG0(xlim[1],lam[b]),pG0(xlim[-1],lam[b])-pG0(xlim[-length(xlim)],lam[b]))
+      #pg02 <- c(pG0(xlim[1],lam[b]),pG0(xlim[-1],lam[b])-pG0(xlim[-length(xlim)],lam[b]))
+      #lga1 <- ldir(pg,cand*pg01) + lpa(cand)
+      #lga2 <- ldir(pg,a[b]*pg02) + lpa(a[b])
+      
+      lla <- function(aa) {
+        n.uniq * log(aa) - lgamma(aa+n) -lgamma(aa) +
+        sum( (nj-1) * log(aa*exp(lg0(y.star,lam[b])) + 1) )
+      }
+
+      lga1 <- lla(cand) + lpa(cand)
+      lga2 <- lla(a[b]) + lpa(a[b])
+
       lqa1 <- 0 #lq(cand,a[b],csa) #0 Normal
       lqa2 <- 0 #lq(a[b],cand,csa) #0 Normal
       lr <- lga1 - lqa1 - lga2 + lqa2
@@ -95,13 +114,20 @@ for (mod.num in 1:length(data.distribution[[1]])){
     #ss <- gamma.mv2shsc(lam[b],csl) # gamma proposal
     #cand <- rgamma(1,ss[1],sc=ss[2]) # gamma proposal
     if (cand > 0) {
-      pg01 <- c(pG0(xlim[1],cand),   pG0(xlim[-1],cand)   - pG0(xlim[-length(xlim)],cand))
-      pg02 <- c(pG0(xlim[1],lam[b]), pG0(xlim[-1],lam[b]) - pG0(xlim[-length(xlim)],lam[b]))
+      #pg01 <- c(pG0(xlim[1],cand),   pG0(xlim[-1],cand)   - pG0(xlim[-length(xlim)],cand))
+      #pg02 <- c(pG0(xlim[1],lam[b]), pG0(xlim[-1],lam[b]) - pG0(xlim[-length(xlim)],lam[b]))
   
-      lgl1 <- ldir(pg,a[b]*pg01) + lpl(cand)
-      lgl2 <- ldir(pg,a[b]*pg02) + lpl(lam[b])
+
+      lll <- function(l) {
+        sum( lg0(y.star,l) + 
+            (nj-1) * log(a[b]*exp(lg0(y.star,l)) + 1) )
+      }
+
+      lgl1 <- lll(cand)   + lpl(cand)
+      lgl2 <- lll(lam[b]) + lpl(lam[b])
       lql1 <- 0 #lq(cand,lam[b],csl) #0
       lql2 <- 0 #lq(lam[b],cand,csl) #0
+
       lr <- lgl1 - lql1 - lgl2 + lql2
   
       if (lr > log(runif(1))) {
@@ -115,9 +141,10 @@ for (mod.num in 1:length(data.distribution[[1]])){
   #out <- list("G"=G, "a"=a, "lamda"=lam, "acc.a"=acc.a, "acc.l"=acc.l)
   
   #G
-  burn <- B * .2
   pdf(paste0("pdfs/postMDP",mod.num,".pdf"),w=10,h=10)
-  layout(matrix(c(1,1,1,2,3,4),2,byrow=T))
+  #layout(matrix(c(1,1,1,2,3,4),2,byrow=T))
+  #layout(matrix(c(1,3,4,2),2,byrow=T))
+  par(mfrow=c(2,2))
   dp.post.ci(list("G"=G[-c(1:burn),],"x"=xlim),ylab="Fn(y)",
              xlab="y",type.EG="p",pch=20,cex.EG=3,
              main=bquote(" G | y,"~alpha~","~lambda ),
@@ -132,12 +159,33 @@ for (mod.num in 1:length(data.distribution[[1]])){
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
          cex=2)
 
-  plot(a[-c(1:burn)],type="l",main=bquote("Trace plot for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"),
-       col="grey",bty="n",ylab=bquote(alpha),xlab='',fg="grey")
+  # alpha posterior
+  plot.post(tail(a,B-burn),
+            main=bquote("Posterior Density & Trace plot for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"))
+  #plot(density(tail(a,B-burn)),
+  #     main=bquote("Posterior Density & Trace plot for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"),
+  #     bty="n",xlab=expression(alpha),fg="grey")
+  #alpha.trace <- function() {
+  #  plot(a[-c(1:burn)],type="l",
+  #     col="grey",bty="n",ylab=bquote(alpha),xlab='',fg="grey",cex.axis=.8)
+  #}
+  #plot.in.plot(alpha.trace,"topleft")
+
+  # lambda posterior
+  plot.post(tail(lam,B-burn),
+            main=bquote("Posterior Density & Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"))
+  #plot(density(tail(lam,B-burn)),
+  #     main=bquote("Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"),
+  #     bty="n",xlab=expression(lambda),fg="grey")
+  #lam.trace <- function() {
+  #  plot(lam[-c(1:burn)],type="l",bty="n",col="grey",fg="grey",cex.axis=.8)
+  #}
+  #plot.in.plot(lam.trace,"topleft")
+
+  # alpha lambda joint
   plot(a[-c(1:burn)],lam[-c(1:burn)],type="p",main=bquote(alpha~" vs "~lambda), col=rgb(.2,.2,((burn+1):B)/B,.2),cex=.4,bty="n",
        ylab=bquote(alpha),xlab=bquote(lambda),fg='grey')
-  plot(lam[-c(1:burn)],type="l",main=bquote("Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"),
-       col="grey",bty="n",ylab=bquote(lambda),xlab="",fg='grey')
+
   dev.off()
 
 }
