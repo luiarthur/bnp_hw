@@ -1,7 +1,9 @@
 #!/bin/bash
+# For dp assignment
 
 argnum=$#
 
+currdir=`pwd`
 if [ "$argnum" -eq "0" ]
 then
   echo "You need to enter a file name"
@@ -17,7 +19,10 @@ else
 #  git pull
 #  R CMD BATCH $pathtofile
 #EOF
-
-#  `scp -r alui2@citrisdance.soe.ucsc.edu:$file/pdfs pdfs`
+#
+#  `scp -r alui2@citrisdance.soe.ucsc.edu:/soe/alui2/bnp_hw/01_dp_priors/code/pdfs /home/arthur/bnp_hw/01_dp_priors/code/pdfs`
+#  cd ~/bnp_hw/01_dp_priors/latex
+#  comptex
+#  cd currdir
 fi
 
