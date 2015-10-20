@@ -7,16 +7,17 @@ then
   echo "You need to enter a file name"
 else
   file="$1"
-  path=`sed 's/home\/arthur/soe\/alui2/'` 
+  path=`pwd | sed 's/home\/arthur/soe\/alui2/'` 
   pathtofile=$path$file
+  echo $pathtofile
 
 #gush
 #ssh alui2@citrisdance.soe.ucsc.edu << EOF
 #  cd ~/bnp_hw/
 #  git pull
-#  R CMD BATCH pwd | $file
+#  R CMD BATCH $pathtofile
 #EOF
 
-  `scp -r alui2@citrisdance.soe.ucsc.edu:$file/pdfs pdfs`
+#  `scp -r alui2@citrisdance.soe.ucsc.edu:$file/pdfs pdfs`
 fi
 
