@@ -19,15 +19,15 @@ else
   echo $pathtoout
   echo $pathtooutlocal
   mkdir -p $pathtooutlocal
+  gush
 
-#gush
-#ssh alui2@citrisdance.soe.ucsc.edu << EOF
-#  cd ~/bnp_hw/
-#  git pull
-#  R CMD BATCH $pathtofile
-#  mdkir -p $pathtoout
-#EOF
-#
-#  `scp -r alui2@citrisdance.soe.ucsc.edu:$pathtoout $pathtooutlocal`
+ssh alui2@citrisdance.soe.ucsc.edu << EOF
+  cd ~/bnp_hw/
+  git pull
+  R CMD BATCH $pathtofile
+  mdkir -p $pathtoout
+EOF
+
+  `scp -r alui2@citrisdance.soe.ucsc.edu:$pathtoout $pathtooutlocal`
 fi
 
