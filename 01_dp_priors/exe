@@ -3,26 +3,31 @@
 
 argnum=$#
 
-currdir=`pwd`
-if [ "$argnum" -eq "0" ]
+
+if [ "$argnum" -lt "2" ]
 then
-  echo "You need to enter a file name"
+  echo "You need to enter a file name and an output destination!"
 else
+  currdir=`pwd`
   file="$1"
-  path=`pwd | sed 's/home\/arthur/soe\/alui2/'` 
-  pathtofile=$path$file
+  outdir="$2"
+  path=`pwd | sed "s|$HOME|\/soe\/alui2|"`
+  pathtofile=$path\/$file
+  pathtoout=$path\/$outdir
+  pathtooutlocal=$currdir\/$outdir
   echo $pathtofile
+  echo $pathtoout
+  echo $pathtooutlocal
+  mkdir -p $pathtooutlocal
 
 #gush
 #ssh alui2@citrisdance.soe.ucsc.edu << EOF
 #  cd ~/bnp_hw/
 #  git pull
 #  R CMD BATCH $pathtofile
+#  mdkir -p $pathtoout
 #EOF
 #
-#  `scp -r alui2@citrisdance.soe.ucsc.edu:/soe/alui2/bnp_hw/01_dp_priors/code/pdfs /home/arthur/bnp_hw/01_dp_priors/code/pdfs`
-#  cd ~/bnp_hw/01_dp_priors/latex
-#  comptex
-#  cd currdir
+#  `scp -r alui2@citrisdance.soe.ucsc.edu:$pathtoout $pathtooutlocal`
 fi
 
