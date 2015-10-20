@@ -2,7 +2,7 @@
 
 argnum=$#
 
-if [ "$argnum" -31 "0" ]
+if [ "$argnum" -eq "0" ]
 then
   echo "You need to enter a file name"
 else
@@ -17,6 +17,6 @@ else
 #  R CMD BATCH pwd | $file
 #EOF
 
+  `scp -r alui2@citrisdance.soe.ucsc.edu:$file/pdfs pdfs`
 fi
 
-`scp -r alui2@citrisdance.soe.ucsc.edu:$file/pdfs pdfs`
