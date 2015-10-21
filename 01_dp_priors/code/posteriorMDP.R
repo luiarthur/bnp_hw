@@ -180,5 +180,5 @@ for (mod.num in 1:length(data.distribution[[1]])){
   dev.off()
 
 }
-system("cd ../latex; comptex")
+#system("cd ../latex; comptex")
 #source("posteriorMDP.R")
