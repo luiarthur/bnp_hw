@@ -23,7 +23,7 @@ rData <- list(rD1,rD2)
 data.distribution <- list("cdf"=pData,"sampler"=rData)
 
 n <- 300
-B <- 5000
+B <- 10000
 burn <- B * .2
 xlim <- 0:30
 
@@ -142,45 +142,36 @@ for (mod.num in 1:length(data.distribution[[1]])){
   
   #G
   pdf(paste0("pdfs/postMDP",mod.num,".pdf"),w=10,h=10)
-  #layout(matrix(c(1,1,1,2,3,4),2,byrow=T))
+  #layout(matrix(c(1,1,2,3,4,5),2,byrow=T))
   #layout(matrix(c(1,3,4,2),2,byrow=T))
   par(mfrow=c(2,2))
   dp.post.ci(list("G"=G[-c(1:burn),],"x"=xlim),ylab="Fn(y)",
              xlab="y",type.EG="p",pch=20,cex.EG=3,
              main=bquote(" G | y,"~alpha~","~lambda ),
-             cex.main=2,EG.col=rgb(.3,.3,.7))
-  lines(xlim,apply(G,2,function(x) var(x,na.rm=T)),
-        col="red",lwd=2)
-  plot.cdf(y,type="p",add=T,pch=20,col="green",cex=1.5)
-
-  legend("bottomright",
-         col=c("green",rgb(.3,.3,.7),"red","grey","transparent"),
-         legend=c("Data","E[G|y]","V[G|y]","95% C.I.",""),lwd=3,
+             cex.main=2,EG.col=rgb(.3,.3,.7),dens=T,
+             ylim.def=c(0,.3),lwd.ci=3)
+  pmf <- plot.pmf(y,type="p",add=T,pch=20,col="green",cex=1.5)
+  legend("topright",
+         col=c("green",rgb(.3,.3,.7),"red","grey","transparent"),text.col=rgb(.3,.3,.4),
+         legend=c("Data","E[G|y]",expression(paste("[","y"^"new","|y]")),"95% C.I.",""),lwd=3,
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
          cex=2)
 
+  # Posterior Predictive
+  postpred <- apply(matrix(tail(1:n,B-burn)),1,function(i) {
+                    dG0 <- c(pG0(xlim[1],lam[i]), pG0(xlim[-1],lam[i]) - pG0(xlim[-length(xlim)],lam[i]))
+                    prob <- rdir(1,a[i]*dG0)
+                    sample(xlim,1,prob=prob)
+         })
+  pmf.postpred <- plot.pmf(postpred,type="p",add=T,pch=20,col=rgb(1,0,0,.5),cex=2)
+
   # alpha posterior
   plot.post(tail(a,B-burn),
-            main=bquote("Posterior Density & Trace plot for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"))
-  #plot(density(tail(a,B-burn)),
-  #     main=bquote("Posterior Density & Trace plot for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"),
-  #     bty="n",xlab=expression(alpha),fg="grey")
-  #alpha.trace <- function() {
-  #  plot(a[-c(1:burn)],type="l",
-  #     col="grey",bty="n",ylab=bquote(alpha),xlab='',fg="grey",cex.axis=.8)
-  #}
-  #plot.in.plot(alpha.trace,"topleft")
+            main=bquote("Posterior & Trace for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"))
 
   # lambda posterior
   plot.post(tail(lam,B-burn),
-            main=bquote("Posterior Density & Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"))
-  #plot(density(tail(lam,B-burn)),
-  #     main=bquote("Trace plot for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"),
-  #     bty="n",xlab=expression(lambda),fg="grey")
-  #lam.trace <- function() {
-  #  plot(lam[-c(1:burn)],type="l",bty="n",col="grey",fg="grey",cex.axis=.8)
-  #}
-  #plot.in.plot(lam.trace,"topleft")
+            main=bquote("Posterior & Trace for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"))
 
   # alpha lambda joint
   plot(a[-c(1:burn)],lam[-c(1:burn)],type="p",main=bquote(alpha~" vs "~lambda), col=rgb(.2,.2,((burn+1):B)/B,.2),cex=.4,bty="n",

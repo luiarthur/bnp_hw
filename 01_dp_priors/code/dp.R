@@ -84,25 +84,33 @@ dp.post <- function(X,col.lines=rgb(.4,.4,.4,.1),xlim.def=range(X$x),...) {
 # dp_stickbreak(N=1000, a=1, rG = function(n) rnorm(n), xlim=c(-3,3), K=100)
 # mdp(N=1000, rA=function(n) rgamma(n,1,2), pG=function(x) pnorm(x), xlim=c(-3,3))
 
-dp.post.ci <- function(G, col.ci=rgb(.2,.2,.2,.5),xlim.def=range(G$x),lwd.EG=2,type.EG="l",pch.EG=1,cex.EG=1,EG.col='blue',
-                       density.est=F,...) {
-  EG <- apply(G$G,2,function(x) mean(x,na.rm=T))
-  VG <- apply(G$G,2,function(x) var(x,na.rm=T))
-  qG <- apply(G$G,2,function(x) quantile(x,c(.025,.975),na.rm=T))
-  
-  plot(0,cex=0,ylim=c(0,1),xlim=xlim.def,
+dp.post.ci <- function(G, col.ci=rgb(.2,.2,.2,.5),ylim.def=c(0,1),xlim.def=range(G$x),lwd.EG=2,type.EG="l",
+                       pch.EG=1,cex.EG=1,EG.col='blue',density.est=F,lwd.ci=1,...) {
+
+  plot(0,cex=0,ylim=ylim.def,xlim=xlim.def,
        bty="n",las=1, col.axis=rgb(.3,.3,.3),
        fg=rgb(.8,.8,.8),col.lab=rgb(.3,.3,.5),col.main=rgb(.3,.3,.4),...)
-
+  
+  g <- NULL
   if (!(density.est)) { # Plot cdf
-    lines(G$x,EG,col=EG.col,lwd=lwd.EG,type=type.EG,pch=pch.EG,cex=cex.EG) # E[G|y]
-    glo <- qG[1,]
-    ghi <- qG[2,]
-    color.btwn(G$x,glo,ghi,-100,100,col.area=col.ci)
+    g <- G$G
   } else { # Plot pmf
-
+    g <- t(apply(G$G,1,function(x) c(x[1], x[-1]-x[-length(x)]) ))
   }
 
+  EG <- apply(g,2,function(x) mean(x,na.rm=T))
+  VG <- apply(g,2,function(x) var(x,na.rm=T))
+  qG <- apply(g,2,function(x) quantile(x,c(.025,.975),na.rm=T))
+  glo <- qG[1,]
+  ghi <- qG[2,]
+
+  if (!(density.est)) {# cdf 95% CI
+    lines(G$x,EG,col=EG.col,lwd=lwd.EG,type=type.EG,pch=pch.EG,cex=cex.EG) # E[G|y]
+    color.btwn(G$x,glo,ghi,-100,100,col.area=col.ci)
+  } else { # pmf 95% CI
+    lines(G$x,EG,col=EG.col,lwd=lwd.EG,type=type.EG,pch=pch.EG,cex=cex.EG) # E[G|y]
+    segments(G$x,glo,G$x,ghi,col=col.ci,lwd=lwd.ci)
+  }
 }
 
 plot.cdf <- function(x,add=F,printProgress=F,...) {
@@ -127,6 +135,26 @@ plot.cdf <- function(x,add=F,printProgress=F,...) {
   }
 }
 
+plot.pmf <- function(x,add=F,...) {
+  x.table <- table(x)
+  x.uniq <- as.numeric(names(x.table))
+  x.counts <- as.numeric(x.table)
+
+  lux <- length(x.uniq)
+  pmf <- matrix(0,lux,2)
+
+  x.prop <- x.counts / sum(x.counts)
+  if (add) {
+    lines(x.uniq, x.prop,...)
+  } else {
+    plot(x.uniq, x.prop,...)
+  }
+
+  out <- cbind(x.uniq, x.prop)
+  colnames(out) <- c("x","prop")
+
+  out
+}
 # Example:
 #plot.cdf(rnorm(2e4),col="black",discrete=F,lwd=3)
 #for (i in 1:1000) {
