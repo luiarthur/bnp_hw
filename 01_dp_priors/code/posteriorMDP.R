@@ -152,10 +152,10 @@ for (mod.num in 1:length(data.distribution[[1]])){
              ylim.def=c(0,.3),lwd.ci=3)
   pmf <- plot.pmf(y,type="p",add=T,pch=20,col="green",cex=1.5)
   legend("topright",
-         col=c("green",rgb(.3,.3,.7),"red","grey","transparent"),text.col=rgb(.3,.3,.4),
-         legend=c("Data","E[G|y]",expression(paste("[","y"^"new","|y]")),"95% C.I.",""),lwd=3,
+         col=c("green",rgb(.3,.3,.7),"red","grey"),text.col=rgb(.3,.3,.4),
+         legend=c("Data","E[G|y]",expression(paste("[","y"^"new","|y]")),"95% C.I."),lwd=3,
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
-         cex=2)
+         cex=1.5)
 
   # Posterior Predictive
   postpred <- apply(matrix(tail(1:n,B-burn)),1,function(i) {
