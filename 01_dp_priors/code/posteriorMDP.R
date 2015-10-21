@@ -39,8 +39,8 @@ for (mod.num in 1:length(data.distribution[[1]])){
   csa <- csa.12[mod.num] # cand sig for alpha
   csl <- csl.12[mod.num] # cand sig for lambda
   
-  ppa <- gamma.mv2shsc(5,5)
-  ppl <- gamma.mv2shsc(5,5)
+  ppa <- gamma.mv2shsc(5,5) # Prior for alpha is Gamma(5,1) because no idea
+  ppl <- gamma.mv2shsc(5,5) # Prior for lambda is Gamma(5,1) because center is 5
   lpa <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for alpha
   lpl <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for lambda
   
@@ -126,7 +126,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
          cex=1.5)
 
   # Posterior Predictive
-  postpred <- apply(matrix(tail(1:n,B-burn)),1,function(i) {
+  postpred <- apply(matrix(tail(1:B,B-burn)),1,function(i) {
                     dG0 <- c(pG0(xlim[1],lam[i]), pG0(xlim[-1],lam[i]) - pG0(xlim[-length(xlim)],lam[i]))
                     prob <- rdir(1,a[i]*dG0)
                     sample(xlim,1,prob=prob)
