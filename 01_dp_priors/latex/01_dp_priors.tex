@@ -98,16 +98,56 @@ given to the partition $B_j$, if $B_i$ and $B_j$ are disjoint.
 
 \newpage
 \section{Simulation of Dirichlet Process Prior Relizations}
+Figure 1 shows draws from the DP using Setharuman's with varying $\alpha$
+values. The $\alpha$ values from left to right are 1, 3, and 5. The mass
+parameter $\alpha$ affects the point-wise variance of the cdf's drawn from the
+DP. Notice that with small $\alpha$, the point-wise variance is larger at the
+center of the DP draws; and with larger $\alpha$, the point-wise variance is
+small. (This is illustrated by the red line.) The expected value of the DP is
+the base-line distribution $G_0$, which is a standard Normal in our case.  To
+confirm this, the point-wise means for the DP draws were taken and plotted in
+blue. A few partiular draws from the DP are drawn in black, and the rest of the
+draws are shaded in light grey such that the more likely draws are darker. \\
+
+\noindent
+Figure 2 shows draws from the DP using Ferguson's construction, again with
+varying $\alpha$ values.  From left to right, the parameters are again 1, 3,
+and 5. We see that there are no differences between the plots in Figure 1 and
+2. This is expected as the 2 methods used to simulate draws from the DP should
+yield the same distribution.
+
+\vspace{5em}
 \beginmyfig
   \includegraphics[scale=.4]{../code/pdfs/sethDP.pdf}
-  \caption{Dirichlet Process Draws using Setharuman's Construction}
+  \caption{DP draws using Setharuman's construction with varying $\alpha$
+  values, with $\alpha=1, 3, \text{and } 5$ from left to right.}
 \endmyfig
 \beginmyfig
   \includegraphics[scale=.4]{../code/pdfs/fergusonDP.pdf}
-  \caption{Dirichlet Process Draws using Ferguson's Construction}
+  \caption{DP draws using Ferguson's construction with varying $\alpha$
+  values, with $\alpha=1, 3, \text{and } 5$ from left to right.}
 \endmyfig
+
+Figure 3 shows draws from a mixture of Dirichlet process (MDP), which is
+different from a Dirichlet process mixture model. Priors were placed on the
+$\alpha$ parameter and draws from the DP were made by sampling from the priors
+for $\alpha$ and then sampling from a DP($\alpha,G_0$)|$\alpha$, where $\alpha
+\sim \Gamma(a,b)$ and $b$ is the scale parameter for the Gamma distribution.
+Again, $G_0$ was chosen to be a standard Normal. The density for $\alpha$ was
+plotted in orange. The $(a,b)$ parameters are chosen such that the means and
+variances for $\alpha$ from the left plot to the right plot are (1,1), (5,1),
+and (5,1000). When both the mean and variance for $\alpha$ are small (1,1), the
+point-wise variance is large in the center of the DP draws. With the same
+variance but a slightly larger mean (5,1), the point-wise variance is smaller.
+This is expected as on average, $\alpha$ is larger. And we learned from Figures
+1 and 2 that larger $\alpha$ yields smaller point-wise variance. It is
+interesting that with a really large variance (1000) but a mean of only 5, the
+point-wise variance is again large. This is because for the Gamma distribution,
+more weight is given to $\alpha$ values closer to 0, but values far out in the
+right tail can be drawn frequently. This leads to a combination of DP draws that
+are both very discrete and only slightly discrete.
 \beginmyfig
-  \includegraphics[scale=.4]{../code/pdfs/priorMDP.pdf}
+  \includegraphics[scale=.37]{../code/pdfs/priorMDP.pdf}
   \caption{Mixture Dirichlet Process Draws. For each of these plots, 
   $G|\alpha \sim \text{DP}(\alpha,G_0)$, and $\alpha \sim \text{Gamma}(a,b)$,
   where $a$ and $b$ are respectively the shape scale parameters of the 
@@ -139,18 +179,18 @@ given to the partition $B_j$, if $B_i$ and $B_j$ are disjoint.
 \[
   \begin{array}{rclcl}
     y_i &|& F &\sim & F \\
-    F &|& \alpha, \lambda &\sim& \text{DP}(\alpha,\text{Poi}(\lambda)) \\
+    F &|& \alpha, \lambda &\sim& \text{DP}(\alpha,\text{Poisson}(\lambda)) \\
       && \lambda &\sim& \Gamma(a_\lambda,b_\lambda) \\
       && \alpha &\sim& \Gamma(a_\alpha,b_\alpha) \\
   \end{array}
 \]
 \beginmyfig
   \includegraphics[scale=.5]{../code/pdfs/postMDP1.pdf}
-  \caption{Posterior inference for Count data using MDP prior}
+  \caption{Posterior inference for count data using MDP prior}
 \endmyfig
 \beginmyfig
   \includegraphics[scale=.5]{../code/pdfs/postMDP2.pdf}
-  \caption{Posterior inference for Count data using MDP prior}
+  \caption{Posterior inference for count data using MDP prior}
 \endmyfig
 
 
