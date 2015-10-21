@@ -16,7 +16,7 @@ rD2 <- function (n) {
 }
 
 csa.12 <- c(5,5)
-csl.12 <- c(.5,1)
+csl.12 <- c(5,5)
 pData <- list(pD1,pD2)
 rData <- list(rD1,rD2)
 
