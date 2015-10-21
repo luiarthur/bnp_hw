@@ -154,8 +154,8 @@ for (mod.num in 1:length(data.distribution[[1]])){
             main=bquote("Posterior & Trace for"~lambda~" ("~.(round(100*acc.l/(B)))~"% acceptance)"))
 
   # alpha lambda joint
-  plot(tail(lam,B-burn),tail(a,B-burn),type="p",main=bquote(alpha~" vs "~lambda), col=rgb(.2,.2,((burn+1):B)/B,.2),cex=.4,bty="n",
-       ylab=bquote(alpha),xlab=bquote(lambda),fg='grey')
+  plot(tail(a,B-burn),tail(lam,B-burn),type="p",main=bquote(lambda~" vs "~alpha), col=rgb(.2,.2,((burn+1):B)/B,.2),cex=.4,bty="n",
+       ylab=bquote(lambda),xlab=bquote(alpha),fg='grey')
 
   dev.off()
 
