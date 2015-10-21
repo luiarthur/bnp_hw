@@ -39,8 +39,8 @@ for (mod.num in 1:length(data.distribution[[1]])){
   csa <- csa.12[mod.num] # cand sig for alpha
   csl <- csl.12[mod.num] # cand sig for lambda
   
-  ppa <- get.ab(5,5)
-  ppl <- get.ab(5,5)
+  ppa <- gamma.mv2shsc(5,5)
+  ppl <- gamma.mv2shsc(5,5)
   lpa <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for alpha
   lpl <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for lambda
   lq <- function(x,m,v) {
