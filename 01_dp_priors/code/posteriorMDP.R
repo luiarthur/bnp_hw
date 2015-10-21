@@ -71,7 +71,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
     if (cand > 0) {
       lla <- function(aa) {
         n.uniq * log(aa) - (lgamma(aa+n) - lgamma(aa)) +
-        sum( lgamma(aa*exp(lg0(y.star,lam[b]))  nj) - 
+        sum( lgamma(aa*exp(lg0(y.star,lam[b])) + nj) - 
              lgamma(aa*exp(lg0(y.star,lam[b]))) )
       }
 
