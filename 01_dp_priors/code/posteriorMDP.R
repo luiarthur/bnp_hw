@@ -46,8 +46,8 @@ for (mod.num in 1:length(data.distribution[[1]])){
   
   K <- length(xlim)
   G <- matrix(0,B,K)
-  lg0 <- function(x,lam) dpois(x,lam,log=T)
-  pG0 <- function(x,lam) ppois(x,lam)
+  lg0 <- function(x,l) dpois(x,l,log=T)
+  pG0 <- function(x,l) ppois(x,l)
   pGn <- pG0 # this is an initialization
   G[1,] <- dp(N=1,a=1, pG=function(x) pG0(x,1), xlim=xlim)$G
   lam <- rep(1,B)
