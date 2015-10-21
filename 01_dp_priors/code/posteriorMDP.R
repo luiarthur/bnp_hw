@@ -15,8 +15,8 @@ rD2 <- function (n) {
   c(rpois(r[1],3),rpois(r[2],11))
 }
 
-csa.12 <- c(8,6)
-csl.12 <- c(3,2)
+csa.12 <- c(8,8)
+csl.12 <- c(2,2)
 pData <- list(pD1,pD2)
 rData <- list(rD1,rD2)
 
