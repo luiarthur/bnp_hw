@@ -23,7 +23,7 @@ rData <- list(rD1,rD2)
 data.distribution <- list("cdf"=pData,"sampler"=rData)
 
 n <- 300
-B <- 5000
+B <- 15000
 burn <- round(B * .2)
 xlim <- 0:30
 
@@ -128,8 +128,17 @@ for (mod.num in 1:length(data.distribution[[1]])){
 
   # Posterior Predictive
   postpred <- apply(matrix(tail(1:B,B-burn)),1,function(i) {
+                    # v1: Wrong! because I need to compute:
+                    #    [F(y) | data]
+                    #    = \int\int [F(y) | a,l,data] [a,l | data] dadl
+                    # but below, we are only computing: 
+                    #    \int\int [F(y) | a,l] [a,l | data] dadl
+                    #    != [F(y) | data]
+                    ##################################################
                     #prob <- rdir( 1, a[i] * dG0(xlim,lam[i]) )
                     #sample(xlim,1,prob=prob)
+
+                    # v2
                     prob <- c(G[i,1],G[i,-1]-G[i,-length(xlim)]) 
                     sample(xlim,1,prob=prob)
          })
