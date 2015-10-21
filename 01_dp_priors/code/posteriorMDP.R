@@ -135,11 +135,11 @@ for (mod.num in 1:length(data.distribution[[1]])){
 
   # alpha posterior
   plot.post(tail(a,B-burn),
-            main=bquote("Posterior & Trace for"~alpha~" ("~.(round(100*acc.a/(B),5))~"% acceptance)"))
+            main=bquote("Posterior & Trace for"~alpha~" ("~.(round(100*acc.a/(B)))~"% acceptance)"))
 
   # lambda posterior
   plot.post(tail(lam,B-burn),
-            main=bquote("Posterior & Trace for"~lambda~" ("~.(round(100*acc.l/(B),5))~"% acceptance)"))
+            main=bquote("Posterior & Trace for"~lambda~" ("~.(round(100*acc.l/(B)))~"% acceptance)"))
 
   # alpha lambda joint
   plot(lam[-c(1:burn)],a[-c(1:burn)],type="p",main=bquote(alpha~" vs "~lambda), col=rgb(.2,.2,((burn+1):B)/B,.2),cex=.4,bty="n",
