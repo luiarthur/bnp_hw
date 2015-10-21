@@ -39,7 +39,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
   csa <- csa.12[mod.num] # cand sig for alpha
   csl <- csl.12[mod.num] # cand sig for lambda
   
-  ppa <- gamma.mv2shsc(5,5) # Prior for alpha is Gamma(5,1) because no idea
+  ppa <- gamma.mv2shsc(5,10) # Prior for alpha is Gamma(5,2) because no idea
   ppl <- gamma.mv2shsc(5,5) # Prior for lambda is Gamma(5,1) because center is 5
   lpa <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for alpha
   lpl <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for lambda
