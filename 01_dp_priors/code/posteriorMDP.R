@@ -91,7 +91,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
 
       lll <- function(l) {
         sum( lg0(y.star,l) + 
-             lgamma(a[b]*exp(lg0(y.star,l) + nj)) - 
+             lgamma(a[b]*exp(lg0(y.star,l)) + nj) - 
              lgamma(a[b]*exp(lg0(y.star,l)) + 1 ))
       }
 
