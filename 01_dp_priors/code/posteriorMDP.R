@@ -70,8 +70,8 @@ for (mod.num in 1:length(data.distribution[[1]])){
     cand <- rnorm(1,a[b],csa) # Normal
     if (cand > 0) {
       lla <- function(aa) {
-        n.uniq * log(aa) - (lgamma(aa+n) -lgamma(aa)) +
-        sum( lgamma(aa*exp(lg0(y.star,lam[b])) + 1 + nj) - 
+        n.uniq * log(aa) - (lgamma(aa+n) - lgamma(aa)) +
+        sum( lgamma(aa*exp(lg0(y.star,lam[b]))  nj) - 
              lgamma(aa*exp(lg0(y.star,lam[b]))) )
       }
 
@@ -91,10 +91,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
 
       lll <- function(l) {
         sum( lg0(y.star,l) + 
-            (nj-1) * log(a[b]*exp(lg0(y.star,l)) + 1) )
-
-        sum( lg0(y.star,l) + 
-             lgamma(a[b]*exp(lg0(y.star,l) + 1 + nj)) - 
+             lgamma(a[b]*exp(lg0(y.star,l) + nj)) - 
              lgamma(a[b]*exp(lg0(y.star,l))) )
       }
 
