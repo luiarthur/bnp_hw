@@ -119,7 +119,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
              main=bquote(" G | y,"~alpha~","~lambda ),
              cex.main=2,EG.col=rgb(.3,.3,.7),dens=T,
              ylim.def=c(0,.3),lwd.ci=3)
-  pmf <- plot.pmf(y,type="p",add=T,pch=20,col=rgb(0,1,0,.5),cex=1.5)
+  pmf <- plot.pmf(y,type="p",add=T,pch=20,col='green',cex=2)
   legend("topright",
          col=c("green",rgb(.3,.3,.7),"red","grey"),text.col=rgb(.3,.3,.4),
          legend=c("Data","E[G|y]",expression(paste("[","y"^"new","|y]")),"95% C.I."),lwd=3,
@@ -133,7 +133,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
                     prob <- c(G[i,1],G[i,-1]-G[i,-length(xlim)]) 
                     sample(xlim,1,prob=prob)
          })
-  pmf.postpred <- plot.pmf(postpred,type="p",add=T,pch=20,col=rgb(1,0,0,.5),cex=2)
+  pmf.postpred <- plot.pmf(postpred,type="p",add=T,pch=20,col=rgb(1,0,0,.5),cex=1.5)
 
   # alpha posterior
   plot.post(tail(a,B-burn),
