@@ -123,7 +123,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
   legend("topright",
          col=c("green",rgb(.3,.3,.7),"red","grey"),text.col=rgb(.3,.3,.4),
          legend=c("Data","E[G|y]",expression(paste("[","y"^"new","|y]")),"95% C.I."),
-         lwd=c(NA,NA,NA,3),pch=c(20,20,20,NA),pt.cex=c(2,3,1,NA),
+         lwd=c(NA,NA,NA,3),pch=c(20,20,20,NA),pt.cex=c(2,3,1.5,NA),
          bg=rgb(.9,.9,.9,.5),box.col=rgb(.9,.9,.9,.5),
          cex=1.5)
 
