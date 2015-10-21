@@ -48,6 +48,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
   G <- matrix(0,B,K)
   lg0 <- function(x,l) dpois(x,l,log=T)
   pG0 <- function(x,l) ppois(x,l)
+  dG0 <- function(x,l) dpois(x,l)
   pGn <- pG0 # this is an initialization
   G[1,] <- dp(N=1,a=1, pG=function(x) pG0(x,1), xlim=xlim)$G
   lam <- rep(1,B)
@@ -127,8 +128,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
 
   # Posterior Predictive
   postpred <- apply(matrix(tail(1:B,B-burn)),1,function(i) {
-                    dG0 <- c(pG0(xlim[1],lam[i]), pG0(xlim[-1],lam[i]) - pG0(xlim[-length(xlim)],lam[i]))
-                    prob <- rdir(1,a[i]*dG0)
+                    prob <- rdir(1,a[i]*dG0(xlim,lam[i]))
                     sample(xlim,1,prob=prob)
          })
   pmf.postpred <- plot.pmf(postpred,type="p",add=T,pch=20,col=rgb(1,0,0,.5),cex=2)
