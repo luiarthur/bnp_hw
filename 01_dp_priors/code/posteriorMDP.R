@@ -72,7 +72,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
       lla <- function(aa) {
         n.uniq * log(aa) - (lgamma(aa+n) - lgamma(aa)) +
         sum( lgamma(aa*exp(lg0(y.star,lam[b])) + nj) - 
-             lgamma(aa*exp(lg0(y.star,lam[b]))) + 1)
+             lgamma(aa*exp(lg0(y.star,lam[b])) + 1))
       }
 
       lga1 <- lla(cand) + lpa(cand)
@@ -92,7 +92,7 @@ for (mod.num in 1:length(data.distribution[[1]])){
       lll <- function(l) {
         sum( lg0(y.star,l) + 
              lgamma(a[b]*exp(lg0(y.star,l) + nj)) - 
-             lgamma(a[b]*exp(lg0(y.star,l))) + 1 )
+             lgamma(a[b]*exp(lg0(y.star,l)) + 1 ))
       }
 
       lgl1 <- lll(cand)   + lpl(cand)
