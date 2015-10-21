@@ -67,40 +67,39 @@ for (mod.num in 1:length(data.distribution[[1]])){
     G[b,] <- dp(N=1, a=a[b]+n, pG=function(x) pGn(x,lam[b]), xlim=xlim)$G
     
     # Update alpha
-    cand <- rnorm(1,a[b],csa) # Normal
-    if (cand > 0) {
+    canda <- rnorm(1,a[b],csa) # Normal
+    if (canda > 0) {
       lla <- function(aa) {
         n.uniq * log(aa) - (lgamma(aa+n) - lgamma(aa)) +
         sum( lgamma(aa*exp(lg0(y.star,lam[b])) + nj) - 
              lgamma(aa*exp(lg0(y.star,lam[b])) + 1))
       }
 
-      lga1 <- lla(cand) + lpa(cand)
+      lga1 <- lla(canda) + lpa(canda)
       lga2 <- lla(a[b]) + lpa(a[b])
       lr <- lga1 - lga2
   
       if (lr > log(runif(1))) {
-        a[b] <- cand
+        a[b] <- canda
         acc.a <- acc.a + 1
       }
     }
   
     # Update lambda
-    cand <- rnorm(1,lam[b],csl) # normal proposal
-    if (cand > 0) {
-
+    candl <- rnorm(1,lam[b],csl) # normal proposal
+    if (candl > 0) {
       lll <- function(l) {
         sum( lg0(y.star,l) + 
              lgamma(a[b]*exp(lg0(y.star,l)) + nj) - 
              lgamma(a[b]*exp(lg0(y.star,l)) + 1 ))
       }
 
-      lgl1 <- lll(cand)   + lpl(cand)
+      lgl1 <- lll(candl)   + lpl(candl)
       lgl2 <- lll(lam[b]) + lpl(lam[b])
       lr <- lgl1 - lgl2
   
       if (lr > log(runif(1))) {
-        lam[b] <- cand
+        lam[b] <- candl
         acc.l <- acc.l + 1
       }
     }
