@@ -24,7 +24,7 @@ data.distribution <- list("cdf"=pData,"sampler"=rData)
 
 n <- 300
 B <- 15000
-burn <- B * .2
+burn <- round(B * .2)
 xlim <- 0:30
 
 # Start here
@@ -93,7 +93,8 @@ for (mod.num in 1:length(data.distribution[[1]])){
         sum( lg0(y.star,l) + 
             (nj-1) * log(a[b]*exp(lg0(y.star,l)) + 1) )
 
-        sum( lgamma(a[b]*exp(lg0(y.star,l) + 1 + nj)) - 
+        sum( lg0(y.star,l) + 
+             lgamma(a[b]*exp(lg0(y.star,l) + 1 + nj)) - 
              lgamma(a[b]*exp(lg0(y.star,l))) )
       }
 
