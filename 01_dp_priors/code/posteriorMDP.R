@@ -128,7 +128,9 @@ for (mod.num in 1:length(data.distribution[[1]])){
 
   # Posterior Predictive
   postpred <- apply(matrix(tail(1:B,B-burn)),1,function(i) {
-                    prob <- rdir(1,a[i]*dG0(xlim,lam[i]))
+                    #prob <- rdir( 1, a[i] * dG0(xlim,lam[i]) )
+                    dG <- sample(xlim,1, c(G[i,1],G[i,-1]-G[i,-length(xlim)]) )
+                    prob <- rdir( 1, a[i] * dG )
                     sample(xlim,1,prob=prob)
          })
   pmf.postpred <- plot.pmf(postpred,type="p",add=T,pch=20,col=rgb(1,0,0,.5),cex=2)
