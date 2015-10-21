@@ -4,7 +4,7 @@ source("../../R_Functions/plotinplot.R")
 source("../../R_Functions/plotPost.R",chdir=T)
 source("../../R_Functions/colorUnderCurve.R")
 source("dp.R")
-#set.seed(1)
+set.seed(1)
 
 pD1 <- function(x) ppois(x,5) # First True distribution (CDF) of y_i
 pD2 <- function(x) .7*ppois(x,3) + 0.3*ppois(x,11)
@@ -43,10 +43,6 @@ for (mod.num in 1:length(data.distribution[[1]])){
   ppl <- gamma.mv2shsc(5,5)
   lpa <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for alpha
   lpl <- function(x) dgamma(x,ppa[1],sc=ppa[2],log=T) #log prior for lambda
-  lq <- function(x,m,v) {
-    ss <- gamma.mv2shsc(m,v)
-    dgamma(x,ss[1],sc=ss[2],log=T)
-  }
   
   K <- length(xlim)
   G <- matrix(0,B,K)
@@ -57,16 +53,6 @@ for (mod.num in 1:length(data.distribution[[1]])){
   lam <- rep(1,B)
   a <- rep(1,B)
   acc.l <- acc.a <- 0
-  
-  # TEST
-  #xlim <- 0:20
-  #xlim <- c(0,20)
-  #M <- dp(N=1000, a=2, pG=function(x) ppois(x,3), xlim=xlim)
-  #M <- dp(N=1000, a=3+n, pG=function(x) pGn(x,3), xlim=xlim)
-  #dp.post(M)
-  #lines(ecdf(y),lwd=3)
-  #lines(M$x,apply(M$G,2,function(x) mean(x,na.rm=T)),col="blue",type="s",lwd=3)
-  #lines(M$x, ppois(M$x,3), col="green",lwd=3,type="s")
   
   for (b in 2:B) {
     lam[b] <- lam[b-1]
@@ -81,27 +67,17 @@ for (mod.num in 1:length(data.distribution[[1]])){
     G[b,] <- dp(N=1, a=a[b]+n, pG=function(x) pGn(x,lam[b]), xlim=xlim)$G
     
     # Update alpha
-    #ss <- gamma.mv2shsc(a[b],csa) # gamma
-    #cand <- rgamma(1,ss[1],sc=ss[2]) # gamma proposal
     cand <- rnorm(1,a[b],csa) # Normal
     if (cand > 0) {
-      #pg <- cdf2pdf(G[b,])
-      #pg01 <- c(pG0(xlim[1],lam[b]),pG0(xlim[-1],lam[b])-pG0(xlim[-length(xlim)],lam[b]))
-      #pg02 <- c(pG0(xlim[1],lam[b]),pG0(xlim[-1],lam[b])-pG0(xlim[-length(xlim)],lam[b]))
-      #lga1 <- ldir(pg,cand*pg01) + lpa(cand)
-      #lga2 <- ldir(pg,a[b]*pg02) + lpa(a[b])
-      
       lla <- function(aa) {
-        n.uniq * log(aa) - lgamma(aa+n) -lgamma(aa) +
-        sum( (nj-1) * log(aa*exp(lg0(y.star,lam[b])) + 1) )
+        n.uniq * log(aa) - (lgamma(aa+n) -lgamma(aa)) +
+        sum( lgamma(aa*exp(lg0(y.star,lam[b])) + 1 + nj) - 
+             lgamma(aa*exp(lg0(y.star,lam[b]))) )
       }
 
       lga1 <- lla(cand) + lpa(cand)
       lga2 <- lla(a[b]) + lpa(a[b])
-
-      lqa1 <- 0 #lq(cand,a[b],csa) #0 Normal
-      lqa2 <- 0 #lq(a[b],cand,csa) #0 Normal
-      lr <- lga1 - lqa1 - lga2 + lqa2
+      lr <- lga1 - lga2
   
       if (lr > log(runif(1))) {
         a[b] <- cand
@@ -111,24 +87,19 @@ for (mod.num in 1:length(data.distribution[[1]])){
   
     # Update lambda
     cand <- rnorm(1,lam[b],csl) # normal proposal
-    #ss <- gamma.mv2shsc(lam[b],csl) # gamma proposal
-    #cand <- rgamma(1,ss[1],sc=ss[2]) # gamma proposal
     if (cand > 0) {
-      #pg01 <- c(pG0(xlim[1],cand),   pG0(xlim[-1],cand)   - pG0(xlim[-length(xlim)],cand))
-      #pg02 <- c(pG0(xlim[1],lam[b]), pG0(xlim[-1],lam[b]) - pG0(xlim[-length(xlim)],lam[b]))
-  
 
       lll <- function(l) {
         sum( lg0(y.star,l) + 
             (nj-1) * log(a[b]*exp(lg0(y.star,l)) + 1) )
+
+        sum( lgamma(a[b]*exp(lg0(y.star,l) + 1 + nj)) - 
+             lgamma(a[b]*exp(lg0(y.star,l))) )
       }
 
       lgl1 <- lll(cand)   + lpl(cand)
       lgl2 <- lll(lam[b]) + lpl(lam[b])
-      lql1 <- 0 #lq(cand,lam[b],csl) #0
-      lql2 <- 0 #lq(lam[b],cand,csl) #0
-
-      lr <- lgl1 - lql1 - lgl2 + lql2
+      lr <- lgl1 - lgl2
   
       if (lr > log(runif(1))) {
         lam[b] <- cand
