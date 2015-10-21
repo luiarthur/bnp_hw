@@ -23,7 +23,7 @@ rData <- list(rD1,rD2)
 data.distribution <- list("cdf"=pData,"sampler"=rData)
 
 n <- 300
-B <- 15000
+B <- 5000
 burn <- round(B * .2)
 xlim <- 0:30
 
