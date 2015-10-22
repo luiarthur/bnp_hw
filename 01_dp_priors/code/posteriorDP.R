@@ -50,7 +50,7 @@ for (mod.num in 1:length(data.distribution[[1]])) { #2
   pD <- data.distribution$cdf[[mod.num]] 
   rD <- data.distribution$sampler[[mod.num]] 
 
-  pdf(paste0("pdfs/dppost",mod.num,".pdf"),width=17,height=11)
+  pdf(paste0("pdfs/dppost",mod.num,".pdf"),width=11,height=11)
   par(mfrow=c(length(ns),nrow(ams)))
 
   for (n.num in 1:length(ns)) { #3
