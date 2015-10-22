@@ -27,7 +27,6 @@ data.distribution <- list("cdf"=pData,"sampler"=rData)
 
 # ams is alpha, m, and s. I'll have 8 rows. I want every 
 # combination of big and small (or near and far).
-ams <- matrix(0,8,3)
 sb <- rbind("a"= c(1,10), "m"= c(0,3), "s"= c(1,3))
 ams <- matrix(c(sb[1,1],sb[2,1],sb[3,1],
                 sb[1,1],sb[2,1],sb[3,2],
@@ -36,7 +35,7 @@ ams <- matrix(c(sb[1,1],sb[2,1],sb[3,1],
                 sb[1,2],sb[2,1],sb[3,1],
                 sb[1,2],sb[2,1],sb[3,2],
                 sb[1,2],sb[2,2],sb[3,1],
-                sb[1,2],sb[2,2],sb[3,2]), 8,3,byrow=T)
+                sb[1,2],sb[2,2],sb[3,2]), ncol=3,byrow=T)
 colnames(ams) <- c("a","m","s")
 ns <- c(20,200,2000)
 
@@ -88,7 +87,7 @@ for (mod.num in 1:length(data.distribution[[1]])) { #2
 
       cat("\r Model:", mod.num, "/2",
           " size: ",n.num, "/3",
-          " ams:", ams.num, "/8")
+          " ams:", ams.num, "/",nrow(ams))
     }
   }
 
