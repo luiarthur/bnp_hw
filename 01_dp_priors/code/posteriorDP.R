@@ -73,7 +73,7 @@ for (mod.num in 1:length(data.distribution[[1]])) { #2
       G <- dp(N=B,pG0_new,a=a+n,xlim=xlim,J=J)
       EG <- apply(G$G,2,mean)
 
-      dp.post.ci(G,ylab="Fn(y)",xlab="y",cex.main=.9,lwd.EG=2,
+      dp.post.ci(G,ylab="Fn(y)",xlab="y",cex.main=1,lwd.EG=2,
                  main=bquote("("~alpha~"="~.(a)~", m ="~.(m)~", s="~.(s)~")"))
       plot.cdf(y,lwd=1,add=T,type="s")
       curve(pG0,add=T,col="red",lwd=1)  # prior G0
