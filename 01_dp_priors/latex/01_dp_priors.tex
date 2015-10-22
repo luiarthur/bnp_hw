@@ -16,7 +16,7 @@
 \def\wl{\par \vspace{\baselineskip}\noindent}
 \def\beginmyfig{\begin{figure}[htbp]\begin{center}}
 \def\endmyfig{\end{center}\end{figure}}
-%\def\prodl{\prod\limits_{i=1}^n}
+\def\prodl{\prod\limits_{j=1}^{n^*}}
 \def\suml{\sum\limits_{i=1}^n}
 \def\ds{\displaystyle}
 \def\tu{\textunderscore}
@@ -161,8 +161,8 @@ that are both very discrete and only slightly discrete.
 Data $\mathbf y = y_1,...,y_n$ for this section were generated from 
 the two following distributions
 \begin{enumerate}
-  \item N(0,1) \\
-  \item $.5$N$(−2.5, .5^2 ) + .3$N$(.5, .7^2 ) + .2$N$(1.5, 2^2 )$\\
+  \item N(0,1) 
+  \item $.5$N$(-2.5, .5^2 ) + .3$N$(.5, .7^2 ) + .2$N$(1.5, 2^2 )$\\
 \end{enumerate}
 with three different sample sizes, 20, 200, and 2000. The data were fit 
 to the following model
@@ -176,27 +176,48 @@ where $\alpha$, $m$, and $s^2$ were each fixed at one of 2 values -- a small
 value, and a large one. That is, $\alpha$ was either 1 or 10, $m$ was either 0
 or 3, and $s^2$ was either 1 or 9. There are a $2^3=8$ combinations of
 parameters, three sample sizes, and two models. So, there are a total of 48
-combinations of parameters, sample sizers and models. I have plotted the
-empirical cdf of the data, centering distribution $N(m,s^2)$, expected value of
-the DP draws $E[G|\mathbf y]$, the 95\% credible interval for $G|\mathbf y$,
-and the true distribution that generated the data in the colors black, red,
-blue, grey, and green, respectively. I will discuss a few observations. \\
+combinations of parameters, sample sizers and models. I have plotted (for only
+some of these combination) the empirical cdf of the data, centering
+distribution $N(m,s^2)$, expected value of the DP draws $E[G|\mathbf y]$, the
+95\% credible interval for $G|\mathbf y$, and the true distribution that
+generated the data in the colors black, red, blue, grey, and green,
+respectively. I will discuss a few observations. \\
 
 % Difficult to write these two paragraphs... Work on it!!!
 \noindent
 First of all, the credible intervals get smaller as sample size increases. This
-is expected as is usually the case. Figure 4 shows the results of the simulation 
-done under the N(0,1) distribution. Most of the graphs look the same and 
-interesting behavior can be observed when $n=20$ (small). In all cases, for 
-$n=20$, the tails of $G|\mathbf y$ is pulled towards the tails of their respective
-baseline distributions. \\
+is expected as is usually the case. Figure 4 shows the results of the
+simulation done under the N(0,1) distribution. Most of the graphs look the same
+and interesting behavior can be observed when $n=20$ (small). In all cases, for
+$n=20$, the tails of $G|\mathbf y$ is pulled towards the tails of their
+respective baseline distributions. 
 
 \noindent
-For the bimodal mixture of normals, the uncertainty is greatest at the trough 
-of the distribution.\\
+For the first set of generated data, when $G_0$ and the data have the same
+distribution, (left top corner), the posterior mean of the DP is very close to
+the data, with small variance for both large and small $\alpha$ (1). This is also
+the case when $\alpha$ is large (10). When the baseline distribution is mispecified,
+uncertainty becomes great at the tail of the posterior distribution for small $\alpha$;
+with large $\alpha$ and a mispecified baseline distribution, however, the posterior
+distribution is pulled towards the prior.\\
+
+\noindent
+For the bimodal mixture of normals, the uncertainty is greater than that in the
+previous problem in general, but greatest in the middle of the distribution
+(where there is a trough in the density). This is because the baseline distribution
+does not aid as much in identifying the true distribution, since the baseline distribution
+is only unimodal. Interestingly, with a sample size of 20, and a baseline distribution 
+of N(0,1), the credible intervals for the posterior distribution is smaller with larger
+$\alpha$ than it is with smaller $\alpha$ (first and third panel in first row). The reason 
+is not apparent to me, but I suppose it is because the baseline distribution and 
+and distribution of the data share some common trends. Finally, the uncertainty for the
+posterior when $\alpha$ is large and the baseline distribution is further from the 
+true distribution is larger. And the posterior is pulled towards the baseline 
+distribution because with a large $\alpha$, the posterior will borrow more from 
+baseline distribution. \\
 
 \beginmyfig
-  \includegraphics[scale=.5,angle=270]{../code/pdfs/dppost1.pdf}
+  \includegraphics[scale=.5]{../code/pdfs/dppost1.pdf}
   \caption{Posterior inference for one-sample problems using 
   DP priors. Note that the first, second, and third rows of th plots are for
   sample sizes 20, 200, and 2000, respectively.  Also, the black, red, blue, and
@@ -204,7 +225,8 @@ of the distribution.\\
   underlying cdf of the generated data.}
 \endmyfig
 \beginmyfig
-  \includegraphics[scale=.5,angle=270]{../code/pdfs/dppost2.pdf}
+  %\includegraphics[scale=.5,angle=270]{../code/pdfs/dppost2.pdf}
+  \includegraphics[scale=.5]{../code/pdfs/dppost2.pdf}
   \caption{Posterior inference for one-sample problems using 
   DP priors. Note that the first, second, and third rows of th plots are for
   sample sizes 20, 200, and 2000, respectively.  Also, the black, red, blue, and
@@ -215,22 +237,114 @@ of the distribution.\\
 
 \newpage
 \section{Posterior Inference for Count Data using MDP Priors}
+
+\noindent
+Data (with sample sizes of 300) were generated from two distributions,
+\begin{enumerate}
+  \item Poisson(5)
+  \item .7 Poisson(3) + .3 Poisson(11).
+\end{enumerate}
+A simulation study was conducted using the above two simulated data sets to
+explore the behavior of the mixture of DP's model. The MDP model used was
 \[
   \begin{array}{rclcl}
-    y_i &|& F &\sim & F \\
+    y_i &|& F &\overset{i.i.d}{\sim} & F, \text{ for } i=1,...,300 \\
     F &|& \alpha, \lambda &\sim& \text{DP}(\alpha,\text{Poisson}(\lambda)) \\
-      && \lambda &\sim& \Gamma(a_\lambda,b_\lambda) \\
-      && \alpha &\sim& \Gamma(a_\alpha,b_\alpha) \\
+      && \alpha &\sim& \Gamma(2.5,2) \\
+      && \lambda &\sim& \Gamma(5,1), \\
   \end{array}
 \]
+where the parameters used in the Gamma distribution are the shape and scale. 
+The parameters (2.5,2) in the gamma prior for $\alpha$ correspond to a mean and
+variance of 5 and 10. This is done so that weight is given to higher values of
+$\alpha$ while ensuring $\alpha$ stays low. This is especially important for 
+data 2 because we know from observing the data that the data is not unimodal.
+And using a Poisson (unimodal) centering distribution in the DP with low
+$\alpha$ will allow us to sample more from the empirical distribution of the 
+data and less from the centering distribution. The parameters (5,1)
+were used in the gamma prior for $\lambda$, which corresponds to a mean 
+and variance of 5 and 5. The range of my data is between 0 and 31. So, a reasonable
+estimate of the mean would be below 10 but the variance a 5 allows for deviance in
+the sampling algorithm away from lower values for $\lambda$.\\
+
+\noindent
+We can explore the posterior distributions of $F, \alpha, \text{ and } \lambda$
+by constructing a Gibbs sampler. At each step of our sampler, we update
+$F$ by noting that the DP is a conjugate prior, and updating $F_{new}$ to be
+DP($\alpha_{current} + 300, \widetilde{F_0}(\lambda_{current}) $), where 
+\[
+\widetilde{F_0}(\cdot) = 
+\ds\frac{\alpha}{\alpha+n}F_0(\cdot|\lambda) + \frac{1}{\alpha+n} \suml\delta_{y_i}(\cdot).
+\]
+Next, to update the hyper parameters $\lambda$ and $\alpha$, we can use the
+result proved by Antoniak to compute the marginal likelihood for DP priors with
+discrete baseline distributions to be
+\[
+  L(\alpha, \lambda ; data) \propto 
+  \ds\frac{\alpha^{n^*}}{\alpha^{(n)}} \prodl f_0(y_j^*|\lambda)
+  \{\alpha f_0(y_j^*|\lambda) + 1\} ^{(n_j-1)}
+\]
+where 
+\begin{itemize}
+  \item $f_0(\cdot |\lambda)$ is the p.m.f. of $F_0(\cdot |\lambda)$
+  \item $n^*$ is the number of distinct values in $(y_1,...,y_n)$
+  \item $\{y_j^*: j = 1, ..., n^*\}$ are the distinct values in $(y_1,...,y_n)$
+  \item $n_j = |\{i: y_i = y_j^*  \}|$, for $j = 1,..., n^*$
+  \item notationally, $z^{(m)} = z(z + 1) \times ... \times (z + m - 1) = 
+    \ds\frac{\Gamma(z+m)}{\Gamma(z)}$, for $m > 0$, with $z(0) = 1$.
+\end{itemize}
+Using this marginalized likelihood, we can use a Metropolis step to update our
+parameters by computing an acceptance ratio based on the ratio of the product
+of the likelihood and prior evaluated at the proposed candidate and the
+previous value for our hyper parameters. \\
+
+\noindent
+Often, Bayesians will use a posterior predictive distribution to check model
+validitiy. To obtain a posterior predictive distribution $F(y^*)|data$, we
+first take our MCMC samples from $p(\alpha,\lambda) \propto
+\pi(\alpha)\pi(\lambda) L(\alpha,\lambda; data)$, and simulate draws from
+$F|\alpha,\lambda,\mathbf y$.  Since we are creating the posterior predictive
+for discrete data, it is sensible to convert the obtained distribution into 
+a p.m.f. \\
+
 \beginmyfig
-  \includegraphics[scale=.5]{../code/pdfs/postMDP1.pdf}
-  \caption{Posterior inference for count data using MDP prior}
-\endmyfig
-\beginmyfig
-  \includegraphics[scale=.5]{../code/pdfs/postMDP2.pdf}
-  \caption{Posterior inference for count data using MDP prior}
+  \includegraphics[scale=.6]{../code/pdfs/postMDP1.pdf}
+  \caption{Posterior inference for count data using MDP prior. Data generated from
+  Poisson(5).}
 \endmyfig
 
+\beginmyfig
+  \includegraphics[scale=.6]{../code/pdfs/postMDP2.pdf}
+  \caption{Posterior inference for count data using MDP prior. Data generated from
+  .7 Poisson(3) + .3 Poisson(11).}
+\endmyfig
+
+\noindent
+The results are shown below in Figures 6 and 7. The top left panel shows the
+data in green, the expected value of $G|\mathbf y$, in blue the posterior
+predictive in red, and the 95\% credible intervals for $G|y$ in grey. The
+posteriors appear to mimic the data, which is expected as we placed a small
+mean for $\alpha$ in our prior for $\alpha$. The posterior distributions for
+$\alpha$ and $\lambda$ are plotted in the next two panels along with their
+trace plots.  The trace plots indicate that convergence is likely to have been
+reached. The 95\% HPD's are shaded in blue and the means are drawn with a red
+line. For the first data set, $\alpha$ was 14.6 which is relatively small when
+considering the ratio $\frac{\alpha}{\alpha+n}= \frac{14.6}{314.6} \approx
+.046$. But the variance of $\alpha$ is large, about 25. The mean for $\lambda$
+is 5.29, with a variance of .2. This suggests that the MDP could approximate
+$\lambda$ well when the baseline distribution is of the same form as the data.
+In our case, the data were Poisson(5) and the baseline was a
+Poisson($\lambda$). The posterior mean for $\lambda$ being 5 is reasonable.\\
+Also, it appears from the joint distribution of $\lambda$ and $\alpha$ that the
+two parameters are indeed not strongly correlated.\\
+
+\noindent
+For data 2, the mean and variance for $\alpha$ is smaller than that in data 1.
+This is not surprising as a smaller $\alpha$ (on average) will lead to more
+discreteness in the DP draws and less weight given to the baseline
+distribution. This is desired because we know out data are actually bimodal and
+not unimodal. The mean for $\lambda$ is larger (9.37). This is also expected
+as our data were generated from a mixture of Poissons, which mean is 5.4. Once
+again, it appears that $\alpha$ and $\lambda$ are not strongly correlated.
 
 \end{document}
