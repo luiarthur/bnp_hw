@@ -29,12 +29,12 @@ data.distribution <- list("cdf"=pData,"sampler"=rData)
 # combination of big and small (or near and far).
 sb <- rbind("a"= c(1,10), "m"= c(0,3), "s"= c(1,3))
 ams <- matrix(c(sb[1,1],sb[2,1],sb[3,1],
-                sb[1,1],sb[2,1],sb[3,2],
-                sb[1,1],sb[2,2],sb[3,1],
+                #sb[1,1],sb[2,1],sb[3,2],
+                #sb[1,1],sb[2,2],sb[3,1],
                 sb[1,1],sb[2,2],sb[3,2],
                 sb[1,2],sb[2,1],sb[3,1],
-                sb[1,2],sb[2,1],sb[3,2],
-                sb[1,2],sb[2,2],sb[3,1],
+                #sb[1,2],sb[2,1],sb[3,2],
+                #sb[1,2],sb[2,2],sb[3,1],
                 sb[1,2],sb[2,2],sb[3,2]), ncol=3,byrow=T)
 colnames(ams) <- c("a","m","s")
 ns <- c(20,200,2000)
