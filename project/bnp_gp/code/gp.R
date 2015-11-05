@@ -2,28 +2,37 @@
 # X - Longitude
 # Y - Latitude
 
+# Plotting example:
+# git clone https://github.com/jwmortensen/mapbox-and-r.git
+# Papers: https://www.google.com/search?q=spatial+statistics+diricchlet+process&oq=spatial+statistics+diricchlet+process&aqs=chrome..69i57j69i60l3j69i65l2.11914j0j7&sourceid=chrome&es_sm=122&ie=UTF-8
+
 rm(list=ls())
 library(LatticeKrig)
 library(geoR)
 library(maps)
 library(xtable)
 
-CMAQ  <- read.csv("../Data/CMAQ.csv")       # 66960 x 4
-O3    <- read.csv("../Data/Ozone.csv")      #   800 x 6
-predL <- read.csv("../Data/PredLocs.csv")   #  2834 x 4
+CMAQ  <- read.csv("../data/CMAQ.csv")       # 66960 x 4
+O3    <- read.csv("../data/Ozone.csv")      #   800 x 6
+predL <- read.csv("../data/PredLocs.csv")   #  2834 x 4
 
 
-plot.O3 <- function(main="") {
-  quilt.plot(c(O3$Lon,-110),c(O3$Lat,50),c(O3$Ozone,50),main=main)
-  map('state',add=T)
-}  
+plot.O3 <- function(main='') {
+  quilt.plot(c(O3$Lon,-110),c(O3$Lat,50),c(O3$Ozone,50),main='',
+             axes=F,add=F)
+  map('state',add=T,col='grey')
+}
+plot.O3()
 
 plot.CMAQ <- function(main="") {
   quilt.plot(CMAQ$Lon,CMAQ$Lat,CMAQ$CMAQ,main=main)
   map('state',add=T)
 }
+plot.CMAQ()
 
-
+cols <- rgb(seq(0,1,len=20),seq(1,0,len=20),.2)
+quilt.plot(CMAQ$Lon,CMAQ$Lat,CMAQ$CMAQ,col=cols,axes=F)
+map('state',add=T,col=rgb(.2,.2,.2))
 
 #GP: #####################################################################
 GP <- function(o3=O3,cmaq=CMAQ,pred=cbind(predL$X,predL$Y),
