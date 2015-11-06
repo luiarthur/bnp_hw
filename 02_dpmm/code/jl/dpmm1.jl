@@ -1,4 +1,5 @@
 include("dp.jl")
+run(`mkdir -p temp`)
 
 y1 = readdlm("../../dat/hw2.dat")
 
