@@ -40,6 +40,25 @@
 
 \section{Location Normal DP Mixed Model}
 
+\subsection{P\'olya urn based Gibbs sampler}
+
+\subsection{Model \& Prior Specification}
+The hierearchical version of the DP mixture model of interest is 
+\[
+\begin{array}{rclcll}
+  y_i &|& \theta_i,\phi &\overset{ind.}{\sim}& \text{N}(\theta_i, \phi), & i = 1,...,n\\
+  \theta_i &|& G &\overset{i.i.d.}{\sim}&  G, & i = 1,...,n\\
+  G &|& \alpha, \mu, \tau^2 &\sim& \text{DP}(\alpha, G_0=\text{N}(\mu,\tau^2))\\
+    && \phi &\sim& \Gamma^{-1}(3,3) \\
+    && \alpha &\sim& \Gamma(3,3) \\
+    && \mu &\sim& \text{N}(3,3) \\
+    && \tau^2 &\sim& \Gamma^{-1}(3,3).\\
+
+\end{array}
+\]
+
+
+
 %\beginmyfig
 %  \includegraphics[scale=.6]{../code/pdfs/postMDP2.pdf}
 %  \caption{Caption}
