@@ -1,5 +1,5 @@
 println("Loading Packages...")
-using Gadfly, Distributions, DataFrames
+using Distributions, DataFrames
 println("Completed!")
 
 run(`mkdir -p temp`)
@@ -36,10 +36,7 @@ end
 
 #= dp Example:
   include("dp.jl")
-  pG(x) = cdf(Gamma(1,1),x)
-  xlim = [.1,3]
-  N,a = 3,1
-  dp(N,a,pG,xlim)
 
-  # Plotting:
+  @time dp(10, 1, x -> cdf(Gamma(1,1), x) , [.1,3], 11)
+
 =#
