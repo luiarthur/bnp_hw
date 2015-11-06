@@ -29,14 +29,13 @@ function dp(N,a,pG,xlim,J=100) # if discrete, set J = size(xlim)
   return (G,x)
 end
 
-function rplot(xx,yy,dat,out,plotter)
-  writedlm(dat, [xx yy])
-  run(`Rscript $plotter $dat $out`)
-end
+#function rplot(xx,yy,dat,out,plotter)
+#  writedlm(dat, [xx yy])
+#  run(`Rscript $plotter $dat $out`)
+#end
 
 #= dp Example:
   include("dp.jl")
 
   @time dp(10, 1, x -> cdf(Gamma(1,1), x) , [.1,3], 11)
-
 =#
