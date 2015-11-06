@@ -29,10 +29,9 @@ function dp(N,a,pG,xlim,J=100) # if discrete, set J = size(xlim)
   return (G,x)
 end
 
-function rplot(x,y)
-  file = "temp/temp.dat"
-  writedlm(file, [x y])
-  run(`Rscript plot.R $file`)
+function rplot(xx,yy,dat,out,plotter)
+  writedlm(dat, [xx yy])
+  run(`Rscript $plotter $dat $out`)
 end
 
 #= dp Example:
@@ -43,6 +42,4 @@ end
   dp(N,a,pG,xlim)
 
   # Plotting:
-  plot(x=[1,2,3], y=[2,3,4])
-  draw(PDF("./test.pdf"), Gadfly.plot(x=[1,2,3],y=[1,2,3]))
 =#
