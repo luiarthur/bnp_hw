@@ -1,6 +1,6 @@
 include("dp.jl")
 
-y1 = readdlm("../dat/hw2.dat")
+y1 = readdlm("../../dat/hw2.dat")
 
 B = 100000
 burn = B * .3
