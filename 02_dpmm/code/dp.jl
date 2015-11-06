@@ -29,6 +29,7 @@ function dp(N,a,pG,xlim,J=100) # if discrete, set J = size(xlim)
   return (G,x)
 end
 
+#https://en.wikibooks.org/wiki/Introducing_Julia/Plotting
 #function rplot(xx,yy,dat,out,plotter)
 #  writedlm(dat, [xx yy])
 #  run(`Rscript $plotter $dat $out`)
