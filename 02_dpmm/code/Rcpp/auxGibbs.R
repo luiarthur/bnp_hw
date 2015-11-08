@@ -14,7 +14,8 @@ auxGibbsR <- function(y, a=1, s=1, cs =3, B=10000) {
       k <- length( ut_xi )
 
       if ( ti %in% ut_xi ) p <- rG0[b]
-      probs <- c( sum(ut_xi == tb) * dnorm(y[i],ut_xi) , a * dnorm(y[i],p) )
+      n.star <- sapply(ut_xi, function(uu) sum(uu == tb))
+      probs <- c( n.star * dnorm(y[i],ut_xi,s) , a * dnorm(y[i],p,s) )
 
       theta[b,i] <- sample( c(ut_xi,p), 1, prob=probs)
     }
@@ -25,8 +26,8 @@ auxGibbsR <- function(y, a=1, s=1, cs =3, B=10000) {
     for (u in ut) {
       ind <- which(tb == u)
       cand <- rnorm(1,u,cs)
-      lg1 <- sum(dnorm(y[ind],cand,log=T)) + lg0(cand)
-      lg2 <- sum(dnorm(y[ind],u,log=T)) + lg0(u)
+      lg1 <- sum(dnorm(y[ind],cand,s,log=T)) + lg0(cand)
+      lg2 <- sum(dnorm(y[ind],u,s,log=T)) + lg0(u)
       lg <- lg1 - lg2
 
       if (lg > log(runif(1)) ) {
