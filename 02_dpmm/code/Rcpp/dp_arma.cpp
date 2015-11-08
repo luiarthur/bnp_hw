@@ -59,10 +59,10 @@ int test(vec x, vec y) {
 }
 
 //[[Rcpp::export]]
-mat gibbs (vec y, double a, double s, double cs, int burn, int B) {
+mat gibbs (vec y, double a, double s, double cs, int B) {
   int n = y.size();
   int acc_t = 0;
-  mat theta = ones(B,n);
+  mat theta; theta.set_size(B,n);
   vec G0 = randn(B);
 
   int k;
@@ -98,21 +98,16 @@ mat gibbs (vec y, double a, double s, double cs, int burn, int B) {
 
       theta(b,i) = wsample( ts , probs );
 
-      if ( b % (B/20) == 0 ) {
-        cout << "\r" << round(100*b/B) << "%";
-      }
     }
     // Update theta | y
+    //
+    //
+    //
+    if ( b % (B/20) == 0 ) { // Progress not pring for some reason...
+      cout << "\rProgress: " << round(100*b/B) << "%";
+    }
   }
   
   return theta;
 }
 
-
-/*
-vec x(n);
-
-for (int i=0; i<n; i++) {
-  x[i] = R::rgamma(1.0,1.0);
-}
-*/
