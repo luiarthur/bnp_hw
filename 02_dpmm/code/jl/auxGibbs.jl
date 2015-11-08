@@ -39,7 +39,7 @@ y = squeeze(readdlm("../../dat/hw2.dat")',1)
 =#
 
 n = length(y)
-B = 10000
+B = 100
 burn = Int64(B * .3)
 t = ones(B,n)
 a = 1
