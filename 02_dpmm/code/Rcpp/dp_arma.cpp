@@ -45,7 +45,8 @@ double f(double x, double t, double s) {
 
 //[[Rcpp::export]]
 double lg0(double x) {
-  return -(log(2*pi) + x*x) / 2;
+  //return -(log(2*pi) + x*x) / 2;
+  return ldnorm(x,0,3);
 }
 
 
@@ -61,18 +62,19 @@ double wsample( vec x, vec prob ) {
 //[[Rcpp::export]]
 mat gibbs (vec y, double a, double s, double cs, int B) {
   cout << "Begin Gibbs..." << endl;
+
   int n = y.size();
   int acc_t = 0;
   mat theta; theta.set_size(B,n);
-  vec G0 = randn(B);
+  vec G0 = randn(B) * 3;
 
   int k;
   double p, ti, utj, u, cand;
   double lg1, lg2, lg;
   vec ut_wo_ti, tb, probs, ts, ut;
-  uvec ind;
 
   for (int b=1; b<B; b++) {
+    theta.row(b) = theta.row(b-1);
     // Update theta_i | theta_{-i}
     for (int i=0; i<n; i++) {
       tb = vectorise( theta.row(b) );
@@ -89,7 +91,7 @@ mat gibbs (vec y, double a, double s, double cs, int B) {
 
       //ts = [ ut_wo_ti, p ]
       ts = zeros(k+1);
-      for (int d=0; d<k+1; d++) {
+      for (int d=0; d<k; d++) {
         ts[d] = ut_wo_ti[d];
       }
       ts[k] = p;
@@ -107,7 +109,7 @@ mat gibbs (vec y, double a, double s, double cs, int B) {
     ut = unique( tb );
     for (int j=0; j<ut.size(); j++) {
       u = ut[j];
-      ind = find( tb == u );
+      uvec ind = find( tb == u );
       cand = randn() * cs + u;
       lg1 = 0;
       lg2 = 0;
@@ -135,3 +137,9 @@ mat gibbs (vec y, double a, double s, double cs, int B) {
   return theta;
 }
 
+//[[Rcpp::export]]
+uvec test(vec x, double y) {
+  uvec uv = find(x==y);
+  int m = uv.size();
+  return uv;
+}
