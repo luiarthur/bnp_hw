@@ -60,7 +60,7 @@ double wsample( vec x, vec prob ) {
 
 
 //[[Rcpp::export]]
-mat gibbs (vec y, double a, double s, double cs, int B) {
+mat auxGibbsCpp (vec y, double a, double s, double cs, int B) {
   cout << "Begin Gibbs..." << endl;
 
   int n = y.size();
