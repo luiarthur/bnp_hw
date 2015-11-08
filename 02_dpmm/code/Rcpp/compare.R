@@ -7,8 +7,8 @@ B <- 10000
 burn <- round(B * .3)
 
 # Rcpp is 10 times faster than R
-system.time(outCpp <- auxGibbsCpp(y,a=2,s=1,cs=3,B=B))
-system.time(  outR <-   auxGibbsR(y,a=2,s=1,cs=3,B=B))
+time.cpp <- system.time(outCpp <- auxGibbsCpp(y,a=2,s=1,cs=3,B=B))
+time.R   <- system.time(  outR <-   auxGibbsR(y,a=2,s=1,cs=3,B=B))
 
 out <- list(outCpp, outR)
 
