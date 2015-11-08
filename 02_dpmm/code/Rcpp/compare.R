@@ -8,9 +8,8 @@ B <- 10000
 burn <- round(B * .3)
 
 # Rcpp is 10 times faster than R
-mb <- microbenchmark(outCpp <- auxGibbsCpp(y,a=2,s=1,cs=3,B=B),
-                       outR <-   auxGibbsR(y,a=2,s=1,cs=3,B=B), 
-                       times=1, control=list("order"="inorder"))
+system.time(outCpp <- auxGibbsCpp(y,a=2,s=1,cs=3,B=B))
+system.time(  outR <-   auxGibbsR(y,a=2,s=1,cs=3,B=B))
 
 out <- list(outCpp, outR)
 
