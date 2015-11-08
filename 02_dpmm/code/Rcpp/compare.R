@@ -1,4 +1,3 @@
-library(microbenchmark)
 library(Rcpp)
 sourceCpp("dp_arma.cpp")
 source("auxGibbs.R")
