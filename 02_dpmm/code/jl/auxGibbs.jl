@@ -26,7 +26,6 @@ function table(x)
   return dict
 end
 
-s = 1
 #y = [rand(Normal(3 ,s),30);
 #     rand(Normal(1 ,s),3); 
 #     rand(Normal(20,s),15)]
@@ -44,10 +43,15 @@ burn = Int64(B * .3)
 t = ones(B,n)
 a = 1
 p = 0
-G0 = rand(Normal(0,1),B)
+s = 1
+
+G0_kernel = Normal(0,3)
+G0 = rand(G0_kernel, B)
+lg0(x) = logpdf(G0_kernel, x )
+
 f(x, theta) =     pdf( Normal(theta,s), x )
 lf(x, theta) = logpdf( Normal(theta,s), x )
-lg0(x) = logpdf( Normal(0,1), x )
+
 acc_t = 0
 cs = 10
 
