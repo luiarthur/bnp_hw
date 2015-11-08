@@ -1,32 +1,42 @@
-useRcpp <- F
-y <- read.table("../../dat/hw2.dat")[[1]]
-
-B <- 10000
-burn <- B * .3
-
-if (useRcpp) {
-# cpp Gibbs:####################################
-  library(Rcpp)
-  sourceCpp("dp_arma.cpp")
-
-  system.time(out <- gibbs(y,a=2,s=1,cs=3,B)) # 30 times faster than julia
-
-  tab <- table(out[B,])
-  mt <- apply(tail(out,B-burn),2,mean)
-  mns <- apply(tail(out,B-burn),1,function(x) length(unique(x)))
-  tabm <- table(mns) / sum(table(mns))
-  plot(tabm)
-
-  plot(y,pch=20,col='grey',cex=2)
-  points(mt,pch=20,col=rgb(0,0,1,.5))
-} else {
-#R Gibbs: ######################################
+auxGibbsR <- function(y, a=1, s=1, cs =3, B=10000) {
   n <- length(y)
   theta <- matrix(0,B,n)
-  for (b in 2:B) {
-    for (i in 1:n) {
-      tb <- theta[b,]
+  rG0 <- rnorm(B,0,3)
+  p <- 0
 
+  for (b in 2:B) {
+    theta[b,] <- theta[b-1,]
+    for (i in 1:n) {
+      # Update theta_i | theta_{-1}
+      tb <- theta[b,]
+      ti <- tb[i]
+      ut_xi <- unique( tb[-i] )
+      k <- length( ut_xi )
+
+      if ( ti %in% ut_xi ) p <- rG0[b]
+      probs <- c( sum(ut_xi == tb) * dnorm(y[i],ut_xi) , a * dnorm(y[i],p) )
+
+      theta[b,i] <- sample( c(ut_xi,p), 1, prob=probs)
     }
-  }
+
+    # Update theta | y
+    tb <- theta[b,]
+    ut <- unique(tb)
+    for (u in ut) {
+      ind <- which(tb == u)
+      cand <- rnorm(1,u,cs)
+      lg1 <- sum(dnorm(y[ind],cand,log=T)) + lg0(cand)
+      lg2 <- sum(dnorm(y[ind],u,log=T)) + lg0(u)
+      lg <- lg1 - lg2
+
+      if (lg > log(runif(1)) ) {
+        #acc_t <- acc_t + 1
+        theta[b,i] <- cand
+      }
+    }
+    # Print Progress:
+    if (b %% (B/20)==0) cat("\rProgress: ", round(100*b/B), "%")
+  } # end of R_gibbs
+
+  theta
 }
