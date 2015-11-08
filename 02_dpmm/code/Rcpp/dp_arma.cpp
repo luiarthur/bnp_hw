@@ -43,6 +43,11 @@ double f(double x, double t, double s) {
   return exp(ldnorm(x,t,s));
 }
 
+//[[Rcpp::export]]
+double lg0(double x) {
+  return -(log(2*pi) + x*x) / 2;
+}
+
 
 // [[Rcpp::export]]
 double wsample( vec x, vec prob ) {
@@ -53,21 +58,19 @@ double wsample( vec x, vec prob ) {
 }
 
 
-// [[Rcpp::export]]
-int test(vec x, vec y) {
-  return sum(x==y);
-}
-
 //[[Rcpp::export]]
 mat gibbs (vec y, double a, double s, double cs, int B) {
+  cout << "Begin Gibbs..." << endl;
   int n = y.size();
   int acc_t = 0;
   mat theta; theta.set_size(B,n);
   vec G0 = randn(B);
 
   int k;
-  double p, ti, utj;
-  vec ut_wo_ti, tb, probs, ts;
+  double p, ti, utj, u, cand;
+  double lg1, lg2, lg;
+  vec ut_wo_ti, tb, probs, ts, ut;
+  uvec ind;
 
   for (int b=1; b<B; b++) {
     // Update theta_i | theta_{-i}
@@ -97,17 +100,38 @@ mat gibbs (vec y, double a, double s, double cs, int B) {
       }
 
       theta(b,i) = wsample( ts , probs );
-
     }
+
     // Update theta | y
-    //
-    //
-    //
+    tb = vectorise( theta.row(b) );
+    ut = unique( tb );
+    for (int j=0; j<ut.size(); j++) {
+      u = ut[j];
+      ind = find( tb == u );
+      cand = randn() * cs + u;
+      lg1 = 0;
+      lg2 = 0;
+      for (int i=0; i<ind.size(); i++) {
+        lg1 += lf(y[ind[i]], cand, s) + lg0(cand);
+        lg2 += lf(y[ind[i]],    u, s) + lg0(u);
+      }
+      lg = lg1 - lg2;
+
+      if ( lg > log(randu()) ) {
+        // acc_t += 1;
+        for (int i=0; i<ind.size(); i++) {
+          theta( b, ind[i] ) = cand;
+        }
+      }
+    }
+
+    // Print Progress
     if ( b % (B/20) == 0 ) { // Progress not pring for some reason...
       cout << "\rProgress: " << round(100*b/B) << "%";
     }
   }
   
+  cout << "\nDone.\n" << endl;
   return theta;
 }
 
