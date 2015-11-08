@@ -1,5 +1,5 @@
 println("Loading Packages...")
-  using Distributions, DataFrames, UnicodePlots
+  using Distributions, DataFrames#, UnicodePlots
   #https://github.com/Evizero/UnicodePlots.jl
 println("Completed!")
 
