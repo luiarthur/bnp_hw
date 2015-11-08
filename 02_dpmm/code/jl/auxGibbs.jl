@@ -32,7 +32,7 @@ s = 1
 #     rand(Normal(20,s),15)]
 
 y = squeeze(readdlm("../../dat/hw2.dat")',1)
-histogram(y)
+#histogram(y)
 #=
   F(theta) = N(theta,.1²)
   G₀ = N(0,1)
