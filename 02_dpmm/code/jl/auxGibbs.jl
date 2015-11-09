@@ -1,4 +1,4 @@
-println("Loading Packages...")
+print("Loading Packages...  ")
   using Distributions, DataFrames#, UnicodePlots
   #https://github.com/Evizero/UnicodePlots.jl
 println("Completed!")
@@ -26,24 +26,31 @@ function table(x)
   return dict
 end
 
-#y = [rand(Normal(3 ,s),30);
-#     rand(Normal(1 ,s),3); 
-#     rand(Normal(20,s),15)]
-
-y = squeeze(readdlm("../../dat/hw2.dat")',1)
-#histogram(y)
 #=
   F(theta) = N(theta,.1²)
   G₀ = N(0,1)
 =#
 
-n = length(y)
-B = 50
-burn = Int64(B * .3)
-t = ones(B,n)
+# Default Arguments
+y = squeeze(readdlm("../../dat/hw2.dat")',1)
 a = 1
-p = 0
 s = 1
+cs = 10
+B = 5000
+
+if length(ARGS) > 0
+  y = squeeze(readdlm(ARGS[1])',1)
+  a = parse(ARGS[2])
+  s = parse(ARGS[3])
+  cs = parse(ARGS[4])
+  B = parse(ARGS[5])
+end
+println(ARGS)
+
+n = length(y)
+t = ones(B,n)
+acc_t = 0
+p = 0
 
 G0_kernel = Normal(0,3)
 G0 = rand(G0_kernel, B)
@@ -52,8 +59,6 @@ lg0(x) = logpdf(G0_kernel, x )
 f(x, theta) =     pdf( Normal(theta,s), x )
 lf(x, theta) = logpdf( Normal(theta,s), x )
 
-acc_t = 0
-cs = 10
 
 println("Begin auxGibbs in Julia...")
 @time for b in 2:B
@@ -100,11 +105,12 @@ println("Begin auxGibbs in Julia...")
   if b%(B/20)==0 print("\r",round(100*b/B),"%") end
   #print("\r",b)
 end # for b in 1:B
-println("Finished auxGibbs in Julia...")
+println("Printing results to 'temp/out.jl'.")
 
 writedlm("temp/out.jl", t)
 #=
   include("auxGibbs.jl")
+  burn = Int64(B * .3)
   tab = table(t[B,:])
   mt = [mean(t[:,j]) for j in 1:n]
   mns = [length(unique(t[b,:])) for b in (burn+1):B]
