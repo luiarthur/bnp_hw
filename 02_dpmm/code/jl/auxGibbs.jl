@@ -38,7 +38,7 @@ y = squeeze(readdlm("../../dat/hw2.dat")',1)
 =#
 
 n = length(y)
-B = 100
+B = 50
 burn = Int64(B * .3)
 t = ones(B,n)
 a = 1
@@ -55,7 +55,8 @@ lf(x, theta) = logpdf( Normal(theta,s), x )
 acc_t = 0
 cs = 10
 
-for b in 2:B
+println("Begin auxGibbs in Julia...")
+@time for b in 2:B
   t[b,:] = t[b-1,:]
 
   # Update θ_i | θ_{-i}
@@ -99,7 +100,9 @@ for b in 2:B
   if b%(B/20)==0 print("\r",round(100*b/B),"%") end
   #print("\r",b)
 end # for b in 1:B
+println("Finished auxGibbs in Julia...")
 
+writedlm("temp/out.jl", t)
 #=
   include("auxGibbs.jl")
   tab = table(t[B,:])
@@ -107,4 +110,5 @@ end # for b in 1:B
   mns = [length(unique(t[b,:])) for b in (burn+1):B]
   tabm = table(mns)
   sort_table(tabm,true)
+  print(t)
 =#
