@@ -40,7 +40,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
     q = zeros( nstar_xi )
     for j in 1:nstar_xi
       n_xi[j] = sum(ut_xi[j] .== theta_new)
-      q[j] = pdf( Normal(ut_xi[j], phi_curr) , y[i])
+      q[j] = pdf( Normal(ut_xi[j], sqrt(phi_curr)) , y[i])
     end
 
     p_draw_new_theta = alpha_curr * q0
@@ -51,7 +51,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
 
     if ind == 0
       new_mean = (y[i] * t2_curr + mu_curr * phi_curr) / (t2_curr + phi_curr)
-      new_sd = t2_curr * phi_curr / (2 * t2_curr * phi_curr)
+      new_sd = sqrt( t2_curr * phi_curr / (2 * t2_curr * phi_curr) )
       theta_new[i] = rand(Normal( new_mean , new_sd ))
     else
       theta_new[i] = ut_xi[ind]
@@ -60,6 +60,13 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
 
   # Update θ | y
   # NEED TO DO THIS!!! LEFT OFF HERE!!!
+  ut = unique(theta_new)
+  J = length( ut )
+  for j in 1:J
+    new_mean = 1
+    new_sd = sqrt( )
+    theta_new = rand ( Normal(,) )
+  end
 
   theta_new
 end
