@@ -135,12 +135,12 @@ println("Starting Computation...")
   print("\r Progress: ", b)
 end
 
+writedlm("temp/out_alpha.dat", alpha)
+writedlm("temp/out_eta.dat", eta)
+writedlm("temp/out_phi.dat", phi)
+writedlm("temp/out_mu.dat", mu)
+writedlm("temp/out_t2.dat", t2)
+writedlm("temp/out_theta.dat", theta)
 #=
   include("dpmm1.jl")
-  writedlm("temp/out_alpha.dat", alpha)
-  writedlm("temp/out_eta.dat", eta)
-  writedlm("temp/out_phi.dat", phi)
-  writedlm("temp/out_mu.dat", mu)
-  writedlm("temp/out_t2.dat", t2)
-  writedlm("temp/out_theta.dat", theta)
 =#
