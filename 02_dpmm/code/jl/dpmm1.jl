@@ -3,7 +3,7 @@ using Distributions, DataFrames
 
 y = readdlm("../../dat/hw2.dat")
 n = length(y)
-B = 100000
+B = 5000
 
 # Parameters:
 theta = zeros(B,n)
@@ -21,12 +21,45 @@ a_t2, b_t2 = 4,3
 # Posterior Generator for parameters:
 # theta generator
 function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
-  theta_new = zeros(n)
-  draw_new_theta = true
+  theta_new = theta_curr + 0
 
+  # Update θ_i | θ_{-i}
   for i in 1:n
-    # LEFT OFF HERE
-  end
+    q0 = (2*pi*(t2_curr+phi_curr))^-.5 * 
+      exp(( (y[i] * t2_curr + mu_curr * phi_curr) / (t2_curr+phi_curr) )^2 - 
+      (y[i]^2 * t2_curr + mu_curr^2 * phi_curr) / (2 * t2_curr * phi_curr)) 
+
+    ut_xi = unique( theta_new[ setdiff(1:n,i) ] )
+    nstar_xi = length( ut_xi )
+    n_xi = zeros( nstar_xi )
+    q = zeros( nstar_xi )
+
+    #n_xi = SharedArray( Float64, nstar_xi )
+    #q = SharedArray( Float64, nstar_xi )
+    #@parallel for j in 1:nstar_xi
+
+    for j in 1:nstar_xi
+      n_xi[j] = sum(ut_xi[j] .== theta_new)
+      q[j] = pdf( Normal(ut_xi[j], phi_curr) , y[i])
+    end
+
+    p_draw_new_theta = alpha_curr * q0
+    p_draw_existing = n_xi .* q
+
+    probs = [ p_draw_new_theta; p_draw_existing ]
+    ind = wsample( 0:nstar_xi , probs )
+
+    if ind == 0
+      new_mean = (y[i] * t2_curr + mu_curr * phi_curr) / (t2_curr + phi_curr)
+      new_sd = t2_curr * phi_curr / (2 * t2_curr * phi_curr)
+      theta_new[i] = rand(Normal( new_mean , new_sd ))
+    else
+      theta_new[i] = ut_xi[ind]
+    end
+  end # for i in 1:n
+
+  # Update θ | y
+  # NEED TO DO THIS!!! LEFT OFF HERE!!!
 
   theta_new
 end
@@ -58,7 +91,7 @@ function r_t2(theta_curr, mu_curr)
 end
 
 # eta generator. Auxiliary variable.
-r_eta(alpha_curr) = Beta(alpha_curr+1,n)
+r_eta(alpha_curr) = rand( Beta(alpha_curr+1,n) )
 
 # alpha generator
 function r_alpha(theta_curr, eta_curr) 
@@ -77,15 +110,20 @@ function r_alpha(theta_curr, eta_curr)
 end
 
 
-# Gibbs
-for b in 2:B
-  # Update theta
+# Gibbs. 8 seconds for 100 mcmc iterations.
+println("Starting Computation...")
+@time for b in 2:B
   theta[b,:] = r_theta(theta[b-1,:], alpha[b-1], phi[b-1], mu[b-1], t2[b-1])
   alpha[b] = r_alpha(theta[b,:], eta[b-1])
-  eat[b] = r_eta(alpha[b])
+  eta[b] = r_eta(alpha[b])
   phi[b] = r_phi(theta[b,:]) 
   mu[b] = r_mu(theta[b,:], t2[b-1])
   t2[b] = r_t2(theta[b,:], mu[b])
 
-  # Update all theta's at once.
+  #if b%(B/100)==0 print("\r",round(100*b/B),"%") end
+  print("\r Progress: ", b)
 end
+
+#=
+  include("dpmm1.jl")
+=#
