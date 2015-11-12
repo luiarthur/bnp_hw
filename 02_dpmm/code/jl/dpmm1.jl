@@ -3,7 +3,7 @@ using Distributions, DataFrames
 
 y = readdlm("../../dat/hw2.dat")
 n = length(y)
-B = 100000
+B = 500
 
 # Parameters:
 theta = zeros(B,n)
@@ -13,8 +13,8 @@ eta = ones(B) # auxiliary variable
 mu = zeros(B)
 t2 = ones(B)
 
-a_phi, b_phi = 2,4
-a_alpha, b_alpha = 1,5
+a_phi, b_phi = 3,4
+a_alpha, b_alpha = 1,1/5
 a_mu, b_mu = 0,5
 a_t2, b_t2 = 4,3
 
@@ -69,7 +69,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
     denom = ns * t2_curr + phi_curr
     new_mean = ( sum(ys) * t2_curr + mu_curr * phi_curr ) / denom
     new_sd = sqrt(t2_curr * phi_curr / denom )
-    theta_new[ind] = rand ( Normal(new_mean, new_sd) )
+    theta_new[ind] = rand( Normal(new_mean, new_sd) )
   end
 
   theta_new
