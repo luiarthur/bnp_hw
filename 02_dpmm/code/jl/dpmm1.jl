@@ -63,9 +63,13 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
   ut = unique(theta_new)
   J = length( ut )
   for j in 1:J
-    new_mean = 1
-    new_sd = sqrt( )
-    theta_new = rand ( Normal(,) )
+    ind = find( x -> x == theta_new[j], theta_new)
+    ys = y[ind]
+    ns = length(ys)
+    denom = ns * t2_curr + phi_curr
+    new_mean = ( sum(ys) * t2_curr + mu_curr * phi_curr ) / denom
+    new_sd = sqrt(t2_curr * phi_curr / denom )
+    theta_new[ind] = rand ( Normal(new_mean, new_sd) )
   end
 
   theta_new
