@@ -3,7 +3,7 @@ using Distributions, DataFrames
 
 y = readdlm("../../dat/hw2.dat")
 n = length(y)
-B = 5000
+B = 100000
 
 # Parameters:
 theta = zeros(B,n)
@@ -31,13 +31,13 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
 
     ut_xi = unique( theta_new[ setdiff(1:n,i) ] )
     nstar_xi = length( ut_xi )
-    n_xi = zeros( nstar_xi )
-    q = zeros( nstar_xi )
 
     #n_xi = SharedArray( Float64, nstar_xi )
     #q = SharedArray( Float64, nstar_xi )
     #@parallel for j in 1:nstar_xi
 
+    n_xi = zeros( nstar_xi )
+    q = zeros( nstar_xi )
     for j in 1:nstar_xi
       n_xi[j] = sum(ut_xi[j] .== theta_new)
       q[j] = pdf( Normal(ut_xi[j], phi_curr) , y[i])
