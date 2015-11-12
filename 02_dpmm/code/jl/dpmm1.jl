@@ -3,20 +3,20 @@ using Distributions, DataFrames
 
 y = readdlm("../../dat/hw2.dat")
 n = length(y)
-B = 5000
+B = 10000
 
 # Parameters:
 theta = zeros(B,n)
 phi = ones(B)
 alpha = ones(B)
-eta = ones(B) # auxiliary variable
+#eta = ones(B) # auxiliary variable
 mu = zeros(B)
 t2 = ones(B)
 
-a_phi, b_phi = 3,4
+a_phi, b_phi = 3,3
 a_alpha, b_alpha = 1,1 # Shape and Rate
-a_mu, b_mu = 0,5
-a_t2, b_t2 = 4,3
+a_mu, b_mu = 0,3
+a_t2, b_t2 = 3,3
 
 # Posterior Generator for parameters:
 # theta generator
@@ -75,8 +75,8 @@ end
 
 # phi generator
 function r_phi(theta_curr) 
-  new_a = n/2 +a_phi
-  new_b = sum([ (y[i] - theta_curr[i])^2 for i in 1:n]) / 2 + b_phi
+  new_a = n/2 + a_phi
+  new_b = sum( (y - theta_curr') .^2 ) / 2 + b_phi
   rand( InverseGamma(new_a , new_b) ) # variance of data
 end
 
@@ -95,7 +95,7 @@ function r_t2(theta_curr, mu_curr)
   ut = unique(theta_curr)
   nstar = length(ut)
   new_a = nstar / 2 + a_t2
-  new_b = sum([ (ut[j]-mu_curr) ^2 for j in 1:nstar]) / 2 + b_t2
+  new_b =  sum( (ut - mu_curr) .^2 ) / 2 + b_t2
   rand( InverseGamma(new_a, new_b) )
 end
 
@@ -123,8 +123,8 @@ end
 println("Starting Computation...")
 @time for b in 2:B
   theta[b,:] = r_theta(theta[b-1,:], alpha[b-1], phi[b-1], mu[b-1], t2[b-1])
-  alpha[b] = r_alpha(theta[b,:], eta[b-1])
-  eta[b] = r_eta(alpha[b])
+  eta = r_eta(alpha[b-1])
+  alpha[b] = r_alpha(theta[b,:], eta)
   phi[b] = r_phi(theta[b,:]) 
   mu[b] = r_mu(theta[b,:], t2[b-1])
   t2[b] = r_t2(theta[b,:], mu[b])
