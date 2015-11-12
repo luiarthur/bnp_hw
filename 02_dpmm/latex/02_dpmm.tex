@@ -68,11 +68,7 @@ where
   \item $q_j = k(y_i | \theta_j^{*-},\phi)$, the Normal density with mean and variance $\theta_j^{*-}$ and $\phi$ 
     evaluated at $y_i$.
   \item $q_0 = \ds\int k(y_i | \theta, \phi) g_0(\theta | \mu, \tau^2) d\theta
-    = [2\pi(\tau^2+\phi)]^{-1/2} 
-    \exp\left\{
-      \ds \left( \frac{y_i\tau^2 + \mu\phi}{\tau^2+\phi} \right)^2 -
-      \ds \frac{y_i^2\tau^2 + \mu^2\phi}{2 \tau^2 \phi}
-    \right\}$
+    = k(y_i~|~\mu,~\tau^2 + \phi)$
   \item $h(\theta_i| \psi, \phi, y_i) = c \cdot k(y_i | \theta_i, \phi) g_0(\theta_i | \mu, \tau^2)
     = k\left(\theta_i~\biggr|~\ds \frac{y_i\tau^2 + \mu\phi}{\tau^2+\phi},
     \ds\frac{\tau^2\phi}{\tau^2 + \phi} \right)$, where $c$ is a constant.
@@ -97,6 +93,7 @@ where $\Gamma^{-1}(a,b)$ denotes the inverse-Gamma distribution with the associa
 $f(x) = \ds \frac{b^a}{\Gamma(a)} x^{-a-1} \exp\left(\frac{-b}{x}\right)$, and we use the
 shape and \emph{rate} parameterization for the Gamma distribution.
 
+\noindent
 We can write the complete conditions in closed form to be used in a Gibbs sampler as follows.
 \[
 \begin{array} {rclcl}
@@ -108,8 +105,8 @@ We can write the complete conditions in closed form to be used in a Gibbs sample
   \tau^2 &|& \stu, n^*, \y &\sim& \Gamma^{-1}\left(\ds\frac{n^*}{2}+a_{\tau^2},
     \frac{\sum_{j=1}^{n^*} (\theta_j^*-\mu)^2}{2} + b_{\tau^2} \right)\\
   \eta &|& \alpha, \y &\sim& \text{Beta}(\alpha+1,n) \\
-  p(\alpha &|& n^*, \y) &=& (\epsilon)\gamma(a_\alpha+n^*, b_\alpha-\log(\eta)) +
-    (1-\epsilon)\gamma(a_\alpha+n^*-1, b_\alpha-\log(\eta))\\
+  p(\alpha &|& n^*, \y) &=& (\epsilon)~\gamma(\alpha | a_\alpha+n^*, b_\alpha-\log(\eta)) +
+    (1-\epsilon)~\gamma(\alpha | a_\alpha+n^*-1, b_\alpha-\log(\eta))\\
 \end{array}
 \]
 where $\gamma$ is the gamma density function with the mean and rate parameterization, 
