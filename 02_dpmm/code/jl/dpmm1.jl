@@ -3,7 +3,7 @@ using Distributions, DataFrames
 
 y = readdlm("../../dat/hw2.dat")
 n = length(y)
-B = 500
+B = 5000
 
 # Parameters:
 theta = zeros(B,n)
@@ -14,7 +14,7 @@ mu = zeros(B)
 t2 = ones(B)
 
 a_phi, b_phi = 3,4
-a_alpha, b_alpha = 1,1/5
+a_alpha, b_alpha = 1,1 # Shape and Rate
 a_mu, b_mu = 0,5
 a_t2, b_t2 = 4,3
 
@@ -25,9 +25,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
 
   # Update θ_i | θ_{-i}
   for i in 1:n
-    q0 = (2*pi*(t2_curr+phi_curr))^-.5 * 
-      exp(( (y[i] * t2_curr + mu_curr * phi_curr) / (t2_curr+phi_curr) )^2 - 
-      (y[i]^2 * t2_curr + mu_curr^2 * phi_curr) / (2 * t2_curr * phi_curr)) 
+    q0 = pdf( Normal(mu_curr, sqrt(t2_curr + phi_curr) ), y[i] )
 
     ut_xi = unique( theta_new[ setdiff(1:n,i) ] )
     nstar_xi = length( ut_xi )
@@ -63,7 +61,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
   ut = unique(theta_new)
   J = length( ut )
   for j in 1:J
-    ind = find( x -> x == theta_new[j], theta_new)
+    ind = find( x -> x == ut[j], theta_new)
     ys = y[ind]
     ns = length(ys)
     denom = ns * t2_curr + phi_curr
@@ -131,8 +129,8 @@ println("Starting Computation...")
   mu[b] = r_mu(theta[b,:], t2[b-1])
   t2[b] = r_t2(theta[b,:], mu[b])
 
-  #if b%(B/100)==0 print("\r",round(100*b/B),"%") end
-  print("\r Progress: ", b)
+  if b%(B/100)==0 print("\r",round(100*b/B),"%") end
+  #print("\r Progress: ", b)
 end
 
 writedlm("temp/out_alpha.dat", alpha)
