@@ -39,24 +39,29 @@ plot(tabclus / sum(tabclus),type='h',bty='n',fg='grey',xlab='Clusters',
      main=paste("mean =",round(mean(clus),1)),lwd=3,col="blue")
 
 # Trace Plot for Thetas ####################################
-plot(ttheta[,1],pch=20,fg='grey',bty="n",cex=.1,col=rgb(.1,.1,.1,.1),
+plot(ttheta[,1],pch=20,fg='grey',bty="n",cex=.1,col=rgb(.4,.4,.4,.1),
      ylim=range(ttheta), main=bquote("Trace Plot of "~theta))
 for ( k in 2:n ) {
-  points(ttheta[,k],col=rgb(.1,.1,.1,.1),pch=20,fg='grey',bty="n",cex=.1)
+  points(ttheta[,k],col=rgb(.4,.4,.4,.1),pch=20,fg='grey',bty="n",cex=.1)
 }
 
 # Cluster Behavior: ###################################
-order_y <- order(y)
+mtheta <- apply(ttheta,2,mean)
+order_y <- order(mtheta)
 Clus <- matrix(0,n,n)
 for (i in 1:n) {
   for (j in 1:n) {
-    Clus[i,j] <- sum(ttheta[,i] == ttheta[,j])
+    Clus[i,j] <- sum(ttheta[,i] == ttheta[,j]) / (B-burn)
   }
 }
+w2b <- rgb(seq(1,0,len=100),seq(1,0,len=100),1)
 image(Clus[order_y,order_y],xaxt="n",yaxt="n",
-      col=rgb(seq(1,0,len=100),seq(1,0,len=100),1))
+      col=w2b)
 axis(1,tck=0,at=1:n/n,lab=order_y,cex.axis=.4,las=2)
 axis(2,tck=0,at=1:n/n,lab=order_y,cex.axis=.4,las=2)
+corrplot(Clus,order="hclust",method='square',insig='blank')
 
+clust <- hclust(dist(mtheta))
+image(Clus[clust$order,clust$order],col=w2b)
 # Posterior Predictive: ###############################
 
