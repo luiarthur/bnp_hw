@@ -3,7 +3,7 @@ using Distributions, DataFrames
 
 y = readdlm("../../dat/hw2.dat")
 n = length(y)
-B = 10000
+B = 7000
 
 # Parameters:
 theta = zeros(B,n)
@@ -14,20 +14,21 @@ mu = zeros(B)
 t2 = ones(B)
 
 a_phi, b_phi = 3,3
-a_alpha, b_alpha = 1,1 # Shape and Rate
+a_alpha, b_alpha = 1,5 # Shape and Rate
 a_mu, b_mu = 0,3
 a_t2, b_t2 = 3,3
 
 # Posterior Generator for parameters:
 # theta generator
 function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
-  theta_new = theta_curr + 0
+  theta_new = theta_curr * 1.0
 
   # Update θ_i | θ_{-i}
   for i in 1:n
     q0 = pdf( Normal(mu_curr, sqrt(t2_curr + phi_curr) ), y[i] )
 
-    ut_xi = unique( theta_new[ setdiff(1:n,i) ] )
+    t_xi = theta_new[ setdiff(1:n,i) ]
+    ut_xi = unique( t_xi )
     nstar_xi = length( ut_xi )
 
     #n_xi = SharedArray( Float64, nstar_xi )
@@ -37,7 +38,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
     n_xi = zeros( nstar_xi )
     q = zeros( nstar_xi )
     for j in 1:nstar_xi
-      n_xi[j] = sum(ut_xi[j] .== theta_new)
+      n_xi[j] = sum(ut_xi[j] .== t_xi)
       q[j] = pdf( Normal(ut_xi[j], sqrt(phi_curr)) , y[i])
     end
 
@@ -66,7 +67,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
     ns = length(ys)
     denom = ns * t2_curr + phi_curr
     new_mean = ( sum(ys) * t2_curr + mu_curr * phi_curr ) / denom
-    new_sd = sqrt(t2_curr * phi_curr / denom )
+    new_sd = sqrt( t2_curr * phi_curr / denom )
     theta_new[ind] = rand( Normal(new_mean, new_sd) )
   end
 
@@ -85,7 +86,8 @@ function r_mu(theta_curr, t2_curr)
   ut = unique(theta_curr)
   nstar = length(ut)
   denom = nstar * b_mu + t2_curr
-  new_mean = (nstar * mean(theta_curr) * b_mu + a_mu * t2_curr) / denom
+  #new_mean = (nstar * mean(ut) * b_mu + a_mu * t2_curr) / denom
+  new_mean = ( sum(ut) * b_mu + a_mu * t2_curr) / denom
   new_sd = sqrt( b_mu*t2_curr / denom  )
   rand( Normal(new_mean, new_sd)  )
 end
@@ -134,7 +136,6 @@ println("Starting Computation...")
 end
 
 writedlm("temp/out_alpha.dat", alpha)
-writedlm("temp/out_eta.dat", eta)
 writedlm("temp/out_phi.dat", phi)
 writedlm("temp/out_mu.dat", mu)
 writedlm("temp/out_t2.dat", t2)
