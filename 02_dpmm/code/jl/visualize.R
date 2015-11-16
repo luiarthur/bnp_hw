@@ -1,4 +1,5 @@
 library(corrplot)
+library(DPpackage) # For number 2
 system("julia dpmm1.jl")
 source("../../../R_Functions/plotPost.R",chdir=T)
 y <- read.table("../../dat/hw2.dat")[[1]]
@@ -83,4 +84,11 @@ lines(density(y),col='grey',lwd=2)
 curve(f, add=T,col='green',lwd=2)
 legend("topleft",legend=c("Posterior Predictive","Data","Truth"),
        col=c("blue","grey","green"),bty='n',lwd=2)
+
+# 2: DPpackage ######################################
+prior1 <- list(a0=1,b0=1,m2=0,s2=1,tau1=1,tau2=1,psiinv1=solve(diag(.5,1)),nu1=1)
+dp.den <- DPdensity(y,prior=prior1,
+                    mcmc=list(nburn=burn,nsave=B-burn,nskip=0,ndisplay=B*.01),
+                    state=NULL,status=T)
+plot(dp.den,ask=F) # Broken?
 
