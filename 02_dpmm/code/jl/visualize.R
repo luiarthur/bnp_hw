@@ -75,6 +75,7 @@ y.pred <- apply(matrix(1:(B-burn)),1,function(b) {
               th <- sample(ttheta[b,],1)
             }
 
+            cat("\r Progress: ",b)
             rnorm(1, as.numeric(th), sqrt(tphi[b]))
       })
 f <- function(x) {.2*dnorm(x,-5,1)+.5*dnorm(x) + .3*dnorm(x,3.5,1)}
