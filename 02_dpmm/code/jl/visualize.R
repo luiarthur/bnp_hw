@@ -65,3 +65,22 @@ clust <- hclust(dist(mtheta))
 image(Clus[clust$order,clust$order],col=w2b)
 # Posterior Predictive: ###############################
 
+y.pred <- apply(matrix(1:(B-burn)),1,function(b) {
+            th <- 0
+
+            if (talpha[b] / (talpha[b]+n) > runif(1)) {
+              th <- rnorm(1,tmu[b],sqrt(tt2[b]))
+            } else {
+              th <- sample(ttheta[b,],1)
+            }
+
+            rnorm(1, as.numeric(th), sqrt(tphi[b]))
+      })
+f <- function(x) {.2*dnorm(x,-5,1)+.5*dnorm(x) + .3*dnorm(x,3.5,1)}
+plot(density(y.pred),col='blue',ylim=c(0,.2),lwd=2,bty='n',fg='grey',
+     main="Posterior Predictive")
+lines(density(y),col='grey',lwd=2)
+curve(f, add=T,col='green',lwd=2)
+legend("topleft",legend=c("Posterior Predictive","Data","Truth"),
+       col=c("blue","grey","green"),bty='n',lwd=2)
+
