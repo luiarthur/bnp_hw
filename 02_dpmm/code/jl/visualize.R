@@ -90,5 +90,6 @@ prior1 <- list(a0=1,b0=1,m2=0,s2=1,tau1=1,tau2=1,psiinv1=solve(diag(.5,1)),nu1=1
 dp.den <- DPdensity(y,prior=prior1,
                     mcmc=list(nburn=burn,nsave=B-burn,nskip=0,ndisplay=B*.01),
                     state=NULL,status=T)
-plot(dp.den,ask=F) # Broken?
+#plot(dp.den,ask=F) # Broken?
+plot(density(dp.den$cpo),col='red')
 
