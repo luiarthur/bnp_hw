@@ -81,16 +81,28 @@ y.pred <- apply(matrix(1:(B-burn)),1,function(b) {
 f <- function(x) {.2*dnorm(x,-5,1)+.5*dnorm(x) + .3*dnorm(x,3.5,1)}
 plot(density(y.pred),col='blue',ylim=c(0,.2),lwd=2,bty='n',fg='grey',
      main="Posterior Predictive")
-lines(density(y),col='grey',lwd=2)
+lines(density(y),col='grey',lwd=3)
 curve(f, add=T,col='green',lwd=2)
-legend("topleft",legend=c("Posterior Predictive","Data","Truth"),
-       col=c("blue","grey","green"),bty='n',lwd=2)
+legend("topleft",legend=c("Posterior Predictive","Data","Truth",as.expression(bquote("Random"~phi))),
+       col=c("blue","grey","green","red"),bty='n',lwd=2)
 
-# 2: DPpackage ######################################
-prior1 <- list(a0=1,b0=1,m2=0,s2=1,psiinv1=diag(.5,1),nu1=1,tau1=1,tau2=1)
+# Check soultion with DPpackage: ######################################
+#prior1 <- list(a0=1,b0=1,m2=0,s2=1,psiinv1=diag(.5,1),nu1=1,tau1=1,tau2=1)
+#dp.den <- DPdensity(y,prior=prior1,
+#                    mcmc=list(nburn=burn,nsave=B-burn,ndisplay=B*.01,nskip=0),
+#                    state=NULL,status=T)
+#dims <- dim(dp.den$save.state$randsave)
+##Posterior Predictive:
+#lines(density(dp.den$save.state$randsave[,dims[2]]),col='red',lwd=3)
+
+# 2: Model with DPpackage Problem ####################
+prior2 <- list(a0=3,b0=3,m2=0,s2=3,psiinv2=solve(diag(.5,1)),nu1=1,nu2=2,tau1=6,tau2=6)
 dp.den <- DPdensity(y,prior=prior1,
                     mcmc=list(nburn=burn,nsave=B-burn,ndisplay=B*.01,nskip=0),
                     state=NULL,status=T)
-#plot(dp.den,ask=F) # Broken?
-plot(dp.den$dens,col='red',lwd=3)
+ind <- which(colnames((dp.den$save.state$randsave)) == "y (Prediction)")
+# Posterior Predictive:
+lines(density(dp.den$save.state$randsave[,ind]),col='red',lwd=3)
+
+# 3: #####################################################
 
