@@ -18,7 +18,7 @@ mat rdir(int N, vec a) {
   for (int i=0; i<N; i++) {
     rowsum_i = 0;
     for (int j=0; j<K; j++) {
-      x(i,j) = R::rgamma(a[j],1.0); // shape & scale
+      x(i,j) = randg(1,distr_param(a[j],1.0))[0]; // shape & scale
       rowsum_i += x(i,j);
     }
     x.row(i) = x.row(i) / rowsum_i;
