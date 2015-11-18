@@ -109,7 +109,6 @@ vec update_theta (vec theta, double mu, double tau, double beta, double alpha, v
   uvec uv, inds;
   double q0, lq0, n_xi, q, denom, temp;
 
-  
   // Update theta_i | theta_{-i}
   for (int i=0; i<n; i++) {
     lq0 = mu * (-x[i]*beta+tau) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
@@ -124,16 +123,17 @@ vec update_theta (vec theta, double mu, double tau, double beta, double alpha, v
     for (int j=0; j<J; j++) {
       uv = find(ut_xi[j] == t_xi);
       n_xi = uv.size();
-      q = dpois(y[i],theta[j]*exp(x[i]*beta));
+      q = dpois(y[i],ut_xi[j]*exp(x[i]*beta));
       probs[j+1] = n_xi * q; // probability of drawing new theta
     }
 
-    ind = wsample(linspace(0,J-1,J), probs);
+    ind = wsample(linspace(0,J,J+1), probs);
     if (ind == 0) {
       theta_new = randg(1,y[i]+mu, 1/( tau+exp(x[i]*beta) ))[0]; //shape, scale
     } else {
       theta_new[i] = ut_xi[ind];
     }
+    cout << i << endl;
   }
 
   // Update theta | y
@@ -157,27 +157,31 @@ List dppois(vec y, vec x, double a_mu, double b_mu, double a_tau, double b_tau,
   // also need cand_sigs
   // all b_* are rates in the gamma distribution
 
-  int acc_mu=0, acc_beta=0, n=y.size();
-  mat theta = zeros<mat>(B,n);
+  int n=y.size();
+  mat theta = ones<mat>(B,n);
   vec mu, tau, beta, alpha, tb, acc_theta=zeros<vec>(n);
   mu = tau = beta = alpha = ones<vec>(B);
   List ret;
 
-  cout << "here1" << endl;
+  int* acc_mu = (int*) malloc(sizeof(int*));
+  int* acc_beta = (int*) malloc(sizeof(int*));
+  *acc_mu = 0;
+  *acc_beta = 0;
+
   // Start MCMC
   for (int b=1; b<B; b++) {
     // Update thetas
-    cout << "here2" << endl;
-    theta.row(b) = update_theta(theta.row(b-1),mu[b-1],tau[b-1],beta[b-1],alpha[b-1],x,y);
-    cout << "here3" << endl;
+    theta.row(b) = update_theta(vectorise(theta.row(b-1)),mu[b-1],tau[b-1],
+        beta[b-1],alpha[b-1],x,y);
     tb = vectorise( theta.row(b) );
 
-    beta[b] = update_beta(beta[b-1], tb, m_beta, s_beta, y, x, cs_beta, &acc_beta);
-    mu[b] = update_mu(mu[b-1], tau[b-1], tb, a_mu, b_mu, cs_mu, &acc_mu);
+    beta[b] = update_beta(beta[b-1], tb, m_beta, s_beta, y, x, cs_beta, acc_beta);
+    mu[b] = update_mu(mu[b-1], tau[b-1], tb, a_mu, b_mu, cs_mu, acc_mu);
     tau[b] = update_tau (mu[b], tb, a_tau, b_tau);
     alpha[b] = update_alpha(alpha[b], tb, a_alpha, b_alpha, n);
 
-    cout << "\r" << b;
+    //cout << "\r" << b;
+    cout << b << endl;;
   } // End of MCMC
 
   ret["mu"] = mu;
@@ -189,6 +193,8 @@ List dppois(vec y, vec x, double a_mu, double b_mu, double a_tau, double b_tau,
   ret["acc_beta"] = acc_beta;
   ret["acc_theta"] = acc_theta;
 
+  free(acc_mu);
+  free(acc_beta);
   return ret;
 }
 
