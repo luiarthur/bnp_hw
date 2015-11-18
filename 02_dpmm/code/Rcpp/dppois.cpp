@@ -98,9 +98,54 @@ double update_beta (double beta, vec theta, double m, double s, vec y, vec x,
   return beta_new;
 }
 
-vec update_theta (vec theta, double mu, double tau, double beta, double alpha, vec x, vec y) {
-  vec theta_new;
+double dpois(double x, double lam) { // without normalizing constant!
+  return exp(-lam * x*log(lam) - lgamma(x+1));
+}
 
+vec update_theta (vec theta, double mu, double tau, double beta, double alpha, vec x, vec y) {
+  vec t_xi, ut_xi, theta_new = theta;
+  int J, ind, n = y.size(), ns;
+  vec ut, probs, ys, xs;
+  uvec uv, inds;
+  double q0, lq0, n_xi, q, denom, temp;
+
+  
+  // Update theta_i | theta_{-i}
+  for (int i=0; i<n; i++) {
+    lq0 = mu * (-x[i]*beta+tau) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
+    q0 = exp(lq0);
+
+    t_xi = theta_new( find(linspace(0,n-1,n) != i) );
+    ut_xi = unique(t_xi);
+    J = ut_xi.size();
+    probs =zeros(J+1);
+    probs[0] = alpha * q0; // prob of drawing new theta
+
+    for (int j=0; j<J; j++) {
+      uv = find(ut_xi[j] == t_xi);
+      n_xi = uv.size();
+      q = dpois(y[i],theta[j]*exp(x[i]*beta));
+      probs[j+1] = n_xi * q; // probability of drawing new theta
+    }
+
+    ind = wsample(linspace(0,J-1,J), probs);
+    if (ind == 0) {
+      theta_new = randg(1,y[i]+mu, 1/( tau+exp(x[i]*beta) ))[0]; //shape, scale
+    } else {
+      theta_new[i] = ut_xi[ind];
+    }
+  }
+
+  // Update theta | y
+  ut = unique(theta_new);
+  J = ut.size();
+  for (int j=0; j<J; j++) {
+    inds = find( theta_new == ut[j] );
+    ys = y(inds);
+    xs = x(inds);
+    ns = ys.size();
+    theta_new.elem(inds).fill(randg(1, sum(ys)+mu, sum( exp(xs*beta)+tau ) )[0]);
+  }
 
   return theta_new;
 }
@@ -118,10 +163,13 @@ List dppois(vec y, vec x, double a_mu, double b_mu, double a_tau, double b_tau,
   mu = tau = beta = alpha = ones<vec>(B);
   List ret;
 
+  cout << "here1" << endl;
   // Start MCMC
   for (int b=1; b<B; b++) {
     // Update thetas
-    //theta.row(b) = update_theta(theta.row(b-1),);
+    cout << "here2" << endl;
+    theta.row(b) = update_theta(theta.row(b-1),mu[b-1],tau[b-1],beta[b-1],alpha[b-1],x,y);
+    cout << "here3" << endl;
     tb = vectorise( theta.row(b) );
 
     beta[b] = update_beta(beta[b-1], tb, m_beta, s_beta, y, x, cs_beta, &acc_beta);
