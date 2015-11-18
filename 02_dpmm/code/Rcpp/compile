@@ -1,0 +1,5 @@
+#!/bin/bash
+# This is a test. This DOES NOT work!
+
+g++ -I/usr/local/lib64/R/include -DNDEBUG  -I/usr/local/include  -I"~/R/x86_64-unknown-linux-gnu-library/3.0/Rcpp/include" -I"~/R/x86_64-unknown-linux-gnu-library/3.0/RcppArmadillo/include" -I"~/bnp_hw/02_dpmm/code/Rcpp"   -std=c++11 -fpic  -g -O2  -c dppois.cpp -o dppois.o
+
