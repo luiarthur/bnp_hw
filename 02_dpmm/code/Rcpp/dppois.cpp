@@ -30,8 +30,9 @@ double update_mu (double mu, double tau, vec theta, double a, double b, double c
   c = randn() * cs + mu; // c=candidate, cs = candidiate sigma
 
   if (c > 0) {
-    lg1 = (a-1) * log(mu) - b*mu + n*mu*log(tau) - n*lgamma(mu) + mu*sum(log(ut));
-    lg2 = (a-1) * log(c) - b*mu + n*c*log(tau) - n*lgamma(c) + c*sum(log(ut));
+    lg1 = (a-1) * log(c)  - b*c  + n*c*log(tau)  - n*lgamma(c)  + c*sum(log(ut));
+    lg2 = (a-1) * log(mu) - b*mu + n*mu*log(tau) - n*lgamma(mu) + mu*sum(log(ut));
+    lg = lg1 - lg2;
 
     if ( lg > log(randu()) ) {
       mu_new = c;
@@ -86,8 +87,8 @@ double update_beta (double beta, vec theta, double m, double s, vec y, vec x,
   beta_new = beta;
   c = randn() * cs + beta;
 
-  lg1 = -pow((beta-m)/s,2) / 2 + sum(beta * y % log(theta) % x - theta % exp(beta*x));
-  lg2 = -pow((c-m)/s,2) / 2 + sum(c * y % log(theta) % x - theta % exp(c*x));
+  lg1 = -pow((c-m)/s,2) / 2    + sum(c * y % log(theta)    % x - theta % exp(c*x));
+  lg2 = -pow((beta-m)/s,2) / 2 + sum(beta * y % log(theta) % x - theta % exp(beta*x));
   lg = lg1 - lg2;
 
   if (lg > log(randu()) ) {
@@ -183,7 +184,7 @@ List dppois(vec y, vec x, double a_mu, double b_mu, double a_tau, double b_tau,
     tau[b] = update_tau (mu[b], tb, a_tau, b_tau);
     alpha[b] = update_alpha(alpha[b], tb, a_alpha, b_alpha, n);
 
-    cout << "\r" << b;
+    cout << "\r" << b * 100 / B <<"%";
   } // End of MCMC
 
   ret["mu"] = mu;
