@@ -9,14 +9,15 @@ using namespace arma;
 using namespace Rcpp ;
 
 //[[Rcpp::export]]
-vec test (vec x) {
-  uvec inds = find( x == 3 );
-  x.elem(inds) = ones(inds.size()) + 3.0;
-  return x;
+vec test (int n) {
+  //uvec inds = find( x == 3 );
+  //x.elem(inds) = ones(inds.size()) + 3.0;
+  //return x;
+  return rbeta(n,2,3);
 } 
 
 // Enable C++11 in R: Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
-// This is used for randg(shape,scale)
+// This is used for randg(shape,scale), vec v = {1,2,3};
 
 // Functions for this assignment
 double update_mu (double mu, double tau, vec theta, double a, double b, double cs,
@@ -45,6 +46,9 @@ double update_mu (double mu, double tau, vec theta, double a, double b, double c
 }
 
 double rand_beta (double a, double b) { // Only for one draw. Write a function for vectors.
+  //randg is in Armadillo, requires c++11
+  //the Rcpp rgamma, dbeta are faster for vectors and scalars
+  //Julia Distribution is faster than R for draws
   double z1 = randg(1, distr_param(a,1.0))[0];
   double z2 = randg(1, distr_param(b,1.0))[0];
   return z1 / (z1+z2);
@@ -54,7 +58,7 @@ double update_tau (double mu, vec theta, double a, double b) {
   // [tau] [prod_{t=uniqueThetas} g_0(t|tau)]
   vec ut = unique( theta );
   int n = ut.size();
-  return randg(1, distr_param(a + mu * n, 1 / (b + sum(ut))) )[0]; // shape, sc
+  return rgamma( 1, a + mu * n, 1 / (b + sum(ut)) )[0]; // shape, sc
 }
 
 double update_alpha (double alpha, vec theta, double a, double b, int n) {
@@ -63,16 +67,17 @@ double update_alpha (double alpha, vec theta, double a, double b, int n) {
   double alpha_new;
   vec ut = unique(theta);
 
-  eta = rand_beta( alpha + 1, n );
+  //eta = rand_beta( alpha + 1, n );
+  eta = rbeta(1, alpha + 1, n )[0];
   ns = ut.size();
   c = a + ns;
   d = b - log(eta);
   
   ind = wsample({0,1}, {c-1, n*d});
   if (ind == 0) {
-    alpha_new = randg(1, distr_param(c, 1/d) )[0]; // shape, rate
+    alpha_new = rgamma(1, c, 1/d )[0]; // shape, rate
   } else {
-    alpha_new = randg(1, distr_param(c-1, 1/d) )[0];
+    alpha_new = rgamma(1, c-1, 1/d )[0];
   }
 
   return alpha_new;
@@ -135,7 +140,7 @@ mat update_theta (vec theta, double mu, double tau, double beta, double alpha, v
     if (ind == J) {
       a = y[i]+mu;
       b = 1/( tau+exp(x[i]*beta) );
-      theta_new[i] = randg(1, distr_param(a,b))[0]; //shape, scale
+      theta_new[i] = rgamma(1, a, b)[0]; //shape, scale
     } else {
       theta_new[i] = ut_xi[ind];
     }
@@ -152,7 +157,7 @@ mat update_theta (vec theta, double mu, double tau, double beta, double alpha, v
 
     a = sum(ys)+mu;
     b = 1 / (sum(exp(xs*beta)) + tau);
-    theta_new.elem(inds) = zeros(ns) + randg(1,distr_param(a,b))[0]; // shape, scale
+    theta_new.elem(inds) = zeros(ns) + rgamma(1,a,b)[0]; // shape, scale
   }
 
   return reshape(theta_new,1,32);
