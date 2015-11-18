@@ -67,7 +67,6 @@ double update_alpha (double alpha, vec theta, double a, double b, int n) {
   double alpha_new;
   vec ut = unique(theta);
 
-  //eta = rand_beta( alpha + 1, n );
   eta = rbeta(1, alpha + 1, n )[0];
   ns = ut.size();
   c = a + ns;
