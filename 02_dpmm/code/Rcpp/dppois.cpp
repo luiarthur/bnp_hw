@@ -9,10 +9,10 @@ using namespace arma;
 using namespace Rcpp ;
 
 //[[Rcpp::export]]
-vec test (int n, double a, double b) {
-  vec z1 = randg(n, distr_param(a,1.0));
-  vec z2 = randg(n, distr_param(b,1.0));
-  return z1 / (z1+z2);
+vec test (vec x) {
+  uvec inds = find( x == 3 );
+  x.elem(inds) = ones(inds.size()) + 3.0;
+  return x;
 } 
 
 // Enable C++11 in R: Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
@@ -35,7 +35,7 @@ double update_mu (double mu, double tau, vec theta, double a, double b, double c
 
     if ( lg > log(randu()) ) {
       mu_new = c;
-      *acc++;
+      *acc = *acc + 1;
     }
   }
 
@@ -92,48 +92,52 @@ double update_beta (double beta, vec theta, double m, double s, vec y, vec x,
 
   if (lg > log(randu()) ) {
     beta_new = c;
-    *acc++;
+    *acc = *acc + 1;
   }
 
   return beta_new;
 }
 
-double dpois(double x, double lam) { // without normalizing constant!
-  return exp(-lam * x*log(lam) - lgamma(x+1));
+double lpois(double x, double lam) { // without normalizing constant!
+  return -lam * x*log(lam) - lgamma(x+1);
 }
 
-vec update_theta (vec theta, double mu, double tau, double beta, double alpha, vec x, vec y) {
-  vec t_xi, ut_xi, theta_new = theta;
+mat update_theta (vec theta, double mu, double tau, double beta, double alpha, vec x, vec y) {
+  vec theta_new = theta;
+  vec t_xi, ut_xi;
   int J, ind, n = y.size(), ns;
-  vec ut, probs, ys, xs;
+  vec ut, probs, ys, xs, lprobs;
   uvec uv, inds;
-  double q0, lq0, n_xi, q, denom, temp;
+  double q0, lq0, n_xi, q;
+  double a,b;
 
   // Update theta_i | theta_{-i}
   for (int i=0; i<n; i++) {
     lq0 = mu * (-x[i]*beta+tau) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
-    q0 = exp(lq0);
 
     t_xi = theta_new( find(linspace(0,n-1,n) != i) );
     ut_xi = unique(t_xi);
     J = ut_xi.size();
-    probs =zeros(J+1);
-    probs[0] = alpha * q0; // prob of drawing new theta
+    lprobs = zeros(J+1);
+    lprobs[J] = log(alpha) + lq0; // prob of drawing new theta
 
     for (int j=0; j<J; j++) {
       uv = find(ut_xi[j] == t_xi);
       n_xi = uv.size();
-      q = dpois(y[i],ut_xi[j]*exp(x[i]*beta));
-      probs[j+1] = n_xi * q; // probability of drawing new theta
+      q = lpois( y[i], ut_xi[j] * exp(x[i]*beta) );
+      lprobs[j] = log(n_xi) * q; // probability of drawing new theta
     }
 
+    probs = exp(lprobs - max(lprobs));
+    //cout << "probs: "<<probs <<endl;
     ind = wsample(linspace(0,J,J+1), probs);
-    if (ind == 0) {
-      theta_new = randg(1,y[i]+mu, 1/( tau+exp(x[i]*beta) ))[0]; //shape, scale
+    if (ind == J) {
+      a = y[i]+mu;
+      b = 1/( tau+exp(x[i]*beta) );
+      theta_new[i] = randg(1, distr_param(a,b))[0]; //shape, scale
     } else {
       theta_new[i] = ut_xi[ind];
     }
-    cout << i << endl;
   }
 
   // Update theta | y
@@ -143,11 +147,14 @@ vec update_theta (vec theta, double mu, double tau, double beta, double alpha, v
     inds = find( theta_new == ut[j] );
     ys = y(inds);
     xs = x(inds);
-    ns = ys.size();
-    theta_new.elem(inds).fill(randg(1, sum(ys)+mu, sum( exp(xs*beta)+tau ) )[0]);
+    ns = inds.size();
+
+    a = sum(ys)+mu;
+    b = 1 / (sum(exp(xs*beta)) + tau);
+    theta_new.elem(inds) = zeros(ns) + randg(1,distr_param(a,b))[0]; // shape, scale
   }
 
-  return theta_new;
+  return reshape(theta_new,1,32);
 }
 
 //[[Rcpp::export]]
@@ -157,31 +164,26 @@ List dppois(vec y, vec x, double a_mu, double b_mu, double a_tau, double b_tau,
   // also need cand_sigs
   // all b_* are rates in the gamma distribution
 
-  int n=y.size();
+  int acc_beta=0, acc_mu=0, n=y.size();
   mat theta = ones<mat>(B,n);
-  vec mu, tau, beta, alpha, tb, acc_theta=zeros<vec>(n);
-  mu = tau = beta = alpha = ones<vec>(B);
+  vec mu, tau, beta, alpha, tb;
+  mu = tau = alpha = ones<vec>(B);
+  beta = zeros<vec>(B);
   List ret;
-
-  int* acc_mu = (int*) malloc(sizeof(int*));
-  int* acc_beta = (int*) malloc(sizeof(int*));
-  *acc_mu = 0;
-  *acc_beta = 0;
 
   // Start MCMC
   for (int b=1; b<B; b++) {
     // Update thetas
-    theta.row(b) = update_theta(vectorise(theta.row(b-1)),mu[b-1],tau[b-1],
-        beta[b-1],alpha[b-1],x,y);
+    theta.row(b) = update_theta(vectorise(theta.row(b-1)), mu[b-1], tau[b-1],
+        beta[b-1], alpha[b-1], x, y);
     tb = vectorise( theta.row(b) );
 
-    beta[b] = update_beta(beta[b-1], tb, m_beta, s_beta, y, x, cs_beta, acc_beta);
-    mu[b] = update_mu(mu[b-1], tau[b-1], tb, a_mu, b_mu, cs_mu, acc_mu);
+    beta[b] = update_beta(beta[b-1], tb, m_beta, s_beta, y, x, cs_beta, &acc_beta);
+    mu[b] = update_mu(mu[b-1], tau[b-1], tb, a_mu, b_mu, cs_mu, &acc_mu);
     tau[b] = update_tau (mu[b], tb, a_tau, b_tau);
     alpha[b] = update_alpha(alpha[b], tb, a_alpha, b_alpha, n);
 
-    //cout << "\r" << b;
-    cout << b << endl;;
+    cout << "\r" << b;
   } // End of MCMC
 
   ret["mu"] = mu;
@@ -189,12 +191,9 @@ List dppois(vec y, vec x, double a_mu, double b_mu, double a_tau, double b_tau,
   ret["beta"] = beta;
   ret["alpha"] = alpha;
   ret["theta"] = theta;
-  ret["acc_mu"] = acc_mu;
-  ret["acc_beta"] = acc_beta;
-  ret["acc_theta"] = acc_theta;
+  ret["acc_mu"] = acc_mu * 1.0 / B;
+  ret["acc_beta"] = acc_beta * 1.0 / B;
 
-  free(acc_mu);
-  free(acc_beta);
   return ret;
 }
 
