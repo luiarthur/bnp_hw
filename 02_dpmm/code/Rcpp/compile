@@ -1,5 +1,7 @@
 #!/bin/bash
 # This is a test. This DOES NOT work!
 
-g++ -I/usr/local/lib64/R/include -DNDEBUG  -I/usr/local/include  -I"~/R/x86_64-unknown-linux-gnu-library/3.0/Rcpp/include" -I"~/R/x86_64-unknown-linux-gnu-library/3.0/RcppArmadillo/include" -I"~/bnp_hw/02_dpmm/code/Rcpp"   -std=c++11 -fpic  -g -O2  -c dppois.cpp -o dppois.o
+g++ -I/usr/share/R/include -DNDEBUG    -I"/home/arthur/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include" -I"/home/arthur/R/x86_64-pc-linux-gnu-library/3.0/RcppArmadillo/include" -I"/home/arthur/Repo/bnp_HW/02_dpmm/code/Rcpp"   -std=c++11 -fpic  -O3 -pipe  -g  -c dppois.cpp -o dppois.o
+
+g++ -shared -o dppois.so dppois.o -llapack -lblas -lgfortran -lm -lquadmath -L/usr/lib/R/lib -lR
 
