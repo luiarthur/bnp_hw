@@ -1,6 +1,6 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
-#include <RcppArmadilloExtensions/sample.h>
+#include <RcppArmadilloExtensions/sample.h> // For wsample
 #include <iostream>
 #include <dp/dp.h>
 
@@ -16,6 +16,7 @@ vec test (int n) {
   return rbeta(n,2,3);
 } 
 
+// http://adv-r.had.co.nz/Rcpp.html#rcpp-sugar
 // Enable C++11 in R: Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 // This is used for randg(shape,scale), vec v = {1,2,3};
 

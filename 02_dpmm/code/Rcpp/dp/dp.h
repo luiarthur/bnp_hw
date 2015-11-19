@@ -1,6 +1,6 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
-#include <RcppArmadilloExtensions/sample.h>
+#include <RcppArmadilloExtensions/sample.h> // For wsample
 #include <iostream>
 
 using namespace std;
