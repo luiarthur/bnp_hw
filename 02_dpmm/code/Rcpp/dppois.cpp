@@ -1,6 +1,5 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
-#include <RcppArmadilloExtensions/sample.h> // For wsample
 #include <iostream>
 #include <dp/dp.h>
 
