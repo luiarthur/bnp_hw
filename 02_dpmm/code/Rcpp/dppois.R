@@ -1,4 +1,5 @@
 library(Rcpp)
+library(RcppArmadillo) # For making packages
 source("../../../R_Functions/plotPost.R",chdir=T)
 dat <- read.table("../../dat/fabric.dat",header=T)
 x <- dat$length
