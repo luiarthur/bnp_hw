@@ -3,7 +3,6 @@
 # CXX = ~/gcc-5.2.0/bin/g++
 # replace with the path to new local g++
 library(Rcpp)
-library(RcppArmadillo) # For making packages
 source("../../../R_Functions/plotPost.R",chdir=T)
 dat <- read.table("../../dat/fabric.dat",header=T)
 x <- dat$length
