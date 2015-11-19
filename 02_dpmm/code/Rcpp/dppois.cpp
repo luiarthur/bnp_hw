@@ -72,7 +72,7 @@ double update_alpha (double alpha, vec theta, double a, double b, int n) {
   c = a + ns;
   d = b - log(eta);
   
-  ind = wsample({0,1}, {c-1, n*d});
+  ind = wsample({0.0, 1.0}, {c-1, n*d});
   if (ind == 0) {
     alpha_new = rgamma(1, c, 1/d )[0]; // shape, rate
   } else {

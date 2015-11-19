@@ -7,8 +7,11 @@ y <- dat$faults
 n <- nrow(dat)
 #plot(x,y)
 
+if (system("echo $HOSTNAME", intern=T) == "citrisdance") {
+  Sys.setenv("CXX"="~/gcc-5.2.0/bin/g++") # enable c++11
+}
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11") # enable c++11
-#Sys.setenv("PKG_CXXFLAGS"="-v") # check version
+Sys.setenv("PKG_CXXFLAGS"="-v") # check version
 system.time( sourceCpp("dppois.cpp") )#, showOutput=T) )
 system.time(z <- dppois(y,x,a_mu=1,b_mu=1,a_tau=1,b_tau=1,
                         a_alpha=1,b_alpha=1,m_beta=1,s_beta=1,
