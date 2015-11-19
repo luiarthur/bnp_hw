@@ -14,7 +14,7 @@ Sys.setenv("PKG_CXXFLAGS"="-std=c++11") # enable c++11
 system.time( sourceCpp("dppois.cpp") )#, showOutput=T) )
 system.time(z <- dppois(y,x,a_mu=1,b_mu=1,a_tau=1,b_tau=1,
                         a_alpha=1,b_alpha=1,m_beta=1,s_beta=1,
-                        cs_mu=1,cs_beta=.0003,B=50000))
+                        cs_mu=1,cs_beta=.0003,B=100000))
 
 par(mfrow=c(4,1))
 plot.post(tail(z$alpha,2000),main=bquote(alpha),ylab='')
