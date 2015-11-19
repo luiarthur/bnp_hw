@@ -5,7 +5,7 @@
 
 using namespace std;
 using namespace arma;
-using namespace Rcpp ;
+using namespace Rcpp;
 
 //[[Rcpp::export]]
 vec test (int n) {
