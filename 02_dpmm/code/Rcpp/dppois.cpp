@@ -31,7 +31,7 @@ double update_mu (double mu, double tau, vec theta, double a, double b, double c
   c = randn() * cs + mu; // c=candidate, cs = candidiate sigma
 
   if (c > 0) {
-    lg1 = (a-1) * log(c)  - b*c  + n*c*log(tau)  - n*lgamma(c)  + c*sum(log(ut));
+    lg1 = (a-1) * log(c)  - b*c  +  n*c*log(tau) - n*lgamma(c)  +  c*sum(log(ut));
     lg2 = (a-1) * log(mu) - b*mu + n*mu*log(tau) - n*lgamma(mu) + mu*sum(log(ut));
     lg = lg1 - lg2;
 
@@ -42,7 +42,6 @@ double update_mu (double mu, double tau, vec theta, double a, double b, double c
   }
 
   return mu_new;
-  //return 1.0;
 }
 
 double rand_beta (double a, double b) { // Only for one draw. Write a function for vectors.
