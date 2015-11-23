@@ -29,7 +29,6 @@ double update_beta(double beta, double theta, double sum_xy, vec x, double m, do
   return beta_new;
 }
 
-
 //[[Rcpp::export]]
 List regpois(vec y, vec x, double a_beta, double b_beta, double m, double s2, double cs_beta, int B) {
   vec theta = ones<vec>(B);
