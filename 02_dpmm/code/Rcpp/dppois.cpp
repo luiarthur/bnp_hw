@@ -103,7 +103,8 @@ double update_beta (double beta, vec theta, double m, double s, vec y, vec x,
 }
 
 double lpois(double x, double lam) { // without normalizing constant!
-  return -lam * x*log(lam) - lgamma(x+1);
+  //return -lam * x*log(lam) - lgamma(x+1);
+  return x*log(lam) - lam -lgamma(x+1);
 }
 
 mat update_theta (vec theta, double mu, double tau, double beta, double alpha, vec x, vec y) {
@@ -112,12 +113,13 @@ mat update_theta (vec theta, double mu, double tau, double beta, double alpha, v
   int J, ind, n = y.size(), ns;
   vec ut, probs, ys, xs, lprobs;
   uvec uv, inds;
-  double q0, lq0, n_xi, q;
+  double lq0, nj, lq;
   double a,b;
 
   // Update theta_i | theta_{-i}
   for (int i=0; i<n; i++) {
-    lq0 = mu * (-x[i]*beta+tau) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
+    //lq0 = mu * (-x[i]*beta+tau) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
+    lq0 = lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu) - y[i]*log( 1 + tau*exp(-beta*x[i]) ) - mu*log( 1 + exp(beta*x[i]) / tau );
 
     t_xi = theta_new( find(linspace(0,n-1,n) != i) );
     ut_xi = unique(t_xi);
@@ -127,9 +129,9 @@ mat update_theta (vec theta, double mu, double tau, double beta, double alpha, v
 
     for (int j=0; j<J; j++) {
       uv = find(ut_xi[j] == t_xi);
-      n_xi = uv.size();
-      q = lpois( y[i], ut_xi[j] * exp(x[i]*beta) );
-      lprobs[j] = log(n_xi) * q; // probability of drawing new theta
+      nj = uv.size();
+      lq = lpois( y[i], ut_xi[j] * exp(x[i]*beta) );
+      lprobs[j] = log(nj) + lq; // probability of drawing new theta
     }
 
     probs = exp(lprobs - max(lprobs));

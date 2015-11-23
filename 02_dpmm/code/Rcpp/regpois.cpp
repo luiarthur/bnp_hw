@@ -30,7 +30,7 @@ double update_beta(double beta, double theta, double sum_xy, vec x, double m, do
 }
 
 //[[Rcpp::export]]
-List regpois(vec y, vec x, double a_beta, double b_beta, double m, double s2, double cs_beta, int B) {
+List regpois(vec y, vec x, double a_theta, double b_theta, double m, double s2, double cs_beta, int B) {
   vec theta = ones<vec>(B);
   vec beta = zeros<vec>(B);
   double sum_y = sum(y);
@@ -40,7 +40,7 @@ List regpois(vec y, vec x, double a_beta, double b_beta, double m, double s2, do
   List ret;
 
   for (int b=1; b<B; b++) {
-    theta[b] = update_theta(beta[b-1], sum_y, x, a_beta, b_beta);
+    theta[b] = update_theta(beta[b-1], sum_y, x, a_theta, b_theta/a_theta);
     beta[b] = update_beta(beta[b-1], theta[b], sum_xy, x, m, s2, cs_beta, &acc_beta);
     cout << "\r Progress: " << b*100/B << "%";
   }
