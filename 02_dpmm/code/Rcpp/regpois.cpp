@@ -7,7 +7,7 @@ using namespace arma;
 using namespace Rcpp;
 
 double update_theta(double beta, double sum_y, vec x, double a, double b) {
-  return rgamma( 1, a + sum_y, 1 / ( b + sum(exp(beta*x)) ) )[0];
+  return rgamma( 1, a + sum_y, 1 / ( b + sum(exp(beta*x)) ) )[0]; // rgamma is shape and scale. I want shape and rate.
 }
 
 double update_beta(double beta, double theta, double sum_xy, vec x, double m, double s2, 
@@ -30,7 +30,7 @@ double update_beta(double beta, double theta, double sum_xy, vec x, double m, do
 }
 
 //[[Rcpp::export]]
-List regpois(vec y, vec x, double a_theta, double b_theta, double m, double s2, double cs_beta, int B) {
+List regpois(vec y, vec x, double zeta, double mu, double m, double s2, double cs_beta, int B) {
   vec theta = ones<vec>(B);
   vec beta = zeros<vec>(B);
   double sum_y = sum(y);
@@ -40,7 +40,7 @@ List regpois(vec y, vec x, double a_theta, double b_theta, double m, double s2, 
   List ret;
 
   for (int b=1; b<B; b++) {
-    theta[b] = update_theta(beta[b-1], sum_y, x, a_theta, b_theta/a_theta);
+    theta[b] = update_theta(beta[b-1], sum_y, x, zeta, zeta/mu);
     beta[b] = update_beta(beta[b-1], theta[b], sum_xy, x, m, s2, cs_beta, &acc_beta);
     cout << "\r Progress: " << b*100/B << "%";
   }

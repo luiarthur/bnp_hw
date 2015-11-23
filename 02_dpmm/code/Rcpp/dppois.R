@@ -67,7 +67,7 @@ points(x[ord],apply(y.pred,2,mean)[ord],col="blue",pch=20)
 
 # Simple Poisson Regression ######
 system.time( sourceCpp("regpois.cpp") )
-system.time(rgp <- regpois(y,cs(x),a=1,b=1,m=0,s2=.1,cs_beta=.2,B=1000000))
+system.time(rgp <- regpois(y,cs(x),zeta=1,mu=1,m=0,s2=.1,cs_beta=.2,B=1000000))
 rgp$acc_beta
 par(mfrow=c(2,1))
 plot(tail(rgp$theta,BB),type='l'); mean(tail(rgp$theta,BB))
