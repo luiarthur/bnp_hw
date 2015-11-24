@@ -9,15 +9,14 @@ cs <- function(x) ( x - mean(x) ) / sd(x)
 x <- dat$length
 y <- dat$faults
 n <- nrow(dat)
-#plot(x,y)
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11") # enable c++11, for RcppArmadillo
 
 BB <- 5000
 # DP ###
 system.time( sourceCpp("dppois.cpp") )#, showOutput=T) )
 system.time(m3 <- dppois(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
-                        a_alpha=1e-10,b_alpha=1,m_beta=0,s2_beta=1,
-                        cs_zeta=9,cs_beta=.2,B=100000))
+                        a_alpha=1,b_alpha=1,m_beta=0,s2_beta=1,
+                        cs_zeta=3,cs_beta=.2,B=10000))
 c(m3$acc_zeta, m3$acc_beta)
 
 m3_alpha <- tail(m3$alpha,BB)
@@ -65,10 +64,9 @@ ord <- order(x)
 m3_ymax <- max(apply(m3_y0.pred,2,mean),apply(m3_y.pred,2,mean),y)
 
 m3.post.pred <- function() {
-‘"l"’, ‘"7"’, ‘"c"’, ‘"u"’, or ‘"]"’
   plot(x[ord],y[ord],col="grey80",cex=2,pch=20,ylim=c(0,m3_ymax),bty='l',fg='grey50')
-  lines(x[ord],apply(m3_y0.pred,2,mean)[ord],col="green",pch=20,type='o')
-  points(x[ord],apply(m3_y.pred,2,mean)[ord],col="darkgreen",pch=20)
+  #lines(x[ord],apply(m3_y0.pred,2,mean)[ord],col="green",pch=20,type='o')
+  points(x[ord],apply(m3_y.pred,2,mean)[ord],col="darkgreen",pch=20,cex=1.5)
 }
 m3.post.pred()
 
@@ -88,9 +86,20 @@ par(mfrow=c(1,1))
 m1_y0.pred <- apply(matrix(1:n), 1, function(i) rpois( BB, m1_theta*exp(m1_beta*cs(x)[i]) ))
 
 m3.post.pred()
-lines(x[ord],apply(m1_y0.pred,2,mean)[ord],col="red",pch=20,type='o')
+lines(x[ord],apply(m1_y0.pred,2,mean)[ord],col="red",pch=20,type='o',lwd=2)
 
 plot(density(apply(m3_theta,1,mean)),col='red'); lines(density(m1_theta))
 plot(density(m3_beta),col='red'); lines(density(m1_beta))
 
+# Hierarchical Model
+system.time( sourceCpp("hier.cpp") )
+system.time(m2 <- hier(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
+                       m_beta=0,s2_beta=1,cs_zeta=2,cs_beta=.5,B=100000))
+c(m2$acc_zeta, m2$acc_beta)
+
+m2_alpha <- tail(m2$alpha,BB)
+m2_theta <- tail(m2$theta,BB)
+m2_beta <- tail(m2$beta,BB)
+m2_zeta <- tail(m2$zeta,BB)
+m2_mu <- tail(m2$mu,BB)
 

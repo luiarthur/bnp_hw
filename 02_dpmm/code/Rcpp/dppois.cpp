@@ -29,8 +29,8 @@ double update_zeta (double zeta, double mu, vec theta, double a, double b, doubl
   c = randn() * cs + zeta; // c=candidate, cs = candidiate sigma
 
   if (c > 0) {
-    lg1 = (a-1)*log(c)    + n*c*log(c/mu)    - n*lgamma(c)     - c*(b+sum(ut)/mu)    + c*sum(log(ut));
-    lg2 = (a-1)*log(zeta) + n*c*log(zeta/mu) - n*lgamma(zeta)  - zeta*(b+sum(ut)/mu) + zeta*sum(log(ut));
+    lg1 = (a-1)*log(c)    + n*c*log(c/mu)       - n*lgamma(c)     - c*(b+sum(ut)/mu)    + c*sum(log(ut));
+    lg2 = (a-1)*log(zeta) + n*zeta*log(zeta/mu) - n*lgamma(zeta)  - zeta*(b+sum(ut)/mu) + zeta*sum(log(ut));
     lg = lg1 - lg2;
 
     if ( lg > log(randu()) ) {
@@ -77,10 +77,8 @@ double update_beta (double beta, vec theta, double s_xy, double m, double s2, ve
   beta_new = beta;
   c = randn() * cs + beta;
 
-  //lg1 = -pow((c-m)/s,2) / 2    + sum(c * y % log(theta)    % x - theta % exp(c*x));
-  //lg2 = -pow((beta-m)/s,2) / 2 + sum(beta * y % log(theta) % x - theta % exp(beta*x));
-  lg1 = -pow(c-m,2)/(2*s2) +    c*s_xy - sum(theta % exp(c*x));
-  lg2 = -pow(c-m,2)/(2*s2) + beta*s_xy - sum(theta % exp(beta*x));
+  lg1 = -pow(c-m,2)/(2*s2)    +    c*s_xy - sum(theta % exp(c*x));
+  lg2 = -pow(beta-m,2)/(2*s2) + beta*s_xy - sum(theta % exp(beta*x));
   lg = lg1 - lg2;
 
   if (lg > log(randu()) ) {
