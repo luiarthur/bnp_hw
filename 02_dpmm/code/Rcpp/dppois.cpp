@@ -21,7 +21,6 @@ vec test (int n) {
 
 // Functions for this assignment
 double update_zeta (double zeta, double mu, vec theta, double a, double b, double cs, int* acc) {
-  // [mu] [prod_{t=uniqueThetas} g_0(t|mu)]
   vec ut = unique( theta );
   int n = ut.size();
   double lg, lg1, lg2, c, zeta_new;
@@ -30,10 +29,8 @@ double update_zeta (double zeta, double mu, vec theta, double a, double b, doubl
   c = randn() * cs + zeta; // c=candidate, cs = candidiate sigma
 
   if (c > 0) {
-    //lg1 = (a-1) * log(c)  - b*c  +  n*c*log(zeta) - n*lgamma(c)  +  c*sum(log(ut));
-    //lg2 = (a-1) * log(mu) - b*mu + n*mu*log(zeta) - n*lgamma(mu) + mu*sum(log(ut));
-    lg1 = (a-1)*log(c)    + n*c*log(c/mu)    - n*lgamma(c)     - b*c    + c*sum(log(ut));
-    lg2 = (a-1)*log(zeta) + n*c*log(zeta/mu) - n*lgamma(zeta)  - b*zeta + zeta*sum(log(ut));
+    lg1 = (a-1)*log(c)    + n*c*log(c/mu)    - n*lgamma(c)     - c*(b+sum(ut)/mu)    + c*sum(log(ut));
+    lg2 = (a-1)*log(zeta) + n*c*log(zeta/mu) - n*lgamma(zeta)  - zeta*(b+sum(ut)/mu) + zeta*sum(log(ut));
     lg = lg1 - lg2;
 
     if ( lg > log(randu()) ) {
@@ -46,10 +43,9 @@ double update_zeta (double zeta, double mu, vec theta, double a, double b, doubl
 }
 
 double update_mu (double zeta, vec theta, double a, double b) {
-  // [zeta] [prod_{t=uniqueThetas} g_0(t|zeta)]
   vec ut = unique( theta );
   int n = ut.size();
-  return rgamma( 1, a + n*zeta, 1 / (b + sum(ut)*zeta) )[0]; // shape, sc
+  return 1/rgamma( 1, a + n*zeta, 1 / (b + sum(ut)*zeta) )[0]; // shape, sc
 }
 
 double update_alpha (double alpha, vec theta, double a, double b, int n) {
@@ -96,7 +92,6 @@ double update_beta (double beta, vec theta, double s_xy, double m, double s2, ve
 }
 
 double lpois(double x, double lam) { // without normalizing constant!
-  //return -lam * x*log(lam) - lgamma(x+1);
   return x*log(lam) - lam -lgamma(x+1);
 }
 
@@ -111,7 +106,6 @@ mat update_theta (vec theta, double zeta, double mu, double beta, double alpha, 
 
   // Update theta_i | theta_{-i}
   for (int i=0; i<n; i++) {
-    //lq0 = mu * (-x[i]*beta+zeta) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
     lq0 = lgamma(y[i]+zeta) - lgamma(y[i]+1) - lgamma(zeta) - y[i]*log( 1 + zeta/mu*exp(-beta*x[i]) ) - zeta*log( 1 + exp(beta*x[i]) * mu/zeta );
 
     t_xi = theta_new( find(linspace(0,n-1,n) != i) );
@@ -128,7 +122,6 @@ mat update_theta (vec theta, double zeta, double mu, double beta, double alpha, 
     }
 
     probs = exp(lprobs - max(lprobs));
-    //cout << "probs: "<<probs <<endl;
     ind = wsample(linspace(0,J,J+1), probs);
     if (ind == J) {
       a = y[i] + zeta;
@@ -160,7 +153,6 @@ mat update_theta (vec theta, double zeta, double mu, double beta, double alpha, 
 List dppois(vec y, vec x, double a_zeta, double b_zeta, double a_mu, double b_mu,
     double a_alpha, double b_alpha, double m_beta, double s2_beta, 
     double cs_zeta, double cs_beta, int B) { 
-  // also need cand_sigs
   // all b_* are rates in the gamma distribution
 
   double s_xy = sum(x%y);

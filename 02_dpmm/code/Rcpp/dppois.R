@@ -12,75 +12,85 @@ n <- nrow(dat)
 #plot(x,y)
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11") # enable c++11, for RcppArmadillo
 
-BB <- 2000
+BB <- 5000
 # DP ###
 system.time( sourceCpp("dppois.cpp") )#, showOutput=T) )
-system.time(z <- dppois(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
-                        a_alpha=5,b_alpha=1,m_beta=0,s2_beta=1,
-                        cs_zeta=5,cs_beta=.3,B=100000))
-c(z$acc_zeta, z$acc_beta)
+system.time(m3 <- dppois(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
+                        a_alpha=1e-10,b_alpha=1,m_beta=0,s2_beta=1,
+                        cs_zeta=9,cs_beta=.2,B=100000))
+c(m3$acc_zeta, m3$acc_beta)
 
-talpha <- tail(z$alpha,BB)
-ttheta <- tail(z$theta,BB)
-tbeta <- tail(z$beta,BB)
-tzeta <- tail(z$zeta,BB)
-tmu <- tail(z$mu,BB)
+m3_alpha <- tail(m3$alpha,BB)
+m3_theta <- tail(m3$theta,BB)
+m3_beta <- tail(m3$beta,BB)
+m3_zeta <- tail(m3$zeta,BB)
+m3_mu <- tail(m3$mu,BB)
 
-par(mfrow=c(4,1))
-  plot(talpha,main=bquote(alpha),ylab='',type='l')
-  plot(tzeta,main=bquote(zeta),ylab='',type='l')
-  plot(tmu,main=bquote(mu),ylab='',type='l')
-  plot(tbeta,main=bquote(beta),ylab='',type='l')
+par(mfrow=c(2,2))
+  plot.post(m3_alpha,main=bquote(alpha),ylab='')
+  plot.post(m3_zeta,main=bquote(zeta),ylab='')
+  plot.post(m3_mu,main=bquote(mu),ylab='')
+  plot.post(m3_beta,main=bquote(beta),ylab='')
 par(mfrow=c(1,1))
+dev.off()
 
-ut <-  apply(ttheta,1,function(x) length( unique(x) ))
+plot(m3_mu, m3_zeta,type='p',pch=20)
+
+ut <-  apply(m3_theta,1,function(x) length( unique(x) ))
 tut <- table(ut)
 plot(tut / sum(tut), main=paste("Mean Number of Clusters =",mean(ut)))
 
-plot(ttheta[,1],cex=.1,col=rgb(.1,.1,.1,.2),main="theta")
-for ( k in 1:ncol(z$theta) )
-  points(ttheta[,k],cex=.1,col=rgb(.1,.1,.1,.2))
+plot(m3_theta[,1],cex=.1,col=rgb(.1,.1,.1,.2),main="theta")
+for ( k in 1:ncol(m3_theta) )
+  points(m3_theta[,k],cex=.1,col=rgb(.1,.1,.1,.2))
 
-plot(tail(z$mu,BB), tail(z$zeta,BB),type='p',pch=20)
 
 # Post Pred
-y0.pred <- matrix(0,BB,n)
-y.pred <- matrix(0,BB,n)
-theta.pred <- apply(matrix(1:(BB)),1,function(b) {
+m3_y0.pred <- matrix(0,BB,n)
+m3_y.pred <- matrix(0,BB,n)
+m3_theta.pred <- apply(matrix(1:(BB)),1,function(b) {
             th <- 0
 
-            if (talpha[b] / (talpha[b]+n) > runif(1)) {
-              th <- rgamma(1,tzeta[b],rate=tzeta[b]/tmu[b])
+            if (m3_alpha[b] / (m3_alpha[b]+n) > runif(1)) {
+              th <- rgamma(1,m3_zeta[b],rate=m3_zeta[b]/m3_mu[b])
             } else {
-              th <- sample(ttheta[b,],1)
+              th <- sample(m3_theta[b,],1)
             }
 
             th
       })
-for (i in 1:n) y0.pred[,i] <- rpois(BB, theta.pred*exp(cs(x)[i]*tbeta) )
-for (i in 1:n) y.pred[,i] <- rpois(BB, ttheta[,i]*exp(cs(x)[i]*tbeta) )
+for (i in 1:n) m3_y0.pred[,i] <- rpois(BB, m3_theta.pred*exp(cs(x)[i]*m3_beta) )
+for (i in 1:n) m3_y.pred[,i] <- rpois(BB, m3_theta[,i]*exp(cs(x)[i]*m3_beta) )
 ord <- order(x)
-ymax <- max(apply(y0.pred,2,mean),apply(y.pred,2,mean),y)
-plot(x[ord],y[ord],col="grey80",cex=2,pch=20,ylim=c(0,ymax))
-lines(x[ord],apply(y0.pred,2,mean)[ord],col="green",pch=20,type='o')
-points(x[ord],apply(y.pred,2,mean)[ord],col="blue",pch=20)
+m3_ymax <- max(apply(m3_y0.pred,2,mean),apply(m3_y.pred,2,mean),y)
+
+m3.post.pred <- function() {
+‘"l"’, ‘"7"’, ‘"c"’, ‘"u"’, or ‘"]"’
+  plot(x[ord],y[ord],col="grey80",cex=2,pch=20,ylim=c(0,m3_ymax),bty='l',fg='grey50')
+  lines(x[ord],apply(m3_y0.pred,2,mean)[ord],col="green",pch=20,type='o')
+  points(x[ord],apply(m3_y.pred,2,mean)[ord],col="darkgreen",pch=20)
+}
+m3.post.pred()
+
 
 # Simple Poisson Regression ######
 system.time( sourceCpp("regpois.cpp") )
-system.time(z1 <- regpois(y,cs(x),zeta=.9368,mu=.39,m=0,s2=.1,cs_beta=.2,B=1000000))
-z1$acc_beta
-t1theta <- tail(z1$theta,BB)
-t1beta <- tail(z1$beta,BB)
+system.time(m1 <- regpois(y,cs(x),zeta=6.6,mu=8.29,m=0,s2=1,cs_beta=.2,B=1000000))
+m1$acc_beta
+m1_theta <- tail(m1$theta,BB)
+m1_beta <- tail(m1$beta,BB)
 par(mfrow=c(2,1))
-plot(t1theta,type='l',main=mean(t1theta))
-plot(t1beta,type='l',main=mean(t1beta))
+plot(m1_theta,type='l',main=mean(m1_theta))
+plot(m1_beta,type='l',main=mean(m1_beta))
 par(mfrow=c(1,1))
 
 #plot(tail(rgp$beta,BB), tail(rgp$theta,BB), col=rgb(.5,.5,.5,.1:BB/BB),pch=20,cex=.1)
-y1.pred <- apply(matrix(1:n), 1, 
-                 function(i)
-                 rpois( BB, t1theta*exp(t1beta*cs(x)[i]) ))
-y1max <- max(apply(y1.pred,2,mean),apply(y1.pred,2,mean),y)
-lines(x[ord],apply(y1.pred,2,mean)[ord],col="red",pch=20,type='o')
+m1_y0.pred <- apply(matrix(1:n), 1, function(i) rpois( BB, m1_theta*exp(m1_beta*cs(x)[i]) ))
+
+m3.post.pred()
+lines(x[ord],apply(m1_y0.pred,2,mean)[ord],col="red",pch=20,type='o')
+
+plot(density(apply(m3_theta,1,mean)),col='red'); lines(density(m1_theta))
+plot(density(m3_beta),col='red'); lines(density(m1_beta))
 
 
