@@ -9,13 +9,14 @@
 \usepackage{appendix}
 \usepackage{graphicx}
 \usepackage{color}
+\usepackage{subfig}
 \usepackage{url} % for underscore in footnote
 \usepackage[UKenglish]{isodate} % for: \today
 \cleanlookdateon                % for: \today
 %\pagestyle{empty} % Removes page number. Graphs too big.
 
 \def\wl{\par \vspace{\baselineskip}\noindent}
-\def\beginmyfig{\begin{figure}[htbp]\begin{center}}
+\def\beginmyfig{\begin{figure}[h]\begin{center}}
 \def\endmyfig{\end{center}\end{figure}}
 \def\prodl{\prod\limits_{j=1}^{n^*}}
 \def\suml{\sum\limits_{i=1}^n}
@@ -111,23 +112,153 @@ We can write the complete conditions in closed form to be used in a Gibbs sample
 \]
 where $\gamma$ is the gamma density function with the mean and rate parameterization, 
 $\epsilon = \ds\frac{a_\alpha +n^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +n^* -1}$,
-and $\eta$ is an auxiliary variable introduced to make the prior for $\alpha$ conjugate. % In Lecture Notes 2.
+and $\eta$ is an auxiliary variable introduced to make the prior for $\alpha$ conjugate.\\ % In Lecture Notes 2.
+
+\noindent
+For $\phi$, an inverse gamma prior with parameters (3,3) were chosen. This
+corresponds to a mean and variance of 1.5 and 2.6. $\phi$ represents the
+variance of the data which share the same mean. This should typically be small
+compared to the variance of the entire data set. Here, the data set has a
+variance of 9. $\mu$, the mean parameter of the centering distribution was
+given a Normal prior with mean and variance 0 and 9.  The data set has a
+variance of 9 and mean of -.27.  $\tau^2$ corresponds to the variance of the
+centering distribution and has an inverse gamma (3,6) prior, which has
+mean and variance 3 and 9.5. The variation between different clusters
+may be large, so I chose a large variance, but kept the mean close to 0.\\
+
+%a_alpha, b_alpha = 2,4 # Shape and Rate a*log(1+n/a) = 1.5
+%a_phi, b_phi = 3,3#3,3 # mean 1.5, var 2.6
+%a_mu, b_mu = 0,3 # 0,3
+%a_t2, b_t2 = 3,15#3,6 # mean 3, var 9.5
 
 \subsection{Posterior Sensitivity}
+We can examine the sensitivity of the model by altering the priors for the
+hyperparameters. Table \ref{tab:posts1} shows the sensitivity of out model to
+the prior specifications. The study was done by changing only one prior at a
+time leaving the other priors unchanged. The new priors used were chosen to be
+more extreme, and were $\phi \sim \text{IG}(3,15)$, $\mu \sim \text{N}(10,3)$,
+and $\tau^2 \sim \text{IG}(3,15)$. These correspond to increasing the prior
+means of the parameters to be more extreme. The posterior distributions were
+not greatly affected by moderate increases in $\phi$ and $\tau^2$, but were
+greatly influenced by changing the prior of $\mu$. The posterior mean for $\mu$
+increased from just below -.3 to 6.66. And $\tau^2$ increased to 30.4 from 6.7.
+This is logical because the centering distribution requires a higher variance 
+when $\mu$ is poorly specified.
+
+\beginmyfig
+  \includegraphics[scale=.5]{img/posts1.pdf}
+  \caption{Posterior for Hyperparameters}
+  \label{fig:post1}
+\endmyfig
+
+\begin{table}[h]
+  \center
+  \begin{tabular}{r|rrrr}
+    Parameters & Original & Large E[$\phi$]& Large E[$\mu$] & Large E[$\tau^2$] \\
+    $\phi$   &  .90 & 1.1  &   .97 &  .88 \\
+    $\mu$    & -.30 & -.27 &  6.66 & -.25 \\
+    $\tau^2$ & 6.71 & 6.86 & 30.4  & 8.74 \\
+  \end{tabular}
+  \caption{Sensitivity analysis: table of how the hyperparameters' posterior
+  means change as the priors are changed.}
+  \label{tab:posts1}
+\end{table}
+
+%\begin{figure}
+%  \center
+%  \subfloat[Original Model]{ \includegraphics[scale=.3]{img/posts1.pdf} } 
+%  \hfill
+%  \subfloat[Large $\phi$]{ \includegraphics[scale=.3]{img/posts1HighPhi.pdf} } \\
+%  \subfloat[Large $\mu$]{ \includegraphics[scale=.3]{img/posts1HighMu.pdf} } 
+%  \hfill
+%  \subfloat[Large $\tau^2$]{ \includegraphics[scale=.3]{img/posts1HighT2.pdf} }
+%\end{figure}
+
+\noindent
+The posterior predictive distributions are plotted in Figure
+\ref{fig:postpreds1} for the various priors. They appear to be similar.\\
+\begin{figure}[h]
+  \center
+  \subfloat[Original Model]{ \includegraphics[scale=.4]{img/postpred1.pdf} } 
+  \hfill
+  \subfloat[Large $\phi$]{ \includegraphics[scale=.4]{img/postpred1HighPhi.pdf} } \\
+  \subfloat[Large $\mu$]{ \includegraphics[scale=.4]{img/postpred1HighMu.pdf} } 
+  \hfill
+  \subfloat[Large $\tau^2$]{ \includegraphics[scale=.4]{img/postpred1HighT2.pdf} }
+  \caption{Posterior predictives under various priors.}
+  \label{fig:postpreds1}
+\end{figure}
+
+
 \subsection{Posterior Distribution for $\alpha$ and $n^*$}
+The prior distribution for $\alpha$ is Gamma(2,4), which corresponds 
+to an expected number of clusters of $2/4 * log(1 + 250 /(2/4) ) \approx 3$.
+The posterior distribution of $n^*$ is shown in figure \ref{fig:nstar1}.
+The mean and variance of $n^*$ are 6.3 and 5.4 respectively. We
+change the prior to Gamma(2,.1) to observe the sensitivity of the posterior
+to the prior.
+mean 28, var 143
+
+\beginmyfig
+  \subfloat{\includegraphics[scale=.5]{img/postnstar1.pdf}}
+  \subfloat{\includegraphics[scale=.5]{img/nstar1big.pdf}}
+  \caption{Posterior for $n^*$ for $\alpha \sim \text{Gamma}(2,4)$ (left) and
+  $\alpha \sim \text{Gamma}(2,.1)$ (right)}
+  \label{fig:nstar1}
+\endmyfig
+
+
 \subsection{Clustering Induced by DP Mixture}
+Figure \ref{fig:clus1} shows the posterior medians of $\m\theta$ sorted by the
+magnitude of $y$ in blue, the 2.5-97.5\% quantiles in pink, and the data in
+grey.  There appears to be three clusters of $\theta$'s with medians at -5, 0,
+and 3.5. The length of the three blue lines also provide information about the
+proportion of $\theta$'s that belong to a certain group. For example, the first
+(approximately) 50 $\theta$'s out of 250 have median -5. That is 20\% of the
+observations have mean -5. The next 125 observations (or 50\% of the
+observations) have mean 0. The last 30\% of the observations have mean 3.5.
+This is consistent with the true model.  \\
+\beginmyfig
+  \includegraphics[scale=.5]{img/clus1.pdf}
+  \caption{Data shown in grey, posterior median of $\m\theta$ sorted
+  by magnitude of $y$ in blue, and 2.5-97.5\% quantiles in pink.
+  There appears to be three clusters with means at -5, 0, and 3.5.
+  The length of the three lines also provide information about 
+  the proportion of $\theta$'s that belong to a certain group.}
+  \label{fig:clus1}
+\endmyfig
+
+
 \subsection{Posterior Predictive}
+Figure \ref{fig:postpred1} shows the posterior predictive density for the $\m\theta$'s 
+in blue, along with the density of the data in grey, the true distribution of the data
+in green, the posterior predictive of the location-scale model (which will be described
+in the following section) in red, and the prior predictive density in yellow.
+The model was able to recover the underlying distribution of the data. This can be seen from
+the posterior predictive density following the true density closer than the data. The prior
+predictive shows that the priors are well specified, while it does not generate the shape
+of the true distribution, as it covers the space of the data.
+\beginmyfig
+  \includegraphics[scale=.5]{img/postpred1.pdf}
+  \caption{Posterior predictive distribution in blue, density of data in grey, the true
+  underlying distribution which generated the data in green, posterior predictive of
+  location-scale model in red, and prior predictive in yellow.}
+  \label{fig:postpred1}
+\endmyfig
+
 
 \section{Location-Scale Normal DP Mixture Model}
+\subsection{Prior Specification}
+%prior2 <- list(a0=3,b0=3,m2=0,s2=3,psiinv2=solve(diag(.5,1)),nu1=1,nu2=2,tau1=6,tau2=6)
+The priors $\mu \sim$ Normal(0,$3^2$), 
+
+\subsection{Model Comparison}
+
+
 \section{Poisson Regression}
 \subsection{Simple Poisson Regression}
 \subsection{Hierarchical Poisson Regression}
 \subsection{DP Mixture-of-Poissons Regression}
-%\beginmyfig
-%  \includegraphics[scale=.6]{../code/pdfs/postMDP2.pdf}
-%  \caption{Caption}
-%\endmyfig
-
 \end{document}
 
 % To compile to html: 
