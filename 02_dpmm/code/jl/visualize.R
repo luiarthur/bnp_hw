@@ -26,7 +26,7 @@ tt2 <- tail(t2, B-burn)
 
 
 # Posterior for individual Parameters:
-#pdf("../../latex/img/posts1alpha.pdf",width=10,height=10)
+#pdf("../../latex/img/posts1alphaorig.pdf",width=10,height=10)
 par(mfrow=c(2,2))
   plot.post(talpha,main=bquote(alpha),cex.main=2)
   plot.post(tphi,main=bquote(phi),cex.main=2)

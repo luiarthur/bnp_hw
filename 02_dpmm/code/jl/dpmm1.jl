@@ -13,7 +13,7 @@ alpha = ones(B)
 mu = zeros(B)
 t2 = ones(B)
 
-a_alpha, b_alpha = 2,.1#2,4 # Shape and Rate a*log(1+n/a) = 1.5
+a_alpha, b_alpha = 2,4 # Shape and Rate a*log(1+n/a) = 1.5
 a_phi, b_phi = 3,3#3,3 # mean 1.5, var 2.6
 a_mu, b_mu = 0,3 # 0,3
 a_t2, b_t2 = 3,6#3,6 # mean 3, var 9.5
