@@ -64,9 +64,9 @@ ord <- order(x)
 m3_ymax <- max(apply(m3_y0.pred,2,mean),apply(m3_y.pred,2,mean),y)
 
 m3.post.pred <- function() {
-  plot(x[ord],y[ord],col="grey80",cex=2,pch=20,ylim=c(0,m3_ymax),bty='l',fg='grey50')
+  plot(x[ord],y[ord],col="grey80",cex=2,pch=20,ylim=c(0,m3_ymax),bty='l',fg='grey50',main="Posterior Predictive",ylab="y",xlab="x")
   #lines(x[ord],apply(m3_y0.pred,2,mean)[ord],col="green",pch=20,type='o')
-  points(x[ord],apply(m3_y.pred,2,mean)[ord],col="darkgreen",pch=20,cex=1.5)
+  points(x[ord],apply(m3_y.pred,2,mean)[ord],col="gold",pch=20,cex=1.5)
 }
 m3.post.pred()
 
@@ -78,8 +78,8 @@ m1$acc_beta
 m1_theta <- tail(m1$theta,BB)
 m1_beta <- tail(m1$beta,BB)
 par(mfrow=c(2,1))
-plot(m1_theta,type='l',main=mean(m1_theta))
-plot(m1_beta,type='l',main=mean(m1_beta))
+  plot(m1_theta,type='l',main=mean(m1_theta))
+  plot(m1_beta,type='l',main=mean(m1_beta))
 par(mfrow=c(1,1))
 
 #plot(tail(rgp$beta,BB), tail(rgp$theta,BB), col=rgb(.5,.5,.5,.1:BB/BB),pch=20,cex=.1)
@@ -97,9 +97,35 @@ system.time(m2 <- hier(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
                        m_beta=0,s2_beta=1,cs_zeta=2,cs_beta=.5,B=100000))
 c(m2$acc_zeta, m2$acc_beta)
 
-m2_alpha <- tail(m2$alpha,BB)
 m2_theta <- tail(m2$theta,BB)
 m2_beta <- tail(m2$beta,BB)
 m2_zeta <- tail(m2$zeta,BB)
 m2_mu <- tail(m2$mu,BB)
+
+par(mfrow=c(2,2))
+  plot.post(m2_zeta,main=bquote(zeta),ylab='')
+  plot.post(m2_mu,main=bquote(mu),ylab='')
+  plot.post(m2_beta,main=bquote(beta),ylab='')
+  plot(m2_theta[,1],cex=.1,col=rgb(.1,.1,.1,.2),main=bquote(theta),fg='grey30',bty='l')
+  for ( k in 1:ncol(m2_theta) )
+    points(m2_theta[,k],cex=.1,col=rgb(.1,.1,.1,.2))
+par(mfrow=c(1,1))
+dev.off()
+
+m2_y.pred <- matrix(0,BB,n)
+for (i in 1:n) m2_y.pred[,i] <- rpois(BB, m2_theta[,i]*exp(cs(x)[i]*m2_beta) )
+
+
+
+####
+
+m3.post.pred()
+points(x[ord],apply(m2_y.pred,2,mean)[ord],col="blue",pch=20,cex=1.5)
+lines(x[ord],apply(m1_y0.pred,2,mean)[ord],col="red",pch=20,type='o',lwd=2)
+legend("topleft",legend=c("Simple Poisson Regression","Hierarchical Poisson Regression","DP Mixture Regression","Data"),bty='n',
+       col=c("red","blue","gold","grey"),lwd=3)
+
+plot(density(apply(m3_theta,1,mean)),col='red'); lines(density(m1_theta)); lines(density(apply(m2_theta,1,mean)),col='blue');
+plot(density(m3_beta),col='red'); lines(density(m1_beta)); lines(density(m2_beta),col='blue');
+
 

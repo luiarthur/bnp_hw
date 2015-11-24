@@ -20,7 +20,7 @@ mat update_theta (vec theta, double zeta, double mu, double beta, vec x, vec y) 
   for (int i=0; i<n; i++) {
     shape = y[i] + zeta;
     scale = 1 / ( zeta/mu + exp(x[i]*beta) );
-    theta_new[i] = 1 / rgamma(1, shape, scale)[0];
+    theta_new[i] = rgamma(1, shape, scale)[0];
   }
 
   return reshape(theta_new,1,n);
@@ -68,7 +68,7 @@ double update_zeta (double zeta, double mu, vec theta, double a, double b, doubl
 
 double update_mu (double zeta, vec theta, double a, double b) {
   int n = theta.size();
-  return 1/rgamma( 1, a + n*zeta, 1 / (b + sum(theta)*zeta) )[0]; // shape, scale
+  return 1 / rgamma( 1, a + n*zeta, 1 / (b + sum(theta)*zeta) )[0]; // shape, scale
 }
 
 

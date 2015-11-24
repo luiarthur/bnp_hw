@@ -1,3 +1,4 @@
+system("mkdir -p ../../latex/img")
 library(corrplot)
 library(DPpackage) # For number 2
 system("julia dpmm1.jl")
