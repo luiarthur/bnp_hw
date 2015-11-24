@@ -16,8 +16,8 @@
 %\pagestyle{empty} % Removes page number. Graphs too big.
 
 \def\wl{\par \vspace{\baselineskip}\noindent}
-\def\beginmyfig{\begin{figure}[h]\begin{center}}
-\def\endmyfig{\end{center}\end{figure}}
+\def\beginmyfig{\begin{figure}[h]\center}
+\def\endmyfig{\end{figure}}
 \def\prodl{\prod\limits_{j=1}^{n^*}}
 \def\suml{\sum\limits_{i=1}^n}
 \def\ds{\displaystyle}
@@ -54,7 +54,6 @@
 \end{center}
 
 \section{Location Normal DP Mixed Model}
-
 \subsection{P\'olya urn based Gibbs sampler}
 \def\denom{ \alpha q_0 + \sum_{j=1}^{n^{*-}}n_j^- q_j }
 Below is P\'olya urn based Gibbs sampler.
@@ -191,19 +190,26 @@ The posterior predictive distributions are plotted in Figure
 
 
 \subsection{Posterior Distribution for $\alpha$ and $n^*$}
-The prior distribution for $\alpha$ is Gamma(2,4), which corresponds 
-to an expected number of clusters of $2/4 * log(1 + 250 /(2/4) ) \approx 3$.
-The posterior distribution of $n^*$ is shown in figure \ref{fig:nstar1}.
-The mean and variance of $n^*$ are 6.3 and 5.4 respectively. We
-change the prior to Gamma(2,.1) to observe the sensitivity of the posterior
-to the prior.
-mean 28, var 143
-
+The prior distribution for $\alpha$ is Gamma(2,4), which corresponds to an
+expected number of clusters of $2/4 * log(1 + 250 /(2/4) ) \approx 3$.  The
+posterior distribution of $n^*$ is shown in figure \ref{fig:nstar1}.  The mean
+and variance of $n^*$ are 6.3 and 5.4 respectively. We change the prior to
+Gamma(2,.1) to observe the sensitivity of the posterior to the prior. The mean
+and variance of the number of clusters $n^*$ are 28 and 143 respectively.
+$\alpha$ is similarly affected when the prior become more extreme.  The
+posterior mean for $\alpha$ increases from .85 to 8.8 when when the rate term
+in the Gamma prior is changed from 4 to .1, (which corresponds to an increase
+from 3 to 48, in the expected number of clusters. Both $\alpha$ and $n^*$ are
+sensitive to the prior on $\alpha$. The posteriors for $n^*$ (for both priors)
+and $\alpha$ (for only the more extreme prior) are plotted in Firgure
+\ref{fig:nstar1}. 
 \beginmyfig
   \subfloat{\includegraphics[scale=.5]{img/postnstar1.pdf}}
-  \subfloat{\includegraphics[scale=.5]{img/nstar1big.pdf}}
+  \subfloat{\includegraphics[scale=.5]{img/nstar1big.pdf}}\\
+  \subfloat{\includegraphics[scale=.3]{img/posts1alpha.pdf}}
   \caption{Posterior for $n^*$ for $\alpha \sim \text{Gamma}(2,4)$ (left) and
-  $\alpha \sim \text{Gamma}(2,.1)$ (right)}
+  $\alpha \sim \text{Gamma}(2,.1)$ (right). The priors for $\alpha$ have a strong
+  influence on the posterior number of clusters.}
   \label{fig:nstar1}
 \endmyfig
 
@@ -230,14 +236,34 @@ This is consistent with the true model.  \\
 
 
 \subsection{Posterior Predictive}
-Figure \ref{fig:postpred1} shows the posterior predictive density for the $\m\theta$'s 
-in blue, along with the density of the data in grey, the true distribution of the data
-in green, the posterior predictive of the location-scale model (which will be described
-in the following section) in red, and the prior predictive density in yellow.
-The model was able to recover the underlying distribution of the data. This can be seen from
-the posterior predictive density following the true density closer than the data. The prior
-predictive shows that the priors are well specified, while it does not generate the shape
-of the true distribution, as it covers the space of the data.
+Figure \ref{fig:postpred1} shows the posterior predictive density for the
+$\m\theta$'s in blue, along with the density of the data in grey, the true
+distribution of the data in green, the posterior predictive of the
+location-scale model (which will be described in the following section) in red,
+and the prior predictive density in yellow.  The model was able to recover the
+underlying distribution of the data. This can be seen from the posterior
+predictive density following the true density closer than the data. The prior
+predictive shows that the priors are well specified, while it does not generate
+the shape of the true distribution, as it covers the space of the data.
+
+% Problem 2: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Location-Scale Normal DP Mixture Model}
+\subsection{Prior Specification}
+For the location-scale DP mixture, I chose the following priors:
+$\mu\sim\text{Normal}(0,3^2) $, $\kappa\sim\text{Gamma}(3,3)$,$\beta\sim\text{InverseGamma}(2,1)$
+%prior2 <- list(a0=3,b0=3,m2=0,s2=3,psiinv2=solve(diag(.5,1)),nu1=1,nu2=2,tau1=6,tau2=6)
+The prior for $\mu$ was chosen such that the mean is 0 and the variance is 9 to account for 
+large uncertainty. The prior for $\kappa$ was chosen such that the mean is 1 and variance is 1/3
+; the prior for $\beta$ was chosen such that the mean is also 1. Together, the mean of $\phi/\kappa$
+will be one apriori.
+\subsection{Model Comparison}
+Figure \ref{fig:postpred1} shows the posterior predictive for the location-scale model
+along with the that of the location model. By observation only, it does not perform better
+than the location model. This is not surprising as the scales are constant across the different 
+clusters. In fact, it appears that the location scale model is closer to the data than the 
+actual model, while the location only DP mixture is closer to the truth than the data. The 
+location-scale model may be over-fitting when there are no true underlying clusters in the
+scales, but only one scale shared across different groups.
 \beginmyfig
   \includegraphics[scale=.5]{img/postpred1.pdf}
   \caption{Posterior predictive distribution in blue, density of data in grey, the true
@@ -246,19 +272,20 @@ of the true distribution, as it covers the space of the data.
   \label{fig:postpred1}
 \endmyfig
 
-
-\section{Location-Scale Normal DP Mixture Model}
-\subsection{Prior Specification}
-%prior2 <- list(a0=3,b0=3,m2=0,s2=3,psiinv2=solve(diag(.5,1)),nu1=1,nu2=2,tau1=6,tau2=6)
-The priors $\mu \sim$ Normal(0,$3^2$), 
-
-\subsection{Model Comparison}
-
-
+% Problem 3: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Poisson Regression}
 \subsection{Simple Poisson Regression}
+\subsubsection{Model}
+\[
+\begin{array}{rclcl}
+  y_i &|& \theta_i, \beta &\sim& \text{Poisson}(y_i~|~\theta_i\exp{(\beta x_i)})\\
+  && \beta   &\sim& \text{Poisson}(y_i~|~\theta_i\exp{(\beta x_i)})
+\end{array}
+\]
 \subsection{Hierarchical Poisson Regression}
+\subsubsection{Model}
 \subsection{DP Mixture-of-Poissons Regression}
+\subsubsection{Model}
 \end{document}
 
 % To compile to html: 
