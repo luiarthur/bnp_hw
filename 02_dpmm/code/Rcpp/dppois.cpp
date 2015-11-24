@@ -20,46 +20,37 @@ vec test (int n) {
 // This is used for randg(shape,scale), vec v = {1,2,3};
 
 // Functions for this assignment
-double update_zeta (double zeta, double mu, vec theta, double a, double b, double cs,
-    int* acc) {
+double update_zeta (double zeta, double mu, vec theta, double a, double b, double cs, int* acc) {
   // [mu] [prod_{t=uniqueThetas} g_0(t|mu)]
   vec ut = unique( theta );
   int n = ut.size();
-  double lg, lg1, lg2, c, mu_new;
+  double lg, lg1, lg2, c, zeta_new;
 
-  mu_new = mu;
-  c = randn() * cs + mu; // c=candidate, cs = candidiate sigma
+  zeta_new = zeta;
+  c = randn() * cs + zeta; // c=candidate, cs = candidiate sigma
 
   if (c > 0) {
-    lg1 = (a-1) * log(c)  - b*c  +  n*c*log(zeta) - n*lgamma(c)  +  c*sum(log(ut));
-    lg2 = (a-1) * log(mu) - b*mu + n*mu*log(zeta) - n*lgamma(mu) + mu*sum(log(ut));
+    //lg1 = (a-1) * log(c)  - b*c  +  n*c*log(zeta) - n*lgamma(c)  +  c*sum(log(ut));
+    //lg2 = (a-1) * log(mu) - b*mu + n*mu*log(zeta) - n*lgamma(mu) + mu*sum(log(ut));
+    lg1 = (a-1)*log(c)    + n*c*log(c/mu)    - n*lgamma(c)     - b*c    + c*sum(log(ut));
+    lg2 = (a-1)*log(zeta) + n*c*log(zeta/mu) - n*lgamma(zeta)  - b*zeta + zeta*sum(log(ut));
     lg = lg1 - lg2;
 
     if ( lg > log(randu()) ) {
-      mu_new = c;
+      zeta_new = c;
       *acc = *acc + 1;
     }
   }
 
-  return mu_new;
+  return zeta_new;
 }
 
 double update_mu (double zeta, vec theta, double a, double b) {
   // [zeta] [prod_{t=uniqueThetas} g_0(t|zeta)]
   vec ut = unique( theta );
   int n = ut.size();
-  return rgamma( 1, a + zeta * n, 1 / (b + sum(ut)) )[0]; // shape, sc
+  return rgamma( 1, a + n*zeta, 1 / (b + sum(ut)*zeta) )[0]; // shape, sc
 }
-
-double rand_beta (double a, double b) { // Only for one draw. Write a function for vectors.
-  //randg is in Armadillo, requires c++11
-  //the Rcpp rgamma, dbeta are faster for vectors and scalars
-  //Julia Distribution is faster than R for draws
-  double z1 = randg(1, distr_param(a,1.0))[0];
-  double z2 = randg(1, distr_param(b,1.0))[0];
-  return z1 / (z1+z2);
-}
-
 
 double update_alpha (double alpha, vec theta, double a, double b, int n) {
   double eta, c, d;
@@ -82,8 +73,7 @@ double update_alpha (double alpha, vec theta, double a, double b, int n) {
   return alpha_new;
 }
 
-double update_beta (double beta, vec theta, double m, double s, vec y, vec x, 
-    double cs, int* acc) {
+double update_beta (double beta, vec theta, double s_xy, double m, double s2, vec y, vec x, double cs, int* acc) {
     // [beta[ [prod_{i=1:n} (k(y_i|t_i,beta) ]
 
   double lg1, lg2, lg, c, beta_new;
@@ -91,8 +81,10 @@ double update_beta (double beta, vec theta, double m, double s, vec y, vec x,
   beta_new = beta;
   c = randn() * cs + beta;
 
-  lg1 = -pow((c-m)/s,2) / 2    + sum(c * y % log(theta)    % x - theta % exp(c*x));
-  lg2 = -pow((beta-m)/s,2) / 2 + sum(beta * y % log(theta) % x - theta % exp(beta*x));
+  //lg1 = -pow((c-m)/s,2) / 2    + sum(c * y % log(theta)    % x - theta % exp(c*x));
+  //lg2 = -pow((beta-m)/s,2) / 2 + sum(beta * y % log(theta) % x - theta % exp(beta*x));
+  lg1 = -pow(c-m,2)/(2*s2) +    c*s_xy - sum(theta % exp(c*x));
+  lg2 = -pow(c-m,2)/(2*s2) + beta*s_xy - sum(theta % exp(beta*x));
   lg = lg1 - lg2;
 
   if (lg > log(randu()) ) {
@@ -108,7 +100,7 @@ double lpois(double x, double lam) { // without normalizing constant!
   return x*log(lam) - lam -lgamma(x+1);
 }
 
-mat update_theta (vec theta, double mu, double zeta, double beta, double alpha, vec x, vec y) {
+mat update_theta (vec theta, double zeta, double mu, double beta, double alpha, vec x, vec y) {
   vec theta_new = theta;
   vec t_xi, ut_xi;
   int J, ind, n = y.size(), ns;
@@ -120,7 +112,7 @@ mat update_theta (vec theta, double mu, double zeta, double beta, double alpha, 
   // Update theta_i | theta_{-i}
   for (int i=0; i<n; i++) {
     //lq0 = mu * (-x[i]*beta+zeta) +lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu);
-    lq0 = lgamma(y[i]+mu) - lgamma(y[i]+1) - lgamma(mu) - y[i]*log( 1 + zeta*exp(-beta*x[i]) ) - mu*log( 1 + exp(beta*x[i]) / zeta );
+    lq0 = lgamma(y[i]+zeta) - lgamma(y[i]+1) - lgamma(zeta) - y[i]*log( 1 + zeta/mu*exp(-beta*x[i]) ) - zeta*log( 1 + exp(beta*x[i]) * mu/zeta );
 
     t_xi = theta_new( find(linspace(0,n-1,n) != i) );
     ut_xi = unique(t_xi);
@@ -139,9 +131,9 @@ mat update_theta (vec theta, double mu, double zeta, double beta, double alpha, 
     //cout << "probs: "<<probs <<endl;
     ind = wsample(linspace(0,J,J+1), probs);
     if (ind == J) {
-      a = y[i]+mu;
-      b = 1/( zeta+exp(x[i]*beta) );
-      theta_new[i] = rgamma(1, a, b)[0]; //shape, scale
+      a = y[i] + zeta;
+      b = zeta/mu + exp(x[i]*beta); // = rate
+      theta_new[i] = rgamma(1, a, 1/b)[0]; //shape, scale
     } else {
       theta_new[i] = ut_xi[ind];
     }
@@ -156,9 +148,9 @@ mat update_theta (vec theta, double mu, double zeta, double beta, double alpha, 
     xs = x(inds);
     ns = inds.size();
 
-    a = sum(ys)+mu;
-    b = 1 / (sum(exp(xs*beta)) + zeta);
-    theta_new.elem(inds) = zeros(ns) + rgamma(1,a,b)[0]; // shape, scale
+    a = sum(ys) + zeta;
+    b = sum(exp(xs*beta)) + zeta/mu; // = rate
+    theta_new.elem(inds) = zeros(ns) + rgamma(1,a,1/b)[0]; // shape, scale
   }
 
   return reshape(theta_new,1,32);
@@ -166,12 +158,13 @@ mat update_theta (vec theta, double mu, double zeta, double beta, double alpha, 
 
 //[[Rcpp::export]]
 List dppois(vec y, vec x, double a_zeta, double b_zeta, double a_mu, double b_mu,
-    double a_alpha, double b_alpha, double m_beta, double s_beta, 
-    double cs_mu, double cs_beta, int B) { 
+    double a_alpha, double b_alpha, double m_beta, double s2_beta, 
+    double cs_zeta, double cs_beta, int B) { 
   // also need cand_sigs
   // all b_* are rates in the gamma distribution
 
-  int acc_beta=0, acc_mu=0, n=y.size();
+  double s_xy = sum(x%y);
+  int acc_beta=0, acc_zeta=0, n=y.size();
   mat theta = ones<mat>(B,n);
   vec zeta, mu, beta, alpha, tb;
   mu = zeta = alpha = ones<vec>(B);
@@ -180,14 +173,13 @@ List dppois(vec y, vec x, double a_zeta, double b_zeta, double a_mu, double b_mu
 
   // Start MCMC
   for (int b=1; b<B; b++) {
-    // Update thetas
-    theta.row(b) = update_theta(vectorise(theta.row(b-1)), zeta[b-1], mu[b-1], beta[b-1], alpha[b-1], x, y);
+    theta.row(b) = update_theta(vectorise(theta.row(b-1)), zeta[b-1], mu[b-1], beta[b-1], alpha[b-1], x, y); // Gibbs. Done.
     tb = vectorise( theta.row(b) );
 
-    beta[b] = update_beta(beta[b-1], tb, m_beta, s_beta, y, x, cs_beta, &acc_beta);
-    zeta[b] = update_zeta (mu[b-1], tb, a_zeta, b_zeta);
-    mu[b] = update_mu(mu[b-1], zeta[b], tb, a_mu, b_mu, cs_mu, &acc_mu);
-    alpha[b] = update_alpha(alpha[b], tb, a_alpha, b_alpha, n);
+    beta[b] = update_beta(beta[b-1], tb, s_xy, m_beta, s2_beta, y, x, cs_beta, &acc_beta); // mh
+    zeta[b] = update_zeta (zeta[b-1], mu[b-1], tb, a_zeta, b_zeta, cs_zeta, &acc_zeta); // mh
+    mu[b] = update_mu(zeta[b], tb, a_mu, b_mu); // Gibbs
+    alpha[b] = update_alpha(alpha[b], tb, a_alpha, b_alpha, n); // Gibbs
 
     cout << "\r" << b * 100 / B <<"%";
   } // End of MCMC
@@ -197,7 +189,7 @@ List dppois(vec y, vec x, double a_zeta, double b_zeta, double a_mu, double b_mu
   ret["beta"] = beta;
   ret["alpha"] = alpha;
   ret["theta"] = theta;
-  ret["acc_mu"] = acc_mu * 1.0 / B;
+  ret["acc_zeta"] = acc_zeta * 1.0 / B;
   ret["acc_beta"] = acc_beta * 1.0 / B;
 
   return ret;
