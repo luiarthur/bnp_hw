@@ -252,18 +252,19 @@ the shape of the true distribution, as it covers the space of the data.
 For the location-scale DP mixture, I chose the following priors:
 $\mu\sim\text{Normal}(0,3^2) $, $\kappa\sim\text{Gamma}(3,3)$,$\beta\sim\text{InverseGamma}(2,1)$
 %prior2 <- list(a0=3,b0=3,m2=0,s2=3,psiinv2=solve(diag(.5,1)),nu1=1,nu2=2,tau1=6,tau2=6)
-The prior for $\mu$ was chosen such that the mean is 0 and the variance is 9 to account for 
-large uncertainty. The prior for $\kappa$ was chosen such that the mean is 1 and variance is 1/3
-; the prior for $\beta$ was chosen such that the mean is also 1. Together, the mean of $\phi/\kappa$
-will be one apriori.
+The prior for $\mu$ was chosen such that the mean is 0 and the variance is 9 to
+account for large uncertainty. The prior for $\kappa$ was chosen such that the
+mean is 1 and variance is 1/3 ; the prior for $\beta$ was chosen such that the
+mean is also 1. Together, the mean of $\phi/\kappa$ will be one apriori.
 \subsection{Model Comparison}
-Figure \ref{fig:postpred1} shows the posterior predictive for the location-scale model
-along with the that of the location model. By observation only, it does not perform better
-than the location model. This is not surprising as the scales are constant across the different 
-clusters. In fact, it appears that the location scale model is closer to the data than the 
-actual model, while the location only DP mixture is closer to the truth than the data. The 
-location-scale model may be over-fitting when there are no true underlying clusters in the
-scales, but only one scale shared across different groups.
+Figure \ref{fig:postpred1} shows the posterior predictive for the
+location-scale model along with the that of the location model. By observation
+only, it does not perform better than the location model. This is not
+surprising as the scales are constant across the different clusters. In fact,
+it appears that the location scale model is closer to the data than the actual
+model, while the location only DP mixture is closer to the truth than the data.
+The location-scale model may be over-fitting when there are no true underlying
+clusters in the scales, but only one scale shared across different groups.
 \beginmyfig
   \includegraphics[scale=.5]{img/postpred1.pdf}
   \caption{Posterior predictive distribution in blue, density of data in grey, the true
@@ -273,8 +274,33 @@ scales, but only one scale shared across different groups.
 \endmyfig
 
 % Problem 3: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{DP Mixture-of-Poissons Regression}
-\subsubsection{Model}
+\section{DP Mixture-of-Poissons Regression}
+\subsubsection{Model \& Prior Specification}
+\[
+  \begin{array}{rclcl}
+    y_i &|& \theta_i,\beta &\sim& \text{Poisson}(y_i~|~\theta_i\exp{(\beta x_i)}) \\
+    \theta_i &|& G &\sim& G \\
+             && G &\sim& \text{DP}(\alpha,\text{Gamma}(\zeta,\zeta\mu^{-1})) \\
+             && \beta &\sim& \text{Normal}(0,1) \\
+             && \mu &\sim& \text{Inverse-Gamma}(2,1) \\
+             && \zeta &\sim& \text{Gamma}(1,1),\\
+  \end{array}
+\]
+where $x_i$ is the corresponding centered and scaled value of the original data
+set.  The prior for $\beta$ was chosen that the prior mean is 0. This is
+typical for regression problems. The variance of 1 is suitable because $\beta$
+should be really small since it is in the exponent. $\mu$ is the expected value
+of $\theta$ apriori and specified such that the prior mean is 1 which corresponds
+to an intercept of 0. $\mu^2/\zeta$ is the prior variance for $\theta$. Since
+the $\theta$'s are small, $\zeta$'s prior was chosen such that the the prior
+variance for $\theta$ is 1.
+
+\beginmyfig
+  \includegraphics[scale=.5]{img/poisPostPred.pdf}
+  \caption{caption}
+  \label{fig:poisPostPred}
+\endmyfig
+
 \end{document}
 
 % To compile to html: 
