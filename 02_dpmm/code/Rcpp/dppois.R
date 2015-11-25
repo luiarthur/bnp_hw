@@ -14,9 +14,9 @@ Sys.setenv("PKG_CXXFLAGS"="-std=c++11") # enable c++11, for RcppArmadillo
 BB <- 5000
 # DP ###
 system.time( sourceCpp("dppois.cpp") )#, showOutput=T) )
-system.time(m3 <- dppois(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
+system.time(m3 <- dppois(y,cs(x),a_zeta=1,b_zeta=1,a_mu=2,b_mu=1,
                         a_alpha=1,b_alpha=1,m_beta=0,s2_beta=1,
-                        cs_zeta=3,cs_beta=.2,B=10000))
+                        cs_zeta=3,cs_beta=.2,B=1000000))
 c(m3$acc_zeta, m3$acc_beta)
 
 m3_alpha <- tail(m3$alpha,BB)
@@ -73,7 +73,7 @@ m3.post.pred()
 
 # Simple Poisson Regression ######
 system.time( sourceCpp("regpois.cpp") )
-system.time(m1 <- regpois(y,cs(x),zeta=6.6,mu=8.29,m=0,s2=1,cs_beta=.2,B=1000000))
+system.time(m1 <- regpois(y,cs(x),zeta=1,mu=1,m=0,s2=1,cs_beta=.2,B=1000000))
 m1$acc_beta
 m1_theta <- tail(m1$theta,BB)
 m1_beta <- tail(m1$beta,BB)
@@ -93,8 +93,8 @@ plot(density(m3_beta),col='red'); lines(density(m1_beta))
 
 # Hierarchical Model
 system.time( sourceCpp("hier.cpp") )
-system.time(m2 <- hier(y,cs(x),a_zeta=1,b_zeta=1,a_mu=1,b_mu=1,
-                       m_beta=0,s2_beta=1,cs_zeta=2,cs_beta=.5,B=100000))
+system.time(m2 <- hier(y,cs(x),a_zeta=1,b_zeta=1,a_mu=2,b_mu=1,
+                       m_beta=0,s2_beta=1,cs_zeta=3,cs_beta=.22,B=1000000))
 c(m2$acc_zeta, m2$acc_beta)
 
 m2_theta <- tail(m2$theta,BB)
@@ -118,14 +118,28 @@ for (i in 1:n) m2_y.pred[,i] <- rpois(BB, m2_theta[,i]*exp(cs(x)[i]*m2_beta) )
 
 
 ####
-
+pdf("../../latex/img/poisPostPred.pdf")
 m3.post.pred()
 points(x[ord],apply(m2_y.pred,2,mean)[ord],col="blue",pch=20,cex=1.5)
 lines(x[ord],apply(m1_y0.pred,2,mean)[ord],col="red",pch=20,type='o',lwd=2)
 legend("topleft",legend=c("Simple Poisson Regression","Hierarchical Poisson Regression","DP Mixture Regression","Data"),bty='n',
        col=c("red","blue","gold","grey"),lwd=3)
+dev.off()
 
 plot(density(apply(m3_theta,1,mean)),col='red'); lines(density(m1_theta)); lines(density(apply(m2_theta,1,mean)),col='blue');
 plot(density(m3_beta),col='red'); lines(density(m1_beta)); lines(density(m2_beta),col='blue');
 
-
+#CPO: ##############
+cpo <- function(post_theta,post_beta) {
+  M <- matrix(0,BB,n)
+  for (b in 1:BB) {
+    for (i in 1:n) {
+      M[b,i] <- 1 / dpois(y[i],post_theta[b,i],post_beta[b])
+    }
+  }
+  denom <- apply(M,2,mean)
+  1 / denom
+}
+m1_y.pred; m1_beta
+m2_y.pred; m2_beta
+m3_y.pred; m3_beta
