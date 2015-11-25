@@ -132,14 +132,25 @@ plot(density(m3_beta),col='red'); lines(density(m1_beta)); lines(density(m2_beta
 #CPO: ##############
 cpo <- function(post_theta,post_beta) {
   M <- matrix(0,BB,n)
-  for (b in 1:BB) {
-    for (i in 1:n) {
-      M[b,i] <- 1 / dpois(y[i],post_theta[b,i],post_beta[b])
-    }
+  for (i in 1:n) {
+    M[,i] <- 1 / dpois(y[i],post_theta[,i] * exp(cs(x)[i]*post_beta) )
   }
   denom <- apply(M,2,mean)
   1 / denom
 }
-m1_y.pred; m1_beta
-m2_y.pred; m2_beta
-m3_y.pred; m3_beta
+(m1_cpo <- cpo(matrix(rep(m1_theta,n),BB), m1_beta))
+(m2_cpo <- cpo(m2_theta, m2_beta))
+(m3_cpo <- cpo(m3_theta, m3_beta))
+
+prod(m3_cpo / m2_cpo)
+prod(m3_cpo / m1_cpo)
+prod(m2_cpo / m1_cpo)
+
+pdf("../../latex/img/cpo.pdf")
+   plot(x[ord], log(m2_cpo / m1_cpo)[ord], type='p', pch=20, cex=1.5, col='red', bty='l',fg='grey',xlab='x',ylab='Log cpo ratio')
+  lines(x[ord], log(m3_cpo / m1_cpo)[ord], type='p', pch=20, cex=1.5, col='green')
+  lines(x[ord], log(m3_cpo / m2_cpo)[ord], type='p', pch=20, cex=1.5, col='blue')
+  points(x[ord],log(y[ord]),col='grey',pch=20,cex=1)
+  legend("topleft",legend=c("log(cpo3 / cpo2)", "log(cpo3 / cpo1)","log(cpo2 / cpo1)","log(y)"),col=c("blue","green","red","grey"),lwd=2,bty='n')
+dev.off()
+

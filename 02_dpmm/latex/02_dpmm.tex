@@ -293,12 +293,48 @@ should be really small since it is in the exponent. $\mu$ is the expected value
 of $\theta$ apriori and specified such that the prior mean is 1 which corresponds
 to an intercept of 0. $\mu^2/\zeta$ is the prior variance for $\theta$. Since
 the $\theta$'s are small, $\zeta$'s prior was chosen such that the the prior
-variance for $\theta$ is 1.
+variance for $\theta$ is 1.\\
+
+The posterior predictives for three models are plotted in figure \ref{fig:poisPostPred}.
+The lines in red is for the simple poisson regression model, the line blue
+is for the hierarchical model, and the green line represents the posterior
+predictive for the DP mixture model. Here we assume that we know the
+what $\theta$ the $y$'s belong to. 
+
+To compare the three models, we can look at the CPO's for each pair of models.
+Figure \ref{fig:cpo} shows the log CPO ratios for the three models,
+superimposed with the log($y$)'s for each $x$. The data are in grey, the blue
+dots are the log cpo ratio for the mixture model (3) to the hierarchical model
+(2), the green dots are the log cpo ratio for the mixture model (3) to the
+simple regression model (1), the red dots are the log cpo ratio between the
+hierarchical model (2) and simple model (1). The corresponding pseudo bayes
+factors are: $B_{32} = .0933, B_{31} =  141, B_{21} = 1520$. The factors
+indicate that model 3 is not much better than model 2, model 3 is moderately
+bettern than model 1, and model 2 is much better than model 1 at prediction.
+This could be the case because there are more clusters than what the mixture model
+is discovering. Perhaps, a modification of the DP model is to increase the prior 
+variance for $\alpha$ to account for possibly more clusters. Also, we see that
+when observations are far from the regression line, that model 2 performs much better
+than model 1 and 3. This is probably because the response variables indeed have
+different means. 
+
+\noindent
+Note that the cpo's were computed as 
+\[
+  \text{CPO}_i^{(M)} = p^{(M)}(y_i|\left\{y_j:j\ne i\right\}) = \ds\left[\int\left[k(y_i|\theta_i)\right]^{-1}p(\theta_i|y_i)d\theta_i\right]^{-1}.
+\]
 
 \beginmyfig
   \includegraphics[scale=.5]{img/poisPostPred.pdf}
-  \caption{caption}
+  \caption{Posterior predictives when the true clustering is known}
   \label{fig:poisPostPred}
+\endmyfig
+
+\noindent
+\beginmyfig
+  \includegraphics[scale=.5]{img/cpo.pdf}
+  \caption{Log CPO for the three models.}
+  \label{fig:cpo}
 \endmyfig
 
 \end{document}
