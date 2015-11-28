@@ -4,9 +4,6 @@ source("../../../R_Functions/plotPost.R",chdir=T)
 cmaq <- read.csv("../../bnp_gp/data/CMAQ.csv")
 o3 <- read.csv("../../bnp_gp/data/Ozone.csv")
 predloc <- read.csv("../../bnp_gp/data/PredLocs.csv")
-cs <- function(x) ( x - mean(x) ) / sd(x)
-x <- dat$length
-y <- dat$faults
-n <- nrow(dat)
+
 
 
