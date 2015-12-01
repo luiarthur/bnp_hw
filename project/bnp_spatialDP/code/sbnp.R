@@ -1,3 +1,5 @@
+# https://eosweb.larc.nasa.gov/cgi-bin/sse/daily.cgi?&ye=2004&lat=4133&submit=Submit&me=12&sitelev=&email=&step=1&p=swv_dwn&de=31&ms=1&ys=2004&plot=swv_dwn&lon=114124&ds=1
+# http://www.wunderground.com/history/airport/KAAT/2000/1/1/MonthlyHistory.html?req_city=Alturas&req_statename=California&reqdb.zip=&reqdb.magic=&reqdb.wmo=&MR=1
 # http://www.ncdc.noaa.gov/cdo-web/search
 library(Rcpp)
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11") # enable c++11, for RcppArmadillo
@@ -57,6 +59,26 @@ library(geoR)
 library(maps)
 
 
-quilt.plot(lon,lat,c(1,2,3,4),cex=5)
-map('county',add=T)
+gd.pts <- 70
+lon.seq <- seq(-122,-120,len=gd.pts)
+lat.seq <- seq(37,35,len=gd.pts)
+grid <- matrix(0,gd.pts^2,3)
+for (i in 1:gd.pts) {
+  for (j in 1:gd.pts) {
+    grid[(i-1)*gd.pts + j,1:2] <- c(lon.seq[i],lat.seq[j])
+  }
+}
+grid[,3] <- rnorm(gd.pts^2,1:2)
+grid <- grid[which(-84.5 - grid[,1]>grid[,2]),]
+grid <- grid[which(-85.5 - grid[,1]<grid[,2]),]
+
+quilt.plot(grid[,1],grid[,2],grid[,3], #lon,lat,val
+           xlim=c(-122.2,-119.8), ylim=c(34.8,37.2))
+map('county',add=T,lwd=2)
+#abline(a=-85.5,b=-1,lwd=3)
+#abline(a=-84.5,b=-1,lwd=3)
+
+
+### DATA: 
+# https://eosweb.larc.nasa.gov/cgi-bin/sse/daily.cgi?&ye=2004&lat=4133&submit=Submit&me=12&sitelev=&email=&step=1&p=swv_dwn&de=31&ms=1&ys=2004&plot=swv_dwn&lon=114124&ds=1
 

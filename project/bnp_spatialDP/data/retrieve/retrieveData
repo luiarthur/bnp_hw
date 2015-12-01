@@ -1,0 +1,7 @@
+#!/bin/bash
+
+city='Santa_Cruz'
+city='Palo_Alto'
+wget -O $city.html https://en.wikipedia.org/wiki/$city,_California
+cat "$city".html | grep 'class="latitude"[^<]*<'
+cat "$city".html | grep 'class="longitude"[^<]*<'
