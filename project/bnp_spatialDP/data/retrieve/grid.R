@@ -24,5 +24,3 @@ quilt.plot(grid[,1],grid[,2],grid[,3], #lon,lat,val
 map('county',add=T,lwd=2,col='grey40')
 
 write.csv(round(grid[,1:2],2),"gridlocs.dat",quote=F,row.names=F)
-###
-
