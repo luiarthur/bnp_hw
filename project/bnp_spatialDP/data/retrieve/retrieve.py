@@ -18,6 +18,6 @@ txt = re.search("<a href=.*Download a text file",htmlfile)
 txtpath = "https://eosweb.larc.nasa.gov" + txt.group(0).split('"')[1]
 txtfile = urllib2.urlopen(txtpath)
 out = txtfile.read()
-fout = open('34-121.txt', "wb")
+fout = open('34-121.dat', "wb")
 fout.write(out)
 fout.close()
