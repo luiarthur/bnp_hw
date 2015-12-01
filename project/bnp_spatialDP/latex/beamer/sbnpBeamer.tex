@@ -102,23 +102,25 @@
   \vspace{0mm}
   \[
     \begin{array}{rclcl}
-      \m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{Normal}_n(\m\theta_t+ \m x_t\beta,
+      %\m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{Normal}_n(\m\theta_t+ \m x_t\beta,
+      \m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{Normal}_n(\m\theta_t+ \m{1_n}\beta,
       ~\tau^2\m I_n), ~~_{t=1,...,T}\\
       \m\theta_t &|& G^{(n)} &\overset{i.i.d.}{\sim}& G^{(n)}, ~~_{t=1,...,T} \\
       G^{(n)} &|& \alpha, \sigma^2, \phi &\sim& \text{DP}(~\alpha,~\text{Normal}_n(\m 0_n,\sigma^2H_n(\phi)) ~) \\
-              && \beta, \tau^2 &\sim& \text{Normal}(0,10^2) \times \text{Inverse-Gamma}(1,1) \\
+              && \beta, \tau^2 &\sim& \text{Normal}(0,10^2) \times \text{Inverse-Gamma}(2,1) \\
               && \alpha &\sim& \text{Gamma}(1,1) \\
-              && \sigma^2 &\sim& \text{Inverse-Gamma}(1,1) \\
-              && \phi &\sim& \text{Gamma}(1,1) \\
+              && \sigma^2 &\sim& \text{Inverse-Gamma}(2,1) \\
+              && \phi &\sim& \text{Uniform}(0,10) \\
     \end{array}
   \]
   where 
   \begin{itemize}
     \item $H_n(\phi)$ is the exponential covariance function with decay parameter $\phi$. (i.e. 
       $(H_n(\phi))_{ij} = \exp\left\{-\phi~\norm{s_i-s_j}\right\}$.) \\
-    \item $\m y_t$ are the station-measured Ozone levels for the $t^{th}$ replicate.
-    \item $\m x_t$ are a average CMAQ value of the 3 locations nearest to the prediction location for the
-      $t^{th}$ replicate.
+    \item $\m y_t(s)$ are the total precipitation for the month at location $s$ for the $t^{th}$ replicate.
+    %\item $\m y_t$ are the station-measured Ozone levels for the $t^{th}$ replicate.
+    %\item $\m x_t$ are a average CMAQ value of the 3 locations nearest to the prediction location for the
+    %  $t^{th}$ replicate.
   \end{itemize}
 }
 
