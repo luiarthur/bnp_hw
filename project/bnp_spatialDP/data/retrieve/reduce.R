@@ -20,9 +20,8 @@ for (f in files[ord]) {
   dat <- read.table(paste0('temps/',f),skip=8,header=T)
   lon <- latlon[i,1]
   lat <- latlon[i,2]
-  fout <- cbind(dat,lat,lon) 
   fbig <- matrix(0, TT, 5)
-  colnames(fbig) <- c("year","mo","lat","lon","swv")
+  colnames(fbig) <- c("year","mo","lat","lon","C")
 
   j <- 0
   for (yr in uyears) {
@@ -32,8 +31,8 @@ for (f in files[ord]) {
       fbig[j,2] <- mo
       fbig[j,3] <- lat
       fbig[j,4] <- lon
-      ind <- (dat$YEAR == yr) * (dat$MO == mo)
-      fbig[j,5] <- mean(dat$swv_dwn[which(as.logical(ind))])
+      ind <- as.logical( (dat$YEAR == yr) * (dat$MO == mo) )
+      fbig[j,5] <- mean(dat$swv_dwn[which(ind)])
     }
   }
   Y[[i]] <- fbig
