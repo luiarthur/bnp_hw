@@ -27,8 +27,9 @@ for i in range(0,n):
     out = txtfile.read()
     #out2 = out.split('\n')
     #out2 = out2[8:len(out2)-1]
+    #fout.write('\n'.join(out2))
     fout = open('temps/'+`i`+'.dat', "wb")
-    fout.write('\n'.join(out))
+    fout.write(out)
     fout.close()
     #print "\rProgress: %d%s" %(round(i*100/n),"%"),
     print "\rProgress: %d%s%d" %(i,"/",n),
