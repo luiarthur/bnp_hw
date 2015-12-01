@@ -16,6 +16,7 @@ for (i in 1:gd.locs) {
 grid[,3] <- rnorm(gd.locs^2,1:2)
 grid <- grid[which(-84.5 - grid[,1]>grid[,2]),]
 grid <- grid[which(-85.5 - grid[,1]<grid[,2]),]
+print(nrow(grid))
 
 quilt.plot(grid[,1],grid[,2],grid[,3], #lon,lat,val
            xlim=c(-122.2,-119.8), ylim=c(34.8,37.2),bty='n',fg='grey',
