@@ -7,7 +7,7 @@ import re # Regexpr
 import numpy as np
 import sys
 
-gridlocs = np.genfromtxt("gridlocs.dat",delimiter=',',skiprows=1)
+gridlocs = np.genfromtxt("gridlocs.dat",delimiter=',',skip_header=1)
 n = len(gridlocs)
 
 for i in range(0,n):
@@ -25,10 +25,10 @@ for i in range(0,n):
     txtpath = "https://eosweb.larc.nasa.gov" + txt.group(0).split('"')[1]
     txtfile = urllib2.urlopen(txtpath)
     out = txtfile.read()
-    out2 = out.split('\n')
-    out2 = out2[8:len(out2)-1]
+    #out2 = out.split('\n')
+    #out2 = out2[8:len(out2)-1]
     fout = open('temps/'+`i`+'.dat', "wb")
-    fout.write('\n'.join(out2))
+    fout.write('\n'.join(out))
     fout.close()
     #print "\rProgress: %d%s" %(round(i*100/n),"%"),
     print "\rProgress: %d%s%d" %(i,"/",n),
