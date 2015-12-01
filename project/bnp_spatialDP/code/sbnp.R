@@ -43,7 +43,20 @@ ss <- c(6,16,26,29)
 n <- 4
 TT <- nrow(rain[which(stations==ustation[29]),])
 y <- matrix(0,TT*12,n)
+lat <- rep(0,4)
+lon <- rep(0,4)
 for (i in 1:n) {
-    ind <- which(stations==ustation[ss])
+    ind <- which(stations==ustation[ss[i]])
     y[,i] <- rain$TPCP[ind]
+    lat[i] <- as.numeric( as.character(rain$LAT[which(stations==ustation[ss[i]])])[1] )
+    lon[i] <- as.numeric( as.character(rain$LON[which(stations==ustation[ss[i]])])[1] )
 }
+
+library(LatticeKrig)
+library(geoR)
+library(maps)
+
+
+quilt.plot(lon,lat,c(1,2,3,4),cex=5)
+map('county',add=T)
+
