@@ -13,7 +13,7 @@ n = len(gridlocs)
 for i in range(0,n):
     lat = gridlocs[i,1]
     lon = gridlocs[i,0]
-    values = {'lat':lat, 'lon':lon, 'ms':'1', 'ds':'1', 'ys':'1985', 'me':'12', 'de':'31', 'ye':'2004', 'submit':'Submit', 'param':'TSKIN'}
+    values = {'lat':lat, 'lon':lon, 'ms':'1', 'ds':'1', 'ys':'1985', 'me':'12', 'de':'31', 'ye':'2004', 'submit':'Submit'}
     data = urllib.urlencode(values)
     req = urllib2.Request(site,data)
     #
