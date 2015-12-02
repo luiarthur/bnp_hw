@@ -1,7 +1,8 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 #include <iostream>
-#include <../../../02_dpmm/code/Rcpp/dp/dp.h>
+#include <algorithm> // unique
+#include <../../../02_dpmm/code/Rcpp/dp/dp.h> //wsample
 
 using namespace std;
 using namespace arma;
@@ -25,7 +26,7 @@ NumericVector test (NumericVector Y) {
 List dppois(NumericVector y, vec s_new, double beta_mu, double beta_s2,
     double tau2_a, double tau2_b, double alpha_a, double alpha_b,
     double sig2_a, double sig2_b, double phi_a, double phi_b,
-    double cs_s2, double cs_phi, int B) {
+    double cs_beta, double cs_tau2, double cs_sig2, double cs_phi, int B) {
 
   IntegerVector arrayDims = y.attr("dim");
   cube Y(y.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
@@ -38,7 +39,9 @@ List dppois(NumericVector y, vec s_new, double beta_mu, double beta_s2,
   vec sig2;
   vec phi;
   NumericVector theta; //cube
-  int acc_s2 = 0;
+  int acc_beta = 0;
+  int acc_tau2 = 0;
+  int acc_sig2 = 0;
   int acc_phi = 0;
   List ret;
 
@@ -58,7 +61,7 @@ List dppois(NumericVector y, vec s_new, double beta_mu, double beta_s2,
   ret["alpha"] = alpha;
   ret["sig2"] = sig2;
   ret["phi"] = phi;
-  ret["acc_s2"] = acc_s2;
+  ret["acc_sig2"] = acc_sig2;
   ret["acc_phi"] = acc_phi;
   ret["theta"] = wrap(theta);
 
