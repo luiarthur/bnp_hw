@@ -78,16 +78,13 @@ double update_alpha (double alpha, mat theta, double a, double b, int n) {
 
 
 //[[Rcpp::export]]
-List sdp(NumericVector y, vec s_new, double beta_mu, double beta_s2,
+List sdp(mat Y, vec s_new, mat D, double beta_mu, double beta_s2,
     double tau2_a, double tau2_b, double alpha_a, double alpha_b,
     double sig2_a, double sig2_b, double phi_a, double phi_b,
     double cs_beta, double cs_tau2, double cs_sig2, double cs_phi, int B) {
 
-  IntegerVector arrayDims = y.attr("dim");
-  cube Y(y.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
-
   int T = Y.n_rows;
-  int n = Y.n_slices;
+  int n = Y.n_cols;
   vec beta = zeros<vec>(B);
   vec tau2 = zeros<vec>(B);
   vec alpha = zeros<vec>(B);
