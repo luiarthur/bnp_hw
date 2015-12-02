@@ -70,7 +70,7 @@ view <- function(y,mo,yr) {
 #par(mfrow=c(5,4),mar=c(4,4,1,1))
 par.opts <- par()
 par(mfrow=c(2,3),mar=c(4,4,1,1))
-  for (yr in c(1985,1989,1994,1999,2001,2004)) view(Y,10,yr)
+  for (yr in c(1985,1989,1994,1999,2001,2004)) view(Y,6,yr)
 par(mfrow=c(1,1))
 
 Yout <- array(0,c(L,TT,5))
@@ -80,3 +80,9 @@ for (i in 1:L) {
 
 save(Yout,file="Y.RData")
 system("cp Y.RData ../")
+
+
+plot(Yout[4,,5],type='o',pch=20,ylim=c(0,30),
+     cex=ifelse(1:TT%%12%%7==0 & 1:TT%%12!=0,2,1),
+     col=ifelse(1:TT%%12%%7==0 & 1:TT%%12!=0,'red','grey'))
+
