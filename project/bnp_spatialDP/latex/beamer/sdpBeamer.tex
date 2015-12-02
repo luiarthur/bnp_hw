@@ -103,14 +103,14 @@
   \[
     \begin{array}{rclcl}
       %\m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{Normal}_n(\m\theta_t+ \m x_t\beta,
-      \m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{Normal}_n(\m\theta_t+ \m{1_n}\beta,
+      \m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{N}_n(\m\theta_t+ \m{1_n}\beta,
       ~\tau^2\m I_n), ~~_{t=1,...,T}\\
       \m\theta_t &|& G^{(n)} &\overset{i.i.d.}{\sim}& G^{(n)}, ~~_{t=1,...,T} \\
-      G^{(n)} &|& \alpha, \sigma^2, \phi &\sim& \text{DP}(~\alpha,~\text{Normal}_n(\m 0_n,\sigma^2H_n(\phi)) ~) \\
-              && \beta, \tau^2 &\sim& \text{Normal}(0,10^2) \times \text{Inverse-Gamma}(2,1) \\
-              && \alpha &\sim& \text{Gamma}(1,1) \\
-              && \sigma^2 &\sim& \text{Inverse-Gamma}(2,1) \\
-              && \phi &\sim& \text{Uniform}(0,10) \\
+      G^{(n)} &|& \alpha, \sigma^2, \phi &\sim& \text{DP}(~\alpha,~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~) \\
+              && \beta, \tau^2 &\sim& \text{N}(0,s^2) \times \text{IGamma}(a_{\tau^2}=2,b_{\tau^2}) \\
+              && \alpha &\sim& \text{Gamma}(a_\alpha,b_\alpha) \\
+              && \sigma^2 &\sim& \text{IGamma}(b_{\sigma^2}=2,b_{\sigma^2}) \\
+              && \phi &\sim& \text{Uniform}(0,b_\phi) \\
     \end{array}
   \]
   where 
@@ -126,24 +126,26 @@
 
 \frame{ %3
   \frametitle{Posteriors}
-  \[
+  \[\def\arraystretch{1.4}
     \begin{array}{rclcl}
       \beta &|& \m y, \m\theta, \tau^2  &\sim& \text{N}(
         \ds\frac{s^2\sum_{t=1}^T\sum_{i=1}^n(y_{it}-\theta_{it})}{\tau^2+Tns^2},
       \ds\frac{s^2\tau^2}{\tau^2+Tns^2}) \\
-      \tau^2 &|& \m y, \m\theta, \beta  &\sim&\\
-      p(\sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& \prod_{j=1}^{T^*}
-        ~\text{Normal}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
+      \tau^2 &|& \m y, \m\theta, \beta  &\sim& \text{IG}(a_{\tau^2}+\frac{nT}{2},
+      b_{\tau^2}+\frac{\sum_{t=1}^T (\m\mu_t-\beta \m1_n)'(\m\mu_t-\beta \m1_n)}{2})\\
+      p(\sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& [\sigma^2]\prod_{j=1}^{T^*}
+        ~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
       p(\phi &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& \prod_{j=1}^{T^*} 
-        ~\text{Normal}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
+        ~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
       \eta &|& \alpha, \m y &\sim& \text{Beta}(\alpha+1,T)\\
       p(\alpha &|& T^*, \m y) &=& (\epsilon)~\gamma(\alpha | a_\alpha+T^*, b_\alpha-\log(\eta)) +\\
                &&&&(1-\epsilon)~\gamma(\alpha | a_\alpha+T^*-1, b_\alpha-\log(\eta))\\
     \end{array}
   \]
-where $\gamma$ is the gamma density function with the mean and rate parameterization, 
-$\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* -1}$,
-and $\eta$ is an auxiliary variable introduced to make the prior for $\alpha$ conjugate.\\
+  where $\m\mu_t=\m{y_t -\theta_t} $, $\eta$ is an auxiliary variable introduced
+  to make the prior for $\alpha$ conjugate, $\gamma$ is the gamma density
+  function with the mean and rate parameterization, and 
+  $\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* -1}$.
 }
 % End Frame:
 {\setbeamercolor{background canvas}{bg=grey}
