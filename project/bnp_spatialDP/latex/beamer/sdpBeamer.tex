@@ -124,6 +124,27 @@
   \end{itemize}
 }
 
+\frame{ %3
+  \frametitle{Posteriors}
+  \[
+    \begin{array}{rclcl}
+      \beta &|& \m y, \m\theta, \tau^2  &\sim& \text{N}(
+        \ds\frac{s^2\sum_{t=1}^T\sum_{i=1}^n(y_{it}-\theta_{it})}{\tau^2+Tns^2},
+      \ds\frac{s^2\tau^2}{\tau^2+Tns^2}) \\
+      \tau^2 &|& \m y, \m\theta, \beta  &\sim&\\
+      p(\sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& \prod_{j=1}^{T^*}
+        ~\text{Normal}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
+      p(\phi &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& \prod_{j=1}^{T^*} 
+        ~\text{Normal}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
+      \eta &|& \alpha, \m y &\sim& \text{Beta}(\alpha+1,T)\\
+      p(\alpha &|& T^*, \m y) &=& (\epsilon)~\gamma(\alpha | a_\alpha+T^*, b_\alpha-\log(\eta)) +\\
+               &&&&(1-\epsilon)~\gamma(\alpha | a_\alpha+T^*-1, b_\alpha-\log(\eta))\\
+    \end{array}
+  \]
+where $\gamma$ is the gamma density function with the mean and rate parameterization, 
+$\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* -1}$,
+and $\eta$ is an auxiliary variable introduced to make the prior for $\alpha$ conjugate.\\
+}
 % End Frame:
 {\setbeamercolor{background canvas}{bg=grey}
   \frame{
