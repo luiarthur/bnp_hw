@@ -81,8 +81,13 @@ for (i in 1:L) {
 save(Yout,file="Y.RData")
 system("cp Y.RData ../")
 
+ind <- 1:TT%%12%%7==0 & 1:TT%%12!=0
+loc <- 12
+plot(Yout[loc,,5],type='o',pch=20,ylim=c(0,35),
+     cex=ifelse(ind,2,1),ylab=bquote({ }^o~"C"),
+     col=ifelse(ind,'red','grey'),
+     fg='grey',bty='l',main="Temperature over Years")
+lines((1:TT)[which(ind)],Yout[loc,ind,5],col='red',type='o',pch=20)
 
-plot(Yout[4,,5],type='o',pch=20,ylim=c(0,30),
-     cex=ifelse(1:TT%%12%%7==0 & 1:TT%%12!=0,2,1),
-     col=ifelse(1:TT%%12%%7==0 & 1:TT%%12!=0,'red','grey'))
+
 
