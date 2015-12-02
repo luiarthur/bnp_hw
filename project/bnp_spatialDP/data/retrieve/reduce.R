@@ -86,8 +86,6 @@ loc <- 12
 plot(Yout[loc,,5],type='o',pch=20,ylim=c(0,35),
      cex=ifelse(ind,2,1),ylab=bquote({ }^o~"C"),
      col=ifelse(ind,'red','grey'),
-     fg='grey',bty='l',main="Temperature over Years")
+     fg='grey',bty='l',main="Temperature over Years",xaxt='n')
+axis(1,labels=1985:2004,at=which(ind),fg='grey')
 lines((1:TT)[which(ind)],Yout[loc,ind,5],col='red',type='o',pch=20)
-
-
-
