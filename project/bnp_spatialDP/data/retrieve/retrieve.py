@@ -11,7 +11,7 @@ gridlocs = np.genfromtxt("gridlocs.dat",delimiter=',',skip_header=1)
 n = len(gridlocs)
 
 #for i in range(0,n):
-for i in range(0,n-1,1):
+for i in range(0,n,1):
     lat = gridlocs[i,1]
     lon = gridlocs[i,0]
     values = {'lat':lat, 'lon':lon, 'ms':'1', 'ds':'1', 'ys':'1985', 'me':'12', 'de':'31', 'ye':'2004', 'submit':'Submit', 'p':"T10M"}

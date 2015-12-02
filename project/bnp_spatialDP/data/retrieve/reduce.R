@@ -39,7 +39,6 @@ for (f in files[ord]) {
   Y[[i]] <- fbig
   cat("\rProgress: ", i, "/",L)
 }
-Y[[1]]
 
 ### Visualize
 library(LatticeKrig) # quilt.plot
@@ -54,13 +53,22 @@ view <- function(y,mo,yr) {
     ind <- as.logical((yy[,"year"]==yr) * (yy[,"mo"]==mo))
     M[i,] <- yy[ind,]
   }
+  lon.up <- -114#-120
+  lon.lo <- -124.5#-122
+  lat.up <- 42#37
+  lat.lo <- 32.5#35
+
   quilt.plot(M[,"lon"],M[,"lat"],M[,"C"], #lon,lat,val
-             xlim=c(-122.2,-119.8), ylim=c(34.8,37.2),bty='n',fg='grey',
-             col= colorRampPalette(c('dark red','white','dark blue'))(100))
-  map('county',add=T,lwd=2,col='grey40')
+             xlim=c(lon.lo-1,lon.up+1), ylim=c(lat.lo-1,lat.up+1),
+             bty="n",fg="grey",
+             col= colorRampPalette(c('dark blue','white','dark red'))(100))
+  map('county',add=T,lwd=2,col='pink')
+  map('state',add=T,lwd=2,col='grey40')
 }
 
-par(mfrow=c(3,1))
-view(Y,1,1985)
-view(Y,1,1994)
-view(Y,1,2004)
+par(mfrow=c(1,3))
+  view(Y,7,1985)
+  view(Y,7,1994)
+  view(Y,7,2004)
+par(mfrow=c(1,1))
+

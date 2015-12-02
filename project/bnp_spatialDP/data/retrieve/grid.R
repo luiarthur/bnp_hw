@@ -3,12 +3,13 @@
 library(LatticeKrig) # quilt.plot
 library(maps) # map()
 
-gd.locs <- 10
+set.seed(1)
+gd.locs <- 100
 
 lon.up <- -114#-120
-lon.lo <- -126#-122
-lat.up <- 44#37
-lat.lo <- 32#35
+lon.lo <- -124.5#-122
+lat.up <- 42#37
+lat.lo <- 32.5#35
 lon.seq <- seq(lon.lo,lon.up,len=gd.locs)
 lat.seq <- seq(lat.lo,lat.up,len=gd.locs)
 int.up <- -79.5
@@ -25,8 +26,10 @@ grid[,3] <- rnorm(gd.locs^2,1:2)
 grid <- grid[which(int.up - grid[,1]>grid[,2]),]
 grid <- grid[which(int.lo - grid[,1]<grid[,2]),]
 
+grid <- grid[sample(1:nrow(grid),100),]
+
 quilt.plot(grid[,1],grid[,2],grid[,3], #lon,lat,val
-           #xlim=c(lon.lo-1,lon.up-1), ylim=c(lat.lo-1,lat.up-1),
+           xlim=c(lon.lo-1,lon.up+1), ylim=c(lat.lo-1,lat.up+1),
            bty='n', fg='grey',
            col= colorRampPalette(c('dark red','white','dark blue'))(100))
 map('county',add=T,lwd=2,col='pink')
