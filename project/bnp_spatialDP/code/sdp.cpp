@@ -105,7 +105,7 @@ List sdp(mat Y, vec s_new, mat D, double beta_mu, double beta_s2,
       //update beta
       //update tau2
       //update alpha
-      update_alpha (alpha[b-1], tb, alpha_a, alpha_b, T); // gibbs 
+      alpha[b] = update_alpha (alpha[b-1], tb, alpha_a, alpha_b, T); // gibbs 
       //update sig2
       //update phi
     }
