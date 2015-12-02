@@ -20,6 +20,11 @@ NumericVector test (NumericVector Y) {
   return(wrap(cubeArray.slice(0))); 
 }
 
+mat mvrnorm(mat M, mat S) {
+  int n = M.n_rows;
+  mat e = randn(n);
+  return M + chol(S).t()*e;
+}
 
 mat rowSort(mat X) {
   int n = X.n_rows;
@@ -77,22 +82,47 @@ double update_alpha (double alpha, mat theta, double a, double b, int n) {
 }
 
 
+double update_beta (double sum_y, mat theta, double tau2, double s2, int T, int n) {
+  double denom = tau2 + T*n*s2;
+  double m_new = s2 * ( sum_y - sum(sum(theta)) ) / denom;
+  double s_new = sqrt( s2*tau2 / denom );
+
+  return rnorm(1, m_new, s_new)[0];
+}
+
+double update_tau2 (double a, double b, int n, int T, mat y, mat theta, double beta) {
+  double a_new = a + n*T/2;
+  mat one_Tn(T,n);
+  mat M = y - theta - one_Tn;
+  double sum_mm = 0;
+  mat m;
+
+  for (int t=0; t<T; t++) {
+    m = M.row(t).t() * M.row(t);
+    sum_mm += m(0,0);
+  }
+
+  double rate_new = b + sum_mm/2;
+  double scale_new = 1 / rate_new;
+
+  return rgamma(1, a_new, scale_new)[0];
+}
+
 //[[Rcpp::export]]
 List sdp(mat Y, vec s_new, mat D, double beta_mu, double beta_s2,
     double tau2_a, double tau2_b, double alpha_a, double alpha_b,
     double sig2_a, double sig2_b, double phi_a, double phi_b,
-    double cs_beta, double cs_tau2, double cs_sig2, double cs_phi, int B) {
+    double cs_sig2, double cs_phi, int B) {
 
   int T = Y.n_rows;
   int n = Y.n_cols;
+  double sum_y = sum( sum(Y) );
   vec beta = zeros<vec>(B);
   vec tau2 = zeros<vec>(B);
   vec alpha = zeros<vec>(B);
   vec sig2 = zeros<vec>(B);
   vec phi = zeros<vec>(B);
   cube theta = zeros<cube>(B,T,n);
-  int acc_beta = 0;
-  int acc_tau2 = 0;
   int acc_sig2 = 0;
   int acc_phi = 0;
   List ret;
@@ -102,10 +132,9 @@ List sdp(mat Y, vec s_new, mat D, double beta_mu, double beta_s2,
     for (int t=0; t<T; t++) {
       //update theta
       tb = theta.slice(b);
-      //update beta
-      //update tau2
-      //update alpha
-      alpha[b] = update_alpha (alpha[b-1], tb, alpha_a, alpha_b, T); // gibbs 
+      beta[b] = update_beta(sum_y, tb, tau2[b-1], beta_s2, T, n); // gibbs
+      tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); //gibbs
+      alpha[b] = update_alpha(alpha[b-1], tb, alpha_a, alpha_b, T); // gibbs 
       //update sig2
       //update phi
     }
