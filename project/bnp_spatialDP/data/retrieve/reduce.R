@@ -82,7 +82,7 @@ save(Yout,file="Y.RData")
 system("cp Y.RData ../")
 
 ind <- 1:TT%%12%%7==0 & 1:TT%%12!=0
-loc <- 12
+loc <- 13
 plot(Yout[loc,,5],type='o',pch=20,ylim=c(0,35),
      cex=ifelse(ind,2,1),ylab=bquote({ }^o~"C"),
      col=ifelse(ind,'red','grey'),
