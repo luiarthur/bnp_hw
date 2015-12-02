@@ -1,5 +1,5 @@
 # http://stackoverflow.com/questions/13260476/how-to-pass-input-to-a-web-page-using-a-automated-script
-site="https://eosweb.larc.nasa.gov/cgi-bin/sse/daily.cgi?email=&step=1&lat=666&lon=666&sitelev=&ms=1&ds=1&ys=1985&me=12&de=31&ye=2004&p=T10M"
+site="https://eosweb.larc.nasa.gov/cgi-bin/sse/daily.cgi?email=&step=1&lat=666&lon=666&sitelev=&ms=1&ds=1&ys=1985&me=12&de=31&ye=2004&p=T10MX"
 import urllib
 import urllib2
 import string

@@ -79,3 +79,4 @@ for (i in 1:L) {
 }
 
 save(Yout,file="Y.RData")
+system("cp Y.RData ../")
