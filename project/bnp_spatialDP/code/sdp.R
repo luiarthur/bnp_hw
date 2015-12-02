@@ -4,3 +4,5 @@ source("../../../R_Functions/plotPost.R",chdir=T)
 load("../data//Y.RData")
 Y <- Yout; rm(Yout)
 
+sourceCpp("sdp.cpp")
+
