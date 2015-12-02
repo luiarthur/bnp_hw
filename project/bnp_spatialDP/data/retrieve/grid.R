@@ -26,14 +26,16 @@ grid[,3] <- rnorm(gd.locs^2,1:2)
 grid <- grid[which(int.up - grid[,1]>grid[,2]),]
 grid <- grid[which(int.lo - grid[,1]<grid[,2]),]
 
-grid <- grid[sample(1:nrow(grid),100),]
+ind <- sample(1:nrow(grid),100)
+#grid <- grid[ind,]
 
-quilt.plot(grid[,1],grid[,2],grid[,3], #lon,lat,val
+quilt.plot(grid[ind,1],grid[ind,2],grid[ind,3], #lon,lat,val
            xlim=c(lon.lo-1,lon.up+1), ylim=c(lat.lo-1,lat.up+1),
            bty='n', fg='grey',cex=7,
            col= colorRampPalette(c('dark red','white','dark blue'))(100))
 map('county',add=T,lwd=2,col='pink')
 map('state',add=T,lwd=2,col='grey40')
 
-write.csv(round(grid[,1:2],2),"gridlocs.dat",quote=F,row.names=F)
-print(nrow(grid))
+write.csv(round(grid[ind,1:2],2),"gridlocs.dat",quote=F,row.names=F)
+write.csv(round(grid[-ind,1:2],2),"predlocs.dat",quote=F,row.names=F)
+print(nrow(grid[ind,]))
