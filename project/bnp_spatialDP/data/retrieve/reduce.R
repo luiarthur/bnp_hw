@@ -60,15 +60,22 @@ view <- function(y,mo,yr) {
 
   quilt.plot(M[,"lon"],M[,"lat"],M[,"C"], #lon,lat,val
              xlim=c(lon.lo-1,lon.up+1), ylim=c(lat.lo-1,lat.up+1),
-             bty="n",fg="grey",
-             col= colorRampPalette(c('dark blue','white','dark red'))(100))
+             bty="n",fg="grey",breaks=seq(0,32,len=101),main=paste0(mo,"/",yr),
+             col= colorRampPalette(c('dark blue','grey90','dark red'))(100))
   map('county',add=T,lwd=2,col='pink')
   map('state',add=T,lwd=2,col='grey40')
+  M
 }
 
-par(mfrow=c(1,3))
-  view(Y,7,1985)
-  view(Y,7,1994)
-  view(Y,7,2004)
+#par(mfrow=c(5,4),mar=c(4,4,1,1))
+par.opts <- par()
+par(mfrow=c(2,3),mar=c(4,4,1,1))
+  for (yr in c(1985,1989,1994,1999,2001,2004)) view(Y,10,yr)
 par(mfrow=c(1,1))
 
+Yout <- array(0,c(L,TT,5))
+for (i in 1:L) { 
+  Yout[i,,] <- Y[[i]]
+}
+
+save(Yout,file="Y.RData")

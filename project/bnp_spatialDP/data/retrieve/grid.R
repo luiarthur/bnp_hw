@@ -30,7 +30,7 @@ grid <- grid[sample(1:nrow(grid),100),]
 
 quilt.plot(grid[,1],grid[,2],grid[,3], #lon,lat,val
            xlim=c(lon.lo-1,lon.up+1), ylim=c(lat.lo-1,lat.up+1),
-           bty='n', fg='grey',
+           bty='n', fg='grey',cex=7,
            col= colorRampPalette(c('dark red','white','dark blue'))(100))
 map('county',add=T,lwd=2,col='pink')
 map('state',add=T,lwd=2,col='grey40')
