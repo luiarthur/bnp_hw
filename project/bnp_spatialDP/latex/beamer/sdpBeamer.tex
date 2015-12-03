@@ -133,10 +133,15 @@
       \ds\frac{s^2\tau^2}{\tau^2+Tns^2}) \\
       \tau^2 &|& \m y, \m\theta, \beta  &\sim& \text{IG}(a_{\tau^2}+\frac{nT}{2},
       b_{\tau^2}+\frac{\sum_{t=1}^T (\m\mu_t-\beta \m1_n)'(\m\mu_t-\beta \m1_n)}{2})\\
-      p(\sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& [\sigma^2]\prod_{j=1}^{T^*}
-        ~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
-      p(\phi &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& \prod_{j=1}^{T^*} 
-        ~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~)\\
+      %p(\sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& [\sigma^2]\prod_{t=1}^{T^*}
+      %  ~\text{N}_n(\m\theta_t^* | \m 0_n,\sigma^2H_n(\phi)) ~)\\
+      \sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2 &\sim& \text{IG}(a_{\sigma^2}+\frac{nT^*}{2},
+        %b+\frac{\sum_{t=1}^{T^*}\m\theta^*'Hn^{-1}(\phi)\m\theta^*}{2})\\
+      b_{\sigma^2}+\frac{\sum_{t=1}^{T^*}\m\theta^{*'} H_n^{-1}(\phi)\m\theta^*}{2})\\
+      %p(\phi &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& \prod_{t=1}^{T^*} 
+      %  ~\text{N}_n(\m\theta_t^* |\m 0_n,\sigma^2H_n(\phi)) ~)\\
+      p(\phi &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& 
+      [\phi]|H_n(\phi)|^{-T^*/2} \exp\left(-\frac{\sum_{t=1}^{T^*}\m\theta^{*'} H_n^{-1}(\phi)\m\theta^*}{2\sigma^2}\right)\\
       \eta &|& \alpha, \m y &\sim& \text{Beta}(\alpha+1,T)\\
       p(\alpha &|& T^*, \m y) &=& (\epsilon)~\gamma(\alpha | a_\alpha+T^*, b_\alpha-\log(\eta)) +\\
                &&&&(1-\epsilon)~\gamma(\alpha | a_\alpha+T^*-1, b_\alpha-\log(\eta))\\
@@ -147,6 +152,22 @@
   function with the mean and rate parameterization, and 
   $\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* -1}$.
 }
+
+\frame{ %4
+  \frametitle{Posterior for $\m\theta$}
+  \def\mm{\m{y_t}-\m{1_n}\beta}
+  \[\def\arraystretch{1.4}
+    \begin{array}{rclcl}
+      \m\theta_t &|& \m{y_t}, \cdot &\sim& \text{N}_n(\mm, \m\Lambda)\\
+                 && q0 &=& |\Lambda|^{1/2} \\
+                 &&&& \times \exp\left\{.5\tau^{-2}(\mm)'(\m{I_n}-\tau^{-2}\m\Lambda)(\mm)\right\}\\
+                 &&&& \times [(2\pi\tau^2\sigma^2)^{n/2} |\m H_n(\phi)|^{1/2}]^{-1}\\
+    \end{array}
+  \]
+  where $\m\Lambda = [\tau^{-2}\m I_n + \sigma^{-2} \m H_n^{-1}(\phi)]^{-1}$.
+}
+
+
 % End Frame:
 {\setbeamercolor{background canvas}{bg=grey}
   \frame{

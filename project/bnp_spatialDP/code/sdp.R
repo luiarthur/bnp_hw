@@ -26,7 +26,7 @@ D <- as.matrix(dist(ylatlon))
 viewYearJuly <- function(yr) {
   ind <- which(uyears==yr)
   quilt.plot(ylatlon[,2],ylatlon[,1],Y[ind,],
-             fg='grey90',bty='n',
+             fg='grey90',bty='n',main=yr,
              ylim=range(ylatlon[,1])+c(-1,1),
              xlim=range(ylatlon[,2])+c(-1,1),
              breaks=seq(14,40,len=101),
@@ -36,9 +36,17 @@ viewYearJuly <- function(yr) {
 }
 viewYearJuly(1989) #1985 - 2004
 
-#XX <- matrix(sample(0:2,10*3,replace=T),10,3)
-#unique(XX)
+#rr <- 1e4; cc <- 100
+#XX <- matrix(sample(c(rnorm(3,0,1000)),rr*cc,repl=T),rr,cc)
+#system.time(a <- unique(XX))
+#system.time(b <- uniqueRows2(XX))
+#all(a==b)
 #uniqueRows(XX)
 
 sourceCpp("sdp.cpp")
+
+s_new <- matrix(0:50,ncol=2)
+out <- sdp(Y, s_ner , D, beta_mu=0, beta_s2 = 100,
+           tau2_a = 2, tau2_b = 10, alpha_a = 3, alpha_b=3,
+           sig2_a = 2, sig2_b = 10, phi_a=0, phi_b=25, B=10)
 
