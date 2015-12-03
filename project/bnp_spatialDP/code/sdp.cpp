@@ -49,8 +49,82 @@ vec mvrnorm(vec M, mat S) {
 //}
 
 
+bool r1GTr2(vec r1, vec r2, int c) { // The user should set c = 0.
+  bool gt;
+  int n = r1.size();
+
+  if (r1[c] > r2[c]) {
+    gt = true;
+  } else if (r1[c] < r2[c]) {
+    gt = false;
+  } else if (c == n) { // if last col and still same, return r1 > r2 is true.
+    gt = true;
+  } else {
+    gt = r1GTr2(r1, r2, c+1);
+  } 
+
+  return gt;
+}
+
+mat sortRows(mat X) {
+  int n = X.n_rows;
+  bool swapped = true;
+  int j = 0;
+  mat tmp;
+
+  while (swapped) {
+    swapped = false;
+    j++;
+    for (int i = 0; i < n - j; i++) {
+      //if (arr[i] > arr[i + 1]) {
+      if ( r1GTr2(vectorise(X.row(i)), vectorise(X.row(i+1)), 0) ) {
+        tmp = X.row(i);
+        X.row(i) = X.row(i+1);
+        X.row(i+1) = tmp;
+        swapped = true;
+      }
+    }
+  }
+  return X;
+}
+
 //[[Rcpp::export]]
-mat uniqueRows(mat X) { // Works, but Not OPTIMAL!!!
+mat uniqueRows2(mat X) { // Works, but not OPTIMAL!!!
+  int n = X.n_rows;
+  X = sortRows(X);
+
+  for (int i=1; i<n; i++) {
+    if ( all(X.row(i) == X.row(i-1)) ) {
+      X.shed_row(i);
+      i--;
+      n--;
+    }
+  }
+  return X;
+}
+
+//[[Rcpp::export]]
+mat uniqueRows(mat Y) { // This works and is fast, but not certain of accuracy
+  int n = Y.n_rows;
+  int k = Y.n_cols;
+  vec x = Y * randu(k);
+  vec idx = zeros<vec>(n);
+
+  map<double, int> uRow;
+  for (int i=0; i<n; i++) {
+    if ( uRow.find(x[i]) == uRow.end() ) { // key doesn't exist
+      uRow[x[i]] = 1;
+      idx[i] = 1;
+    } else { // key found
+      uRow[x[i]] = uRow[x[i]] + 1;
+    }
+  }
+  
+  return Y.rows( find(idx==1) );
+}
+
+//[[Rcpp::export]]
+mat uniqueRows1(mat X) { // Works, but Not OPTIMAL!!!
   int n = X.n_rows;
   int i = 0;
   
@@ -155,9 +229,9 @@ double update_phi (double a, double b, mat H, int Tstar, mat theta, double sig2)
   for (int i=0; i<L; i++) {
     Hp = pow(H, phi[i]);
     log_det(val, sign, Hp);
-    ldet = val; // what to do about the sign???
+    ldet = val; // covariance Matrices ALWAYS have positive determinants!!!
     for (int j=0; j<Tstar; j++) {
-      mt = ut.row(j) *Hp.i()* ut.row(j).t();
+      mt = ut.row(j) * Hp.i() * ut.row(j).t();
       sum_mt += mt(0,0);
     }
     lgs[i] = -Tstar/2.0 * ldet -sum_mt/(2*sig2);

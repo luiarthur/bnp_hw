@@ -39,6 +39,12 @@ viewYearJuly(1989) #1985 - 2004
 
 s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
+rr <- 100000; cc <- 3
+XX <- matrix(sample(c(-100,0,100),rr*cc,repl=T),rr,cc)
+system.time(a <- unique(XX))
+system.time(e <- uniqueRows(XX))
+all(a == e)
+
 out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 100,
            tau2_a = 2, tau2_b = 10, alpha_a = 3, alpha_b=3,
            sig2_a = 2, sig2_b = 10, phi_a=0, phi_b=.0000001, B=10)
