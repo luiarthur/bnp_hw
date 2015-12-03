@@ -123,8 +123,9 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
   mat mt;
   double sum_mt = 0;
 
+  //cout << H << endl;
   for (int t=0; t<Tstar; t++) {
-    mt = ut.row(t).t() * H.i() *ut.row(t);
+    mt = ut.row(t) * H.i() *ut.row(t).t();
     sum_mt += mt(0,0);
   }
 
@@ -137,11 +138,11 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
 
 
 double update_phi (double a, double b, mat H, int Tstar, mat theta, double sig2) {
-
   double lg;
-  vec lgs;
-  int phi_new; 
-  vec phi = linspace(a,b,b-a+1);
+  double phi_new; 
+  int L = b-a+1;
+  vec lgs = zeros<vec>(L);
+  vec phi = linspace(a,b,L) + .0000000001;
   //int cand = randi(1, distr_param(a,b))[0];
   double val, sign;
   mat ut = uniqueRows(theta);
@@ -149,15 +150,17 @@ double update_phi (double a, double b, mat H, int Tstar, mat theta, double sig2)
   mat mt;
   double sum_mt = 0;
   vec probs;
+  double ldet;
 
-  for (int i=0; i<b-a+1; i++) {
+  for (int i=0; i<L; i++) {
     Hp = pow(H, phi[i]);
-    for (int t=0; t<Tstar; t++) {
-      mt = ut.row(t).t() * Hp.i() *ut.row(t);
+    log_det(val, sign, Hp);
+    ldet = val; // what to do about the sign???
+    for (int j=0; j<Tstar; j++) {
+      mt = ut.row(j) *Hp.i()* ut.row(j).t();
       sum_mt += mt(0,0);
     }
-    log_det(val, sign, Hp);
-    lgs[i] = -Tstar/2 * sign*val - sum_mt/(2*sig2);
+    lgs[i] = -Tstar/2.0 * ldet -sum_mt/(2*sig2);
   }
   
   probs = exp(lgs - max(lgs));
@@ -174,7 +177,7 @@ double ldmvnorm(vec x, vec m, mat S) {
   vec out;
   vec b = x - m;
   log_det(val,sign,S);
-  ldet = sign*val;
+  ldet = val;
   out = -n/2*log(2*pi) -.5*ldet -.5*b.t()*S.i()*b;
 
   return out[0];
@@ -223,13 +226,13 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
 
   S = (In/tau2 + Hi /sig2).i();
   log_det(val,sign,S);
-  ldet = sign*val;
+  ldet = val;
 
   log_det(val2,sign2,H);
-  ldetH = sign2*val2;
+  ldetH = val2;
 
   for (int t=0; t<T; t++) {
-    mu = y.row(t) - ones(n)*beta;
+    mu = vectorise(y.row(t)) - ones(n)*beta;
     tmp = .5*ldet + .5*mu.t() * (In-S/tau2) * mu/tau2 -
       n/2 * log(2*pi*tau2*sig2) - .5*ldetH;
     lq0 = tmp(0,0);
@@ -237,12 +240,13 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
     ut_xt = uniqueRows(t_xt);
     J = ut_xt.n_rows;
     lprobs = zeros(J+1);
+    probs = zeros(J+1);
     lprobs[J] = log(alpha) + lq0;
 
     for (int j=0; j<J; j++) {
       uv = matchRows(t_xt, vectorise(ut_xt.row(j)) );
       Tj = uv.size();
-      lq = ldmvnorm(y.row(t), zeros(n), tau2I);
+      lq = ldmvnorm(vectorise(y.row(t)), zeros(n), tau2I);
       lprobs[j] = log(Tj) + lq;
     }
 
@@ -268,11 +272,11 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
   int n = Y.n_cols; // 100 locations
   double sum_y = sum( sum(Y) );
   vec beta = zeros<vec>(B);
-  vec tau2 = zeros<vec>(B);
-  vec alpha = zeros<vec>(B);
-  vec sig2 = zeros<vec>(B);
-  vec phi = zeros<vec>(B);
-  cube theta = zeros<cube>(B,T,n);
+  vec tau2 = ones<vec>(B);
+  vec alpha = ones<vec>(B);
+  vec sig2 = ones<vec>(B);
+  vec phi = ones<vec>(B);
+  cube theta = zeros<cube>(T,n,B);
   int Tstar;
   mat utheta;
   int acc_sig2 = 0;
@@ -281,20 +285,19 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
   mat tb;
 
   for (int b=1; b<B; b++) {
-    for (int t=0; t<T; t++) {
-      //update theta
-      tb = theta.slice(b);
-      utheta = uniqueRows(tb);
-      Tstar = utheta.n_rows;
+    theta.slice(b) = update_theta(alpha[b-1], sig2[b-1], phi[b-1], tau2[b-1], 
+        beta[b-1], Y, theta.slice(b-1), T, n,  Hn(phi[b-1],D));// ERROR.
+    tb = theta.slice(b);
+    utheta = uniqueRows(tb);
+    Tstar = utheta.n_rows;
 
-      beta[b] = update_beta(sum_y, tb, tau2[b-1], beta_s2, T, n); // check
-      tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
-      alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T); // check 
-      sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check 
-      phi[b] = update_phi(phi_a, phi_b, Hn(1,D), Tstar, tb, sig2[b]); // check
-    }
+    beta[b] = update_beta(sum_y, tb, tau2[b-1], beta_s2, T, n); // check
+    tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
+    alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T); // check 
+    sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check 
+    phi[b] = update_phi(phi_a, phi_b, Hn(1,D), Tstar, tb, sig2[b]); // check. ERROR.
 
-    cout <<"\r Progress: " << b << "/" << B << endl;
+    cout <<"\r Progress: " << b << "/" << B;
   }
 
   ret["beta"] = beta;

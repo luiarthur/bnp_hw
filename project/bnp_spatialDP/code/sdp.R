@@ -36,17 +36,15 @@ viewYearJuly <- function(yr) {
 }
 viewYearJuly(1989) #1985 - 2004
 
-#rr <- 1e4; cc <- 100
-#XX <- matrix(sample(c(rnorm(3,0,1000)),rr*cc,repl=T),rr,cc)
-#system.time(a <- unique(XX))
-#system.time(b <- uniqueRows2(XX))
-#all(a==b)
-#uniqueRows(XX)
 
+s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
-
-s_new <- matrix(0:50,ncol=2)
-out <- sdp(Y, s_ner , D, beta_mu=0, beta_s2 = 100,
+out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 100,
            tau2_a = 2, tau2_b = 10, alpha_a = 3, alpha_b=3,
-           sig2_a = 2, sig2_b = 10, phi_a=0, phi_b=25, B=10)
+           sig2_a = 2, sig2_b = 10, phi_a=0, phi_b=.0000001, B=10)
 
+plot(out$beta[-1],type='l')
+plot(out$alpha[-1],type='l')
+plot(out$tau2[-1],type='l')
+plot(out$sig2[-1],type='l')
+plot(out$phi[-1],type='l')
