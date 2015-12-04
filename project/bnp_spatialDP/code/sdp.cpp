@@ -212,9 +212,8 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
 }
 
 
-double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2) {
+double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2, int L) {
   double phi_new; 
-  int L = b-a+1;
   vec lgs = zeros<vec>(L);
   vec phi = linspace(a,b,L) + .0000000001;
   //int cand = randi(1, distr_param(a,b))[0];
@@ -222,18 +221,20 @@ double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2)
   mat ut = uniqueRows(theta);
   mat Hp;
   mat mt;
-  double sum_mt = 0;
+  double sum_mt;
   vec probs;
   double ldet;
 
   for (int i=0; i<L; i++) {
-    Hp = Hn(phi[i],D); //pow(H, phi[i]);
+    sum_mt = 0;
+    Hp = Hn(phi[i],D); // pow(H, phi[i]);
     log_det(val, sign, Hp);
     ldet = val; // covariance Matrices ALWAYS have positive determinants!!!
-    for (int j=0; j<Tstar; j++) {
-      mt = -ut.row(j) * Hp.i() * ut.row(j).t();
-      sum_mt += mt(0,0);
-    }
+    //for (int j=0; j<Tstar; j++) { // this long chunk is the same as the line below.
+    //  mt = -ut.row(j) * Hp.i() * ut.row(j).t();
+    //  sum_mt += mt(0,0);
+    //}
+    sum_mt = trace(-ut * Hp.i() * ut.t());
     lgs[i] = -Tstar/2.0 * ldet + sum_mt/(2*sig2);
   }
   
@@ -343,8 +344,6 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
     inds = matchRows(theta_new, vectorise( ut.row(j) ));
     Tj = inds.size();
     Sj = (Tj/tau2 * In + Hi/sig2).i();
-    //cout << "HERE1" << endl;
-    //cout << inds.size() << ", " << Tj << ", " << n << endl;
     Mu = y.rows(inds) - ones(Tj,n)*beta;
     muj = Sj/tau2 * vectorise( sum(Mu,0) ); // sum each column
 
@@ -357,7 +356,7 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
 //[[Rcpp::export]]
 List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
     double tau2_a, double tau2_b, double alpha_a, double alpha_b,
-    double sig2_a, double sig2_b, int phi_a, int phi_b, int B) {
+    double sig2_a, double sig2_b, int phi_a, int phi_b, int L, int B) {
   //phi_a = 0, phi_b = 3/(d*max(||si-sj||)), where d is small ~ .01. => a,b about 0,25
 
   int T = Y.n_rows; // 20 years
@@ -387,7 +386,7 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
     tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
     alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T); // check 
     sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
-    phi[b] = .5;//update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b]); // check. ERROR.
+    phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L); // check. ERROR.
 
     cout << "\r Progress: " << b << "/" << B;
   }

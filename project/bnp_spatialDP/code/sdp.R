@@ -23,13 +23,13 @@ Y <- t(Yout[,july,5]) # Y is 20 x 100
 ylatlon <- Yout[,1,3:4]
 D <- as.matrix(dist(ylatlon))
 # lon,lat,val
-viewYearJuly <- function(yr,y) {
+viewYearJuly <- function(yr,y,bks=seq(14,40,len=101)) {
   ind <- which(uyears==yr)
   quilt.plot(ylatlon[,2],ylatlon[,1],y[ind,],
              fg='grey90',bty='n',main=yr,
              ylim=range(ylatlon[,1])+c(-1,1),
              xlim=range(ylatlon[,2])+c(-1,1),
-             breaks=seq(14,40,len=101),
+             breaks=bks,
              col= colorRampPalette(c('dark blue','grey90','dark red'))(100))
   map('county',add=T,col='grey')
   map('state',add=T,col='grey60',lwd=2)
@@ -47,9 +47,9 @@ s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
 out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 100,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=0, phi_b=.1, B=500)
+           sig2_a = 2, sig2_b = 5, phi_a=1, phi_b=2, L=2, B=5000)
 
-par(mfrow=c(5,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
+par(mfrow=c(6,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
 plot(out$beta[-1],type='l',xaxt='n')
 par(mar=c(0,4.5,0,2))
 plot(out$alpha[-1],type='l',xaxt='n')
@@ -57,15 +57,27 @@ plot(out$tau2[-1],type='l',xaxt='n') # about 11.25
 plot(out$sig2[-1],type='l',xaxt='n') # Challenge
 par(mar=c(3,4.5,0,2))
 plot(out$phi[-1],type='l')  # Challenge
+plot(out$theta[1,1,-1],type='l')
 par(mfrow=c(1,1),mar=c(5,4,4,2)+.1)
 
 ot <- out$theta
 dim(ot)
 B <- dim(ot)[3]
 ot[,,B]
-unique(ot[,,B]) # I should see clustering across times
+uB <- unique(ot[,,B]) # I should see clustering across times
+nrow(uB)
+ind <- matchRows(ot[,,B-100], unique(ot[,,B-100])[1,]) # Change the index to see what happens
+par(mfrow=c(ifelse(length(ind)>1,ceiling(length(ind)/2),1),ifelse(length(ind)>1,2,1)),
+    mar=c(1,4.5,1,2),fg='grey30',bty='l')
+for (ii in ind) {
+  viewYearJuly(1985+ii,Y)
+}
+
+mt <- t(apply(ot,1,function(x) apply(x,1,mean))) # mean theta 20 x 100
 viewYearJuly(1998,ot[,,B])
 viewYearJuly(1998,Y)
+viewYearJuly(1998,mt)
+viewYearJuly(2004,mt-Y,bks=seq(-3,3,len=101))
 
 mean( apply(Y,2,var) ) # empirical sig2. Difficult.
 mean( apply(Y,1,var) ) # empirical tau
