@@ -158,7 +158,7 @@
   \def\mm{\m{y_t}-\m{1_n}\beta}
   \[\def\arraystretch{1.4}
     \begin{array}{rclcl}
-      \m\theta_t &|& \m{y_t}, \cdot &\sim& \text{N}_n(\mm, \m\Lambda)\\
+      \m\theta_t &|& \m{y_t}, \cdot &\sim& \text{N}_n(\tau^{-2}\m\Lambda(\mm), \m\Lambda)\\
                  && q0 &=& |\Lambda|^{1/2} \\
                  &&&& \times \exp\left\{.5\tau^{-2}(\mm)'(\m{I_n}-\tau^{-2}\m\Lambda)(\mm)\right\}\\
                  &&&& \times [(2\pi\tau^2\sigma^2)^{n/2} |\m H_n(\phi)|^{1/2}]^{-1}\\
