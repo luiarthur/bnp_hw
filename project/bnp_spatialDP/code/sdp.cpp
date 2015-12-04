@@ -348,7 +348,7 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
     Mu = y.rows(inds) - ones(Tj,n)*beta;
     muj = Sj/tau2 * vectorise( sum(Mu,0) ); // sum each column
 
-    theta_new.each_row(inds) = reshape(mvrnorm(muj, Sj),Tj,n); // Check this !!!
+    theta_new.each_row(inds) = reshape(mvrnorm(muj, Sj),1,n); // Check this !!!
   }
 
   return theta_new;
