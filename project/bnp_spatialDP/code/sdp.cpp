@@ -171,9 +171,8 @@ double update_beta (double sum_y, mat theta, double tau2, double s2, int T, int 
 }
 
 double update_tau2 (double a, double b, int n, int T, mat y, mat theta, double beta) {
-  double a_new = a + n*T/2;
   mat one_Tn(T,n);
-  mat M = y - theta - one_Tn;
+  mat M = y - theta - beta*one_Tn;
   double sum_mm = 0;
   mat m;
 
@@ -182,6 +181,7 @@ double update_tau2 (double a, double b, int n, int T, mat y, mat theta, double b
     sum_mm += m(0,0);
   }
 
+  double a_new = a + n*T/2;
   double rate_new = b + sum_mm/2;
   double scale_new = 1 / rate_new;
 

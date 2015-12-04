@@ -47,12 +47,12 @@ s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
 out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 1,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=200)
+           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=500)
 
-par(mfrow=c(6,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
-plot(out$beta[-1],type='l',xaxt='n',ylab=bquote(beta))
-par(mar=c(0,4.5,0,2))
+par(mfrow=c(5,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
+#plot(out$beta[-1],type='l',xaxt='n',ylab=bquote(beta))
 plot(out$alpha[-1],type='l',xaxt='n',ylab=bquote(alpha))
+par(mar=c(0,4.5,0,2))
 plot(out$tau2[-1],type='l',xaxt='n',ylab=bquote(tau^2)) # about 11.25
 plot(out$sig2[-1],type='l',xaxt='n',ylab=bquote(sigma^2)) # about 80
 plot(out$theta[1,1,-1],type='l',xaxt='n',ylab=bquote(theta))
@@ -62,11 +62,13 @@ par(mfrow=c(1,1),mar=c(5,4,4,2)+.1)
 
 ot <- out$theta
 dim(ot)
+#ot[,,7]
 B <- dim(ot)[3]
-ot[,,B]
-uB <- unique(ot[,,B-100]) # I should see clustering across times
-nrow(uB)
-ind <- matchRows(ot[,,B-100], unique(ot[,,B-100])[1,]) # Change the index to see what happens
+b <- 500
+uB <- uniqueRows(ot[,,b]) # I should see clustering across times
+apply(uB,1,function(x) length(matchRows(ot[,,b], x)))
+nrow(uB); unique(uB)
+ind <- matchRows(ot[,,b], uB[1,]); ind # Change the index to see what happens
 par(mfrow=c(ifelse(length(ind)>1,ceiling(length(ind)/2),1),ifelse(length(ind)>1,2,1)),
     mar=c(1,4.5,1,2),fg='grey30',bty='l')
 for (ii in ind) {
@@ -75,10 +77,11 @@ for (ii in ind) {
 par(mfrow=c(1,1))
 
 mt <- t(apply(ot,1,function(x) apply(x,1,mean))) # mean theta 20 x 100
-viewYearJuly(1998,ot[,,B])
-viewYearJuly(1998,Y)
-viewYearJuly(1998,mt)
-viewYearJuly(2004,mt-Y,bks=seq(-3,3,len=101))
+par(mfrow=c(1,3))
+viewYearJuly(1989,Y)
+viewYearJuly(1989,mt)
+viewYearJuly(1989,mt-Y,bks=seq(-2,2,len=101))
+par(mfrow=c(1,1))
 
 mean( apply(Y,2,var) ) # empirical sig2. Difficult.
 mean( apply(Y,1,var) ) # empirical tau
