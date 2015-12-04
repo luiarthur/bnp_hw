@@ -45,19 +45,19 @@ viewYearJuly(1989,Y) #1985 - 2004
 
 s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
-out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 100,
+out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 1,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=50000)
+           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=200)
 
 par(mfrow=c(6,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
-plot(out$beta[-1],type='l',xaxt='n')
+plot(out$beta[-1],type='l',xaxt='n',ylab=bquote(beta))
 par(mar=c(0,4.5,0,2))
-plot(out$alpha[-1],type='l',xaxt='n')
-plot(out$tau2[-1],type='l',xaxt='n') # about 11.25
-plot(out$sig2[-1],type='l',xaxt='n') # Challenge
+plot(out$alpha[-1],type='l',xaxt='n',ylab=bquote(alpha))
+plot(out$tau2[-1],type='l',xaxt='n',ylab=bquote(tau^2)) # about 11.25
+plot(out$sig2[-1],type='l',xaxt='n',ylab=bquote(sigma^2)) # about 80
+plot(out$theta[1,1,-1],type='l',xaxt='n',ylab=bquote(theta))
 par(mar=c(3,4.5,0,2))
-plot(out$phi[-1],type='l')  # Challenge
-plot(out$theta[1,1,-1],type='l')
+plot(out$phi[-1],type='l',ylab=bquote(phi)) #about .05
 par(mfrow=c(1,1),mar=c(5,4,4,2)+.1)
 
 ot <- out$theta
