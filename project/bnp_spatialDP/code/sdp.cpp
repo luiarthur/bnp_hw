@@ -211,7 +211,7 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
   return 1 / rgamma(1, a_new, scale_new)[0]; 
 }
 
-
+// Broken!!!???
 double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2, int L) {
   double phi_new; 
   vec lgs = zeros<vec>(L);
