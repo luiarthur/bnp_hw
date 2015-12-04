@@ -142,18 +142,18 @@ mat uniqueRows1(mat X) { // Works, but Not OPTIMAL!!!
   return X;
 }
 
-double update_alpha (double alpha, int Tstar, double a, double b, int n) {
+double update_alpha (double alpha, int Tstar, double a, double b, int T) {
   double eta, c, d;
   int ind;
   double alpha_new;
 
-  eta = rbeta(1, alpha + 1, n )[0];
+  eta = rbeta(1, alpha + 1, T )[0];
   c = a + Tstar;
-  d = b - log(eta);
+  d = b - log(eta); // rate
   
-  ind = wsample({0.0, 1.0}, {c-1, n*d});
-  if (ind == 0) {
-    alpha_new = rgamma(1, c, 1/d )[0]; // shape, rate
+  ind = wsample({0.0, 1.0}, {c-1, T*d});
+  if (ind == 0.0) {
+    alpha_new = rgamma(1, c, 1/d )[0]; // shape, scale
   } else {
     alpha_new = rgamma(1, c-1, 1/d )[0];
   }
@@ -199,10 +199,11 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
   mat Hi = H.i();
 
   //cout << H << endl;
-  for (int j=0; j<Tstar; j++) {
-    mt = ut.row(j) * Hi *ut.row(j).t();
-    sum_mt += mt(0,0);
-  }
+  //for (int j=0; j<Tstar; j++) {
+  //  mt = ut.row(j) * Hi *ut.row(j).t();
+  //  sum_mt += mt(0,0);
+  //}
+  sum_mt = trace(ut * Hi * ut.t()); // changed!
 
   double a_new = a + n*Tstar/2;
   double rate_new = b + sum_mt / 2;
@@ -215,8 +216,7 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
 double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2, int L) {
   double phi_new; 
   vec lgs = zeros<vec>(L);
-  vec phi = linspace(a,b,L) + .0000000001;
-  //int cand = randi(1, distr_param(a,b))[0];
+  vec phi = linspace<vec>(a,b,L);
   double val, sign;
   mat ut = uniqueRows(theta);
   mat Hp;
@@ -230,12 +230,8 @@ double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2,
     Hp = Hn(phi[i],D); // pow(H, phi[i]);
     log_det(val, sign, Hp);
     ldet = val; // covariance Matrices ALWAYS have positive determinants!!!
-    //for (int j=0; j<Tstar; j++) { // this long chunk is the same as the line below.
-    //  mt = -ut.row(j) * Hp.i() * ut.row(j).t();
-    //  sum_mt += mt(0,0);
-    //}
     sum_mt = trace(-ut * Hp.i() * ut.t());
-    lgs[i] = -Tstar/2.0 * ldet + sum_mt/(2*sig2);
+    lgs[i] = -.5*Tstar * ldet + sum_mt/(2*sig2);
   }
   
   probs = exp(lgs - max(lgs));
@@ -356,7 +352,7 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
 //[[Rcpp::export]]
 List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
     double tau2_a, double tau2_b, double alpha_a, double alpha_b,
-    double sig2_a, double sig2_b, int phi_a, int phi_b, int L, int B) {
+    double sig2_a, double sig2_b, double phi_a, double phi_b, int L, int B) {
   //phi_a = 0, phi_b = 3/(d*max(||si-sj||)), where d is small ~ .01. => a,b about 0,25
 
   int T = Y.n_rows; // 20 years
@@ -384,7 +380,7 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
 
     beta[b] = 0.0;//update_beta(sum_y, tb, tau2[b-1], beta_s2, T, n); // check
     tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
-    alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T); // check 
+    alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T);
     sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
     phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L); // check. ERROR.
 

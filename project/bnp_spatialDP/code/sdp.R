@@ -47,7 +47,7 @@ s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
 out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 100,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=1, phi_b=2, L=2, B=50000)
+           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=50000)
 
 par(mfrow=c(6,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
 plot(out$beta[-1],type='l',xaxt='n')
