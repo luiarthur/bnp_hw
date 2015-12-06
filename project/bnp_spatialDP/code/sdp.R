@@ -29,7 +29,7 @@ viewPred <- function(x,latlon,main.plot='',bks=c(14,40)) {
              ylim=range(latlon[,1])+c(-1,1),
              xlim=range(latlon[,2])+c(-1,1),
              breaks=seq(bks[1],bks[2],len=length(x)+1),
-             col= colorRampPalette(c('dark blue','grey90','dark red'))(100))
+             col= colorRampPalette(c('dark blue','grey90','dark red'))(length(x)))
   map('county',add=T,col='grey')
   map('state',add=T,col='grey60',lwd=2)
 }
@@ -58,21 +58,23 @@ viewYearJuly(1989,Y) #1985 - 2004
 sourceCpp("sdp.cpp")
 system.time(
 #out <- sdp(t(Yout[,,5]), s_new , D, beta_mu=0, beta_s2 = 1,
-out <- sdp(Y, D, beta_mu=30, beta_s2 = 1,
+out <- sdp(Y, D, beta_m=30, beta_s2 = 100,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=20, L=3, B=500)
-           #sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=500)
+           sig2_a = 2, sig2_b = 5, phi_a=1, phi_b=1, L=1, B=500)
+           #sig2_a = 2, sig2_b = 5, phi_a=.001, phi_b=.3, L=10, B=500)
 )
+seq(.001,.3,len=10)
 
+burn <- round(B*.8)
 par(mfrow=c(6,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
-plot(out$beta[-1],type='l',xaxt='n',ylab=bquote(beta))
-plot(out$alpha[-1],type='l',xaxt='n',ylab=bquote(alpha))
+plot(out$beta[-c(1:keep)],type='l',xaxt='n',ylab=bquote(beta))
+plot(out$alpha[-c(1:keep)],type='l',xaxt='n',ylab=bquote(alpha))
 par(mar=c(0,4.5,0,2))
-plot(out$tau2[-1],type='l',xaxt='n',ylab=bquote(tau^2)) # about 11.25
-plot(out$sig2[-1],type='l',xaxt='n',ylab=bquote(sigma^2)) # about 80
-plot(out$theta[1,1,-1],type='l',xaxt='n',ylab=bquote(theta))
+plot(out$tau2[-c(1:keep)],type='l',xaxt='n',ylab=bquote(tau^2)) # about 11.25
+plot(out$sig2[-c(1:keep)],type='l',xaxt='n',ylab=bquote(sigma^2)) # about 80
+plot(out$theta[1,1,-c(1:keep)],type='l',xaxt='n',ylab=bquote(theta))
 par(mar=c(3,4.5,0,2))
-plot(out$phi[-1],type='l',ylab=bquote(phi)) #about .05
+plot(out$phi[-c(1:keep)],type='l',ylab=bquote(phi)) #about .05
 par(mfrow=c(1,1),mar=c(5,4,4,2)+.1)
 
 ot <- out$theta
@@ -82,8 +84,8 @@ B <- dim(ot)[3]
 b <- 10
 uB <- uniqueRows(ot[,,b]) # I should see clustering across times
 unique(uB); nrow(uB)
-nURows <- apply(ot,3,function(x) nrow(uniqueRows(x)))
-hist(nURows)
+nURows <- apply(ot[,,round(B*.8):B],3,function(x) nrow(uniqueRows(x)))
+plot(table(nURows)/sum(table(nURows)))
 apply(uB,1,function(x) length(matchRows(ot[,,b], x)))
 ind <- matchRows(ot[,,b], uB[1,]); ind # Change the index to see what happens
 par(mfrow=c(ifelse(length(ind)>1,ceiling(length(ind)/2),1),ifelse(length(ind)>1,2,1)),
@@ -106,7 +108,7 @@ mean( apply(Y,1,var) ) # empirical tau
 
 ### Predictions at Observed Locations:
 # Obtain theta0
-keep <- round(B*.8)
+keep <- round(B*.2)
 post.a <- tail(out$alpha,keep)
 post.b <- tail(out$beta,keep)
 post.p <- tail(out$phi,keep)
@@ -123,12 +125,18 @@ for (bb in 1:keep) {
   }
   cat("\r",bb)
 }
-pred.theta0
+apply(pred.theta0,2,mean)
 
-pred.y0 <- t(apply(matrix(1:keep),1,function(i) mvrnorm(pred.theta0[i,],post.t2[i]*diag(ncol(Y)))))
+pred.y0 <- t(apply(matrix(1:keep),1,function(i) 
+                   mvrnorm(pred.theta0[i,]+post.b[i],
+                           post.t2[i]*diag(ncol(Y)))))
 
-viewPred(apply(pred.y0,2,var),ylatlon, "Posterior Predictive Variance",bks=c(0,300))
+apply(pred.y0,2,mean)
+apply(pred.y0,2,var)
+par(mfrow=c(1,2))
+viewPred(apply(pred.y0,2,var),ylatlon, "Posterior Predictive Variance",bks=c(0,100))
 viewPred(apply(Y,2,var), ylatlon, "Variance of Data",bks=c(0,3))
+par(mfrow=c(1,1))
 
 #hist(Y[,3],prob=TRUE)
 #lines(density(pred.y0[,3]),col='red')
@@ -136,20 +144,36 @@ viewPred(apply(Y,2,var), ylatlon, "Variance of Data",bks=c(0,3))
 
 # Print this:
 par(mfrow=c(1,2))
-  viewPred(apply(pred.y0,2,median), ylatlon, "Posterior Predictive Median")
-  viewPred(apply(Y,2,median), ylatlon, "Data Median")
+  viewPred(apply(pred.y0,2,mean), ylatlon, "Posterior Predictive Median")
+  viewPred(apply(Y,2,mean), ylatlon, "Data Median")
 par(mfrow=c(1,1))
 
 ### Predictions at NEW Locations:
 
-n_new <- 500
+nn <- ncol(Y)
+n_new <- 1000
 s0 <- s_new[sample(1:nrow(s_new),n_new,replace=F),]
 D_new <- as.matrix(dist(s0))
 pred.new.theta <- matrix(0,keep,n_new)
+pred.new.y <- matrix(0,keep,n_new)
 
 for (bb in 1:keep) {
   pred.new.theta[bb,] <- mvrnorm(rep(0,n_new),
                                 post.s2[bb]*Hn(post.p[bb],D_new))
+  pred.new.y[bb,] <- mvrnorm(pred.new.theta[bb,]+post.b[bb],
+                             post.t2[bb]*diag(n_new));
   cat("\r",bb)
 }
+
+apply(pred.new.theta,2,mean)
+apply(pred.new.theta,2,var)
+apply(pred.new.y,2,mean)
+apply(pred.new.y,2,var)
+
+par(mfrow=c(1,3))
+  viewPred(apply(pred.y0,2,mean), ylatlon, "Posterior Predictive Median")
+  viewPred(apply(Y,2,mean), ylatlon, "Data Median")
+  viewPred(apply(pred.new.y,2,mean)[1:n_new], s0[,2:1], "Posterior Predictive Mean",bks=c(0,40))
+par(mfrow=c(1,1))
+
 

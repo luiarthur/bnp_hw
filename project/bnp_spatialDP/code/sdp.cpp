@@ -221,6 +221,7 @@ double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
 }
 
 // Broken!!!???
+//double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2, int L, double cs, int* acc, double phi_curr) {
 double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2, int L) {
   double phi_new; 
   vec lgs = zeros<vec>(L);
@@ -244,7 +245,26 @@ double update_phi (double a, double b, mat D, int Tstar, mat theta, double sig2,
   
   probs = exp(lgs - max(lgs));
   phi_new = wsample(phi, probs);
-  
+  /*
+  double lgcand, lgcurr;
+  double cand = randn() * cs + phi_curr;
+  double ldetCurr, ldetCand;
+  phi_new = phi_curr;
+  if (cand > 0) {
+    Hp = Hn(cand,D);
+    log_det(ldetCand, sign, Hp);
+    lgcand = -.5*Tstar * ldetCand - trace(-ut * Hp.i() * ut.t())/(2*sig2);
+
+    Hp = Hn(phi_curr,D);
+    log_det(ldetCurr, sign, Hp);
+    lgcurr = -.5*Tstar * ldetCurr - trace(-ut * Hp.i() * ut.t())/(2*sig2);
+    if (lgcand - lgcurr > log(randu())) {
+      phi_new = cand;
+      *acc = *acc + 1; 
+    }
+  }
+  */
+
   return phi_new;
 }
 
@@ -391,6 +411,7 @@ List sdp(mat Y, mat D, double beta_m, double beta_s2,
     alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T);
     sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
     phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L); // check. ERROR.
+    //phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L,phi_cs,&acc_phi,phi[b-1]); // check. ERROR.
 
     Rcout << "\rProgress: " << b << "/" << B;
   }
@@ -402,6 +423,7 @@ List sdp(mat Y, mat D, double beta_m, double beta_s2,
   ret["sig2"] = sig2;
   ret["phi"] = phi;
   ret["theta"] = wrap(theta);
+  ret["acc_phi"] = acc_phi*1.0 / B;
 
   return ret;
 }
