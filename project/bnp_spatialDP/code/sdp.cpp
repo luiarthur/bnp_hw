@@ -163,9 +163,9 @@ double update_alpha (double alpha, int Tstar, double a, double b, int T) {
 }
 
 
-double update_beta (double sum_y, mat theta, double tau2, double s2, int T, int n) {
+double update_beta (double sum_y, mat theta, double tau2, double m, double s2, int T, int n) {
   double denom = tau2 + T*n*s2;
-  double m_new = s2 * ( sum_y - sum(sum(theta)) ) / denom;
+  double m_new = (m*tau2 + s2 * ( sum_y - sum(sum(theta)) )) / denom;
   double s_new = sqrt( s2*tau2 / denom );
 
   return rnorm(1, m_new, s_new)[0];
@@ -358,7 +358,7 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
 }
 
 //[[Rcpp::export]]
-List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
+List sdp(mat Y, mat D, double beta_m, double beta_s2,
     double tau2_a, double tau2_b, double alpha_a, double alpha_b,
     double sig2_a, double sig2_b, double phi_a, double phi_b, int L, int B) {
   //phi_a = 0, phi_b = 3/(d*max(||si-sj||)), where d is small ~ .01. => a,b about 0,25
@@ -386,7 +386,7 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
     utheta = uniqueRows(tb);
     Tstar = utheta.n_rows;
 
-    beta[b] = 0.0;//update_beta(sum_y, tb, tau2[b-1], beta_s2, T, n); // check
+    beta[b] = update_beta(sum_y, tb, tau2[b-1], beta_m, beta_s2, T, n); // check
     tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
     alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T);
     sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
@@ -394,6 +394,7 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
 
     Rcout << "\rProgress: " << b << "/" << B;
   }
+  cout << endl;
 
   ret["beta"] = beta;
   ret["tau2"] = tau2;
