@@ -334,8 +334,7 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
 
   for (int t=0; t<T; t++) {
     mu = vectorise(y.row(t)) - ones(n)*beta;
-    tmp = .5*ldet + .5*(mu.t()*(In-S/tau2)*mu)/tau2 -
-      n/2 * log(2*pi*tau2*sig2) - .5*ldetH;
+    tmp = .5*ldet + .5*(mu.t()*(In-S/tau2)*mu)/tau2 - n/2 * log(2*pi*tau2*sig2) - .5*ldetH;
     lq0 = tmp(0,0);
     t_xt = theta_new.rows( find(Tind != t) );
     ut_xt = uniqueRows(t_xt);
@@ -347,7 +346,6 @@ mat update_theta(double alpha, double sig2, double phi, double tau2, double beta
     for (int j=0; j<J; j++) {
       uv = matchRows(t_xt, vectorise(ut_xt.row(j)) );
       Tj = uv.size();
-      //lq = ldmvnorm(vectorise(y.row(t)), zeros(n), tau2I);
       lq = ldmvnorm(vectorise(y.row(t)), vectorise(theta_new.row(j)) + ones(n)*beta, tau2I); // changed this
       lprobs[j] = log(Tj) + lq;
     }
