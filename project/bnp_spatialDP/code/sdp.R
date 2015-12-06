@@ -116,6 +116,19 @@ post.s2 <- tail(out$sig2,keep)
 post.t2 <- tail(out$tau2,keep)
 post.th <- out$theta[,,(B-keep+1):B]
 pred.theta0 <- matrix(0,keep,dim(ot)[2])
+### New Locations:
+post.norm <- function(x,mx,Sx,my,Sy,Syx) {
+  Sxi <- solve(Sx)
+  m <- my + Syx%*%Sxi%*%(x-mx)
+  S <- Sy - Syx%*%Sxi%*%t(Syx)
+  list("m"=m,"S"=S)
+}
+nn <- ncol(Y)
+n_new <- 1000
+s0 <- as.matrix(s_new[sample(1:nrow(s_new),n_new,replace=F),])[,2:1]
+D_new <- as.matrix(dist(rbind(s0,ylatlon)))
+pred.t_new <- matrix(0,keep,n_new)
+
 for (bb in 1:keep) {
   idx_new <- sample(0:(dim(ot)[1]), 1, prob=c(post.a[bb], rep(1,dim(ot)[1]) ))
   if (idx_new == 0) {
@@ -123,6 +136,13 @@ for (bb in 1:keep) {
   } else {
     pred.theta0[bb,] <- post.th[idx_new,,bb]
   }
+  # new stuff...
+  lmS <- post.norm(x=pred.theta0[bb,],mx=0,
+                   Sx=post.s2[bb]*Hn(post.p[bb],D),
+                   my=0,Sy=Hn(post.p[bb],D_new[1:n_new,1:n_new]),
+                   Syx=Hn(post.p[bb],D_new[1:n_new,(n_new+1):(nn+n_new)]))
+  pred.t_new[bb,] <- mvrnorm(lmS$m,lmS$S)
+  # End of New Stuff. Check it...
   cat("\r",bb)
 }
 round(apply(pred.theta0,2,mean),4)
@@ -144,16 +164,11 @@ par(mfrow=c(1,1))
 
 # Print this:
 par(mfrow=c(1,2))
-  viewPred(apply(pred.y0,2,mean), ylatlon, "Posterior Predictive Median")
-  viewPred(apply(Y,2,mean), ylatlon, "Data Median")
+  viewPred(apply(pred.y0,2,mean), ylatlon, "Posterior Predictive Mean")
+  viewPred(apply(Y,2,mean), ylatlon, "Data Mean")
 par(mfrow=c(1,1))
 
 ### Predictions at NEW Locations:
-
-nn <- ncol(Y)
-n_new <- 1000
-s0 <- as.matrix(s_new[sample(1:nrow(s_new),n_new,replace=F),])[,2:1]
-D_new <- as.matrix(dist(rbind(s0,ylatlon)))
 #sequential:
 #pred.new.theta <- matrix(0,keep,n_new+nn)
 #pred.new.y <- matrix(0,keep,n_new+nn)
@@ -169,17 +184,28 @@ D_new <- as.matrix(dist(rbind(s0,ylatlon)))
 library(doMC)
 registerDoMC(8)
 engine.t0 <- function(i) {
-  oo <- mvrnorm(rep(0,n_new+nn), post.s2[i]*Hn(post.p[i],D_new))
+  oo <- NULL
+  idx_new <- sample(0:(dim(ot)[1]),1,prob=c(post.a[i],rep(1,dim(ot)[1])))
+  if (idx_new == 0) {
+    oo <- mvrnorm(rep(0,n_new+nn),post.s2[i]*Hn(post.p[i],D_new))
+  } else {
+    oo <- c(mvrnorm(rep(0,n_new),
+                    post.s2[i]*Hn(post.p[i],D_new[1:n_new,1:n_new])),
+            post.th[idx_new,,i])
+
+  }
   cat("\r",i)
-  t(oo)
+
+  #oo <- mvrnorm(rep(0,n_new+nn), post.s2[i]*Hn(post.p[i],D_new))
+  #cat("\r",i)
+  c(oo)
 }
+pred.new.theta <- foreach(bb=1:keep,.combine=rbind) %dopar% engine.t0(bb)
 engine.y0 <- function(i) {
   oo <- mvrnorm(pred.new.theta[i,]+post.b[i], post.t2[i]*diag(n_new+nn));
   cat("\r",i)
   t(oo)
 }
-
-pred.new.theta <- foreach(bb=1:keep,.combine=rbind) %dopar% engine.t0(bb)
 pred.new.y <- foreach(bb=1:keep,.combine=rbind) %dopar% engine.y0(bb)
 
 
