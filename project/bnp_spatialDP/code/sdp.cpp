@@ -392,7 +392,7 @@ List sdp(mat Y, mat s_new, mat D, double beta_mu, double beta_s2,
     sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
     phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L); // check. ERROR.
 
-    cout << "\r" << b << "/" << B;
+    Rcout << "\rProgress: " << b << "/" << B;
   }
 
   ret["beta"] = beta;
