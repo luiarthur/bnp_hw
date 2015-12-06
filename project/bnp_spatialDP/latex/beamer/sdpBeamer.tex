@@ -107,7 +107,7 @@
       ~\tau^2\m I_n), ~~_{t=1,...,T}\\
       \m\theta_t &|& G^{(n)} &\overset{i.i.d.}{\sim}& G^{(n)}, ~~_{t=1,...,T} \\
       G^{(n)} &|& \alpha, \sigma^2, \phi &\sim& \text{DP}(~\alpha,~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~) \\
-              && \beta, \tau^2 &\sim& \text{N}(0,s^2) \times \text{IGamma}(a_{\tau^2}=2,b_{\tau^2}) \\
+              && \beta, \tau^2 &\sim& \text{N}(m,s^2) \times \text{IGamma}(a_{\tau^2}=2,b_{\tau^2}) \\
               && \alpha &\sim& \text{Gamma}(a_\alpha,b_\alpha) \\
               && \sigma^2 &\sim& \text{IGamma}(b_{\sigma^2}=2,b_{\sigma^2}) \\
               && \phi &\sim& \text{Uniform}(0,b_\phi) \\
@@ -129,8 +129,8 @@
   \[\def\arraystretch{1.4}
     \begin{array}{rclcl}
       \beta &|& \m y, \m\theta, \tau^2  &\sim& \text{N}(
-        \ds\frac{s^2\sum_{t=1}^T\sum_{i=1}^n(y_{it}-\theta_{it})}{\tau^2+Tns^2},
-      \ds\frac{s^2\tau^2}{\tau^2+Tns^2}) \\
+        \frac{\tau^2m + s^2\sum_{t=1}^T\sum_{i=1}^n(y_{it}-\theta_{it})}{\tau^2+Tns^2},
+        \frac{s^2\tau^2}{\tau^2+Tns^2}) \\
       \tau^2 &|& \m y, \m\theta, \beta  &\sim& \text{IG}(a_{\tau^2}+\frac{nT}{2},
       b_{\tau^2}+\frac{\sum_{t=1}^T (\m\mu_t-\beta \m1_n)'(\m\mu_t-\beta \m1_n)}{2})\\
       %p(\sigma^2 &|& \m\theta_t^*, T^*, \m y, \sigma^2) &\propto& [\sigma^2]\prod_{t=1}^{T^*}
