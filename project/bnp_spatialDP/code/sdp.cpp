@@ -142,6 +142,7 @@ mat uniqueRows1(mat X) { // Works, but Not OPTIMAL!!!
   return X;
 }
 
+//[[Rcpp::export]]
 double update_alpha (double alpha, int Tstar, double a, double b, int T) {
   double eta, c, d;
   int ind;
@@ -170,6 +171,7 @@ double update_beta (double sum_y, mat theta, double tau2, double s2, int T, int 
   return rnorm(1, m_new, s_new)[0];
 }
 
+//[[Rcpp::export]]
 double update_tau2 (double a, double b, int n, int T, mat y, mat theta, double beta) {
   mat one_Tn(T,n);
   mat M = y - theta - beta*one_Tn;
@@ -188,25 +190,31 @@ double update_tau2 (double a, double b, int n, int T, mat y, mat theta, double b
   return 1 / rgamma(1, a_new, scale_new)[0];
 }
 
+//[[Rcpp::export]]
+vec testrg(int n, double a, double b) {
+  return rgamma(n, a, b);
+}
+
+//[[Rcpp::export]]
 mat Hn (double phi, mat D) {
   return exp(-phi * D);
 }
 
+//[[Rcpp::export]]
 double update_sig2 (double a, double b, int Tstar, int n, mat theta, mat H) {
   mat ut = uniqueRows(theta);
   mat mt;
   double sum_mt = 0;
   mat Hi = H.i();
 
-  //cout << H << endl;
   //for (int j=0; j<Tstar; j++) {
   //  mt = ut.row(j) * Hi *ut.row(j).t();
   //  sum_mt += mt(0,0);
   //}
-  sum_mt = trace(ut * Hi * ut.t()); // changed!
+  sum_mt = trace(ut * Hi * ut.t()); // concise but slower.
 
-  double a_new = a + n*Tstar/2;
-  double rate_new = b + sum_mt / 2;
+  double a_new = a + .5*n*Tstar;
+  double rate_new = b + .5*sum_mt;
   double scale_new = 1 / rate_new;
 
   return 1 / rgamma(1, a_new, scale_new)[0]; 

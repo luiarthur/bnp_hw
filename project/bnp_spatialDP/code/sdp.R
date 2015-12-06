@@ -23,6 +23,18 @@ Y <- t(Yout[,july,5]) # Y is 20 x 100
 ylatlon <- Yout[,1,3:4]
 D <- as.matrix(dist(ylatlon))
 # lon,lat,val
+viewPred <- function(x,latlon,main.plot='',bks=c(14,40)) {
+  quilt.plot(latlon[,2],latlon[,1],x,
+             fg='grey90',bty='n',main=main.plot,
+             ylim=range(latlon[,1])+c(-1,1),
+             xlim=range(latlon[,2])+c(-1,1),
+             breaks=seq(bks[1],bks[2],len=length(x)+1),
+             col= colorRampPalette(c('dark blue','grey90','dark red'))(100))
+  map('county',add=T,col='grey')
+  map('state',add=T,col='grey60',lwd=2)
+}
+
+
 viewYearJuly <- function(yr,y,bks=seq(14,40,len=101)) {
   ind <- which(uyears==yr)
   quilt.plot(ylatlon[,2],ylatlon[,1],y[ind,],
@@ -45,9 +57,11 @@ viewYearJuly(1989,Y) #1985 - 2004
 
 s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
+system.time(
 out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 1,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=500)
+           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=5000)
+)
 
 par(mfrow=c(5,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
 #plot(out$beta[-1],type='l',xaxt='n',ylab=bquote(beta))
@@ -66,9 +80,11 @@ dim(ot)
 B <- dim(ot)[3]
 b <- 500
 uB <- uniqueRows(ot[,,b]) # I should see clustering across times
+unique(uB); nrow(uB)
+nURows <- apply(ot,3,function(x) nrow(uniqueRows(x)))
+hist(nURows)
 apply(uB,1,function(x) length(matchRows(ot[,,b], x)))
-nrow(uB); unique(uB)
-ind <- matchRows(ot[,,b], uB[1,]); ind # Change the index to see what happens
+ind <- matchRows(ot[,,b], uB[3,]); ind # Change the index to see what happens
 par(mfrow=c(ifelse(length(ind)>1,ceiling(length(ind)/2),1),ifelse(length(ind)>1,2,1)),
     mar=c(1,4.5,1,2),fg='grey30',bty='l')
 for (ii in ind) {
@@ -85,3 +101,33 @@ par(mfrow=c(1,1))
 
 mean( apply(Y,2,var) ) # empirical sig2. Difficult.
 mean( apply(Y,1,var) ) # empirical tau
+
+### Predictions at Observed Locations:
+# Obtain theta0
+keep <- 400
+post.a <- tail(out$alpha,keep)
+post.b <- tail(out$beta,keep)
+post.p <- tail(out$phi,keep)
+post.s2 <- tail(out$sig2,keep)
+post.t2 <- tail(out$tau2,keep)
+post.th <- out$theta[,,(B-keep+1):B]
+pred.theta0 <- matrix(0,keep,ncol(Y))
+for (bb in 1:keep) {
+  idx_new <- sample(0:nrow(Y), 1, prob=c(post.a[bb], rep(1,nrow(Y)) ))
+  if (idx_new == 0) {
+    pred.theta0[bb,] <- mvrnorm(rep(0,ncol(Y)),post.s2[bb]*Hn(post.p[bb],D))
+  } else {
+    pred.theta0[bb,] <- post.th[idx_new,,bb]
+  }
+  cat("\r",bb)
+}
+pred.theta0
+
+pred.y0 <- t(apply(matrix(1:keep),1,function(i) mvrnorm(pred.theta0[i,],post.t2[i]*diag(ncol(Y)))))
+
+post.pred.y0 <- apply(pred.y0,2,median)
+post.pred.var <- apply(pred.y0,2,var)
+viewPred(post.pred.y0, ylatlon, "Posterior Predictive")
+viewPred(apply(Y,2,mean), ylatlon, "Posterior Predictive")
+viewPred(post.pred.var,ylatlon, "Posterior Predictive",bks=range(post.pred.var))
+viewPred(apply(Y,2,var), ylatlon, "Posterior Predictive",bks=c(0,3))
