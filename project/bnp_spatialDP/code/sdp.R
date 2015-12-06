@@ -59,26 +59,28 @@ sourceCpp("sdp.cpp")
 system.time(
 #out <- sdp(t(Yout[,,5]), s_new , D, beta_mu=0, beta_s2 = 1,
 out <- sdp(Y, D, beta_m=30, beta_s2 = 100,
-           tau2_a = 2, tau2_b = 100, alpha_a = 1, alpha_b=.0001,
-           sig2_a = 2, sig2_b = .5, phi_a=.3, phi_b=.3, L=10, B=50000)
+           tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=10,
+           sig2_a = 2, sig2_b = 100, phi_a=.3, phi_b=.3, L=10, B=2500)
 )
-
-burn <- round(B*.5)
-par(mfrow=c(6,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
+ot <- out$theta
+B <- dim(ot)[3]
+burn <- round(B*.8)
+par(mfrow=c(7,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
 plot(out$beta[-c(1:burn)],type='l',xaxt='n',ylab=bquote(beta))
 plot(out$alpha[-c(1:burn)],type='l',xaxt='n',ylab=bquote(alpha))
 par(mar=c(0,4.5,0,2))
 plot(out$tau2[-c(1:burn)],type='l',xaxt='n',ylab=bquote(tau^2)) # about 11.25
 plot(out$sig2[-c(1:burn)],type='l',xaxt='n',ylab=bquote(sigma^2)) # about 80
-plot(out$theta[20,62,-c(1:burn)],type='l',xaxt='n',ylab=bquote(theta))
+plot(out$theta[20,39,-c(1:burn)],type='l',xaxt='n',ylab=bquote(theta[39]))
+plot(out$theta[20,62,-c(1:burn)],type='l',xaxt='n',ylab=bquote(theta[62]))
 par(mar=c(3,4.5,0,2))
 plot(out$phi[-c(1:burn)],type='l',ylab=bquote(phi)) #about .05
 par(mfrow=c(1,1),mar=c(5,4,4,2)+.1)
 
-ot <- out$theta
+update_tau2(2,100,100,20,Y,matrix(rnorm(2000,0,1),20),29)
+
 dim(ot)
 #ot[,,7]
-B <- dim(ot)[3]
 b <- B
 uB <- uniqueRows(ot[,,b]) # I should see clustering across times
 unique(uB); nrow(uB)
@@ -150,27 +152,46 @@ par(mfrow=c(1,1))
 
 nn <- ncol(Y)
 n_new <- 1000
-s0 <- s_new[sample(1:nrow(s_new),n_new,replace=F),]
-D_new <- as.matrix(dist(s0))
-pred.new.theta <- matrix(0,keep,n_new)
-pred.new.y <- matrix(0,keep,n_new)
+s0 <- as.matrix(s_new[sample(1:nrow(s_new),n_new,replace=F),])[,2:1]
+D_new <- as.matrix(dist(rbind(s0,ylatlon)))
+#sequential:
+#pred.new.theta <- matrix(0,keep,n_new+nn)
+#pred.new.y <- matrix(0,keep,n_new+nn)
+#for (bb in 1:keep) {
+#  pred.new.theta[bb,] <- mvrnorm(rep(0,n_new+nn),
+#                                post.s2[bb]*Hn(post.p[bb],D_new))
+#  pred.new.y[bb,] <- mvrnorm(pred.new.theta[bb,]+post.b[bb],
+#                             post.t2[bb]*diag(n_new+nn));
+#  cat("\r",bb)
+#}
 
-for (bb in 1:keep) {
-  pred.new.theta[bb,] <- mvrnorm(rep(0,n_new),
-                                post.s2[bb]*Hn(post.p[bb],D_new))
-  pred.new.y[bb,] <- mvrnorm(pred.new.theta[bb,]+post.b[bb],
-                             post.t2[bb]*diag(n_new));
-  cat("\r",bb)
+# Parallel
+library(doMC)
+registerDoMC(8)
+engine.t0 <- function(i) {
+  oo <- mvrnorm(rep(0,n_new+nn), post.s2[i]*Hn(post.p[i],D_new))
+  cat("\r",i)
+  t(oo)
 }
+engine.y0 <- function(i) {
+  oo <- mvrnorm(pred.new.theta[i,]+post.b[i], post.t2[i]*diag(n_new+nn));
+  cat("\r",i)
+  t(oo)
+}
+
+pred.new.theta <- foreach(bb=1:keep,.combine=rbind) %dopar% engine.t0(bb)
+pred.new.y <- foreach(bb=1:keep,.combine=rbind) %dopar% engine.y0(bb)
+
 
 apply(pred.new.theta,2,mean)
 apply(pred.new.theta,2,var)
 apply(pred.new.y,2,mean)
 apply(pred.new.y,2,var)
 
+# Print THIS:
 par(mfrow=c(1,3))
   viewPred(apply(pred.y0,2,mean), ylatlon, "Posterior Predictive Median")
   viewPred(apply(Y,2,mean), ylatlon, "Data Median")
-  viewPred(apply(pred.new.y,2,mean)[1:n_new], s0[,2:1], "Posterior Predictive Mean",bks=c(0,40))
+  viewPred(apply(pred.new.y,2,mean), rbind(s0,ylatlon), "Posterior Predictive Mean")
 par(mfrow=c(1,1))
 

@@ -178,10 +178,11 @@ double update_tau2 (double a, double b, int n, int T, mat y, mat theta, double b
   double sum_mm = 0;
   mat m;
 
-  for (int t=0; t<T; t++) {
-    m = M.row(t).t() * M.row(t);
-    sum_mm += m(0,0);
-  }
+  //for (int t=0; t<T; t++) {
+  //  m = M.row(t).t() * M.row(t);
+  //  sum_mm += m(0,0);
+  //}
+  sum_mm = trace(M.t() * M);
 
   double a_new = a + n*T/2;
   double rate_new = b + sum_mm/2;
@@ -405,10 +406,10 @@ List sdp(mat Y, mat D, double beta_m, double beta_s2,
     Tstar = utheta.n_rows;
 
     beta[b] = update_beta(sum_y, tb, tau2[b-1], beta_m, beta_s2, T, n); // check
-    tau2[b] = update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
+    tau2[b] = 13;//update_tau2(tau2_a, tau2_b, n, T, Y, tb, beta[b]); // check
     alpha[b] = update_alpha(alpha[b-1], Tstar, alpha_a, alpha_b, T);
-    sig2[b] = update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
-    phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L); // check. ERROR.
+    sig2[b] = 100;//update_sig2 (sig2_a, sig2_b, Tstar, n, tb, Hn(phi[b-1],D)); // check
+    phi[b] = 1;//update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L); // check. ERROR.
     //phi[b] = update_phi(phi_a, phi_b, D, Tstar, tb, sig2[b], L,phi_cs,&acc_phi,phi[b-1]); // check. ERROR.
 
     Rcout << "\rProgress: " << b << "/" << B;
