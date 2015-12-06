@@ -58,9 +58,10 @@ viewYearJuly(1989,Y) #1985 - 2004
 s_new <- matrix(1:50,ncol=2)
 sourceCpp("sdp.cpp")
 system.time(
-out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 1,
+#out <- sdp(Y, s_new , D, beta_mu=0, beta_s2 = 1,
+out <- sdp(t(Yout[,,5]), s_new , D, beta_mu=0, beta_s2 = 1,
            tau2_a = 2, tau2_b = 10, alpha_a = 1, alpha_b=1,
-           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=5000)
+           sig2_a = 2, sig2_b = 5, phi_a=.01, phi_b=.07, L=3, B=50)
 )
 
 par(mfrow=c(5,1),mar=c(0,4.5,1,2),fg='grey30',bty='l')
@@ -125,9 +126,10 @@ pred.theta0
 
 pred.y0 <- t(apply(matrix(1:keep),1,function(i) mvrnorm(pred.theta0[i,],post.t2[i]*diag(ncol(Y)))))
 
-post.pred.y0 <- apply(pred.y0,2,median)
-post.pred.var <- apply(pred.y0,2,var)
-viewPred(post.pred.y0, ylatlon, "Posterior Predictive")
+viewPred(apply(pred.y0,2,median), ylatlon, "Posterior Predictive")
 viewPred(apply(Y,2,mean), ylatlon, "Posterior Predictive")
-viewPred(post.pred.var,ylatlon, "Posterior Predictive",bks=range(post.pred.var))
+viewPred(apply(pred.y0,2,var),ylatlon, "Posterior Predictive",bks=range(post.pred.var))
 viewPred(apply(Y,2,var), ylatlon, "Posterior Predictive",bks=c(0,3))
+
+#hist(Y[,3],prob=TRUE)
+#lines(density(pred.y0[,3]),col='red')
