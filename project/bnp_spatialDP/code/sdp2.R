@@ -21,8 +21,8 @@ Y <- t(Yout[,july,5]) # Y is 20 x 100
                       # 20 years of july max temperatures
                       # 100 stations
 D <- as.matrix(dist(s))
-viewPred <- function(x,latlon,main.plot='',bks=range(x)) {
-  quilt.plot(latlon[,2],latlon[,1],x,
+viewPred <- function(x,latlon,main.plot='',bks=range(x),leg=T) {
+  quilt.plot(latlon[,2],latlon[,1],x,add.legend=leg,
              fg='grey90',bty='n',main=main.plot,
              ylim=range(latlon[,1])+c(-1,1),
              xlim=range(latlon[,2])+c(-1,1),
@@ -32,7 +32,21 @@ viewPred <- function(x,latlon,main.plot='',bks=range(x)) {
   map('state',add=T,col='grey60',lwd=2)
 }
 # Print this:
-viewPred(Y[1,],s,bks=c(15,40))
+pdf("../latex/graphs/july1985.pdf")
+viewPred(Y[1,],s,bks=c(15,40),main="Max Temp. July 1985")
+dev.off()
+pdf("../latex/graphs/july1989.pdf")
+viewPred(Y[5,],s,bks=c(15,40),main="Max Temp. July 1989")
+dev.off()
+pdf("../latex/graphs/july1994.pdf")
+viewPred(Y[10,],s,bks=c(15,40),main="Max Temp. July 1994")
+dev.off()
+pdf("../latex/graphs/july1999.pdf")
+viewPred(Y[15,],s,bks=c(15,40),main="Max Temp. July 1999")
+dev.off()
+pdf("../latex/graphs/july2004.pdf")
+viewPred(Y[20,],s,bks=c(15,40),main="Max Temp. July 2004")
+dev.off()
 
 mean( apply(Y,2,var) ) # empirical sig2. Difficult.
 mean( apply(Y,1,var) ) # empirical tau
@@ -134,11 +148,16 @@ apply(Y,2,mean)
 apply(pred.y0,2,mean)
 apply(pred.y0,2,var)
 # Print this:
-par(mfrow=c(1,2))
-  viewPred(apply(Y,2,mean), s, "Data Mean")
+pdf("../latex/graphs/postpredmean.pdf",width=13,height=7)
+par(mfrow=c(1,2),mar=c(5,2,4,3))
+  viewPred(apply(Y,2,mean), s, "Data Mean",leg=FALSE)
   viewPred(apply(pred.y0,2,mean), rbind(s0,s), "Posterior Predictive Mean")
 par(mfrow=c(1,1))
-par(mfrow=c(1,2))
-  viewPred(apply(Y,2,var), s, "Variance of Data",bks=c(0,20))
+dev.off()
+
+pdf("../latex/graphs/postpredvar.pdf",width=13,height=7)
+par(mfrow=c(1,2),mar=c(5,2,4,3))
+  viewPred(apply(Y,2,var), s, "Data Variance",bks=c(0,20),leg=F)
   viewPred(apply(pred.y0,2,var),rbind(s0,s), "Posterior Predictive Variance",bks=c(0,20))
 par(mfrow=c(1,1))
+dev.off()
