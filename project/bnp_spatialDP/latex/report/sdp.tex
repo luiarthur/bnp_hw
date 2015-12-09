@@ -1,5 +1,5 @@
 % To compile: pdflatex file.tex
-\documentclass{article}
+\documentclass[11pt]{article}
 \usepackage{fullpage}
 \usepackage{pgffor}
 \usepackage{amssymb}
@@ -13,6 +13,7 @@
 \usepackage{url} % for underscore in footnote
 \usepackage[UKenglish]{isodate} % for: \today
 \cleanlookdateon                % for: \today
+\usepackage{natbib} % Can remove if no bibliography. bibtex
 %\pagestyle{empty} % Removes page number. Graphs too big.
 
 \def\wl{\par \vspace{\baselineskip}\noindent}
@@ -30,7 +31,6 @@
 \def\norm#1{\left\lVert#1\right\rVert}
 
 % \def for THIS ASSIGNMENT!!!%%%%%%%%%%%%%%%%%%%
-\usepackage{natbib}
 
 \begin{document}
 % my title:
@@ -45,19 +45,35 @@
   \hline
 \end{center}
 
-This project is a review of the Spatial Dirichlet Process 
+\noindent
+This project is a review of the spatial Dirichlet process (SDP) developed by
+\cite{sdp}. I will first discuss how to model using the SDP, then examine
+properties of the model through a data analysis.
 
-\section{Introduction}
-In modeling spatial data with replicates, it is possible to cluster replicates
+\section{Spatial Dirichlet Process Modeling}
+\noindent
+To denote realizations from point-referenced spatial data, we use $\{y(s): s\in
+S\}, S \subset R^d$, where $d$ is the dimension of $S$. We observe data only at
+a subset of all possible points in $S$, $\m s^{(n)}=(s_1,...,s_n)$ . Typically,
+this type of data is modeled by a Guassian process (GP). However, the
+assumption that the data arises from a GP is often a restrictiveon.  we may
+want to allow deviation from a Gaussian random field. An SDP prior can be put
+on the random field and have a Gaussian process as the baseline distribution.
+Required for the model are replicates at each point. That is we need the full
+dataset to consist of a collection of vectors $\m y_t = (y(s_1),...,y(s_n))$,
+$t=1,,,.T$. Note that the points $s_i$ can be a pair of latitudes and
+longitudes.\\
 
-\section{Model}
+\noindent
+We can construct the model as follows:
 \[
   \begin{array}{rclcl}
     %\m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{Normal}_n(\m\theta_t+ \m x_t\beta,
     \m y_t &|& \m\theta_t,\beta,\tau^2 &\overset{ind.}{\sim}&\text{N}_n(\m\theta_t+ \m{1_n}\beta,
     ~\tau^2\m I_n), ~~_{t=1,...,T}\\
     \m\theta_t &|& G^{(n)} &\overset{i.i.d.}{\sim}& G^{(n)}, ~~_{t=1,...,T} \\
-    G^{(n)} &|& \alpha, \sigma^2, \phi &\sim& \text{DP}(~\alpha,~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~) \\
+    G^{(n)} &|& \alpha, \sigma^2, \phi &\sim&
+      \text{DP}(~\alpha,G_0^{(n)}~\text{N}_n(\m 0_n,\sigma^2H_n(\phi)) ~) \\
     \\
             && \beta, \tau^2 &\sim& \text{N}(m,s^2) \times \text{IGamma}(a_{\tau^2}=2,b_{\tau^2}) \\
             && \alpha &\sim& \text{Gamma}(a_\alpha,b_\alpha) \\
@@ -65,18 +81,28 @@ In modeling spatial data with replicates, it is possible to cluster replicates
             && \phi &\sim& \text{Uniform}(0,b_\phi) \\
   \end{array}
 \]
-where 
-\begin{itemize}
-  \item $H_n(\phi)$ is a covariance function, for example, the exponential
-    covariance function with decay parameter $\phi$. (i.e.  $(H_n(\phi))_{ij}
-    = \exp\left\{-\phi~\norm{s_i-s_j}\right\}$.) \\
-  \item $\m y_t(s)$ is the average daily maximum temperature ($^oC$) at location $s$ for replicate $t$.
-  %\item $\m y_t$ are the station-measured Ozone levels for the $t^{th}$ replicate.
-  %\item $\m x_t$ are a average CMAQ value of the 3 locations nearest to the prediction location for the
-  %  $t^{th}$ replicate.
-\end{itemize}
+where $H_n(\phi)$ is a covariance function, for example, the exponential
+covariance function with decay parameter $\phi$. (i.e.  $(H_n(\phi))_{ij} =
+\exp\left\{-\phi~\norm{s_i-s_j}\right\}$.)\\
 
-\section{Posteriors}
+\noindent
+Here, $\m\theta_t$ are the location-specific mean deviations from a grand mean
+$\beta$ across the $n$ spatial locations. Notice that clustering can result
+among the $\m\theta_t$'s. This may be useful when our $\theta_t$'s are indexed
+by time and we want to learn how the observations are clustered in time.  Also
+notice that if we replaced the prior for the $\m\theta$ the baseline
+distribution used, we get a Gaussian process.  And as $\alpha \rightarrow
+\infty$, $\m\theta_t$ become i.i.d. $G_0^{(n)}$ conditional on the
+hyperparameters. We assume $\m y_t$ to be independent and multivariate
+normal with no correlation. That is, the covariance is $\tau^2 \m I_n$.
+The $\m y_t$'s are simply modeled as a mixture of multivariate normals.\\
+
+\subsection{Prior Specification}
+The grand mean $\beta$ modeled with a normal prior. In modeling maximum
+temperatures, it is appropriate to use a reasonably informative prior. In the
+following data analysis, a prior mean of 30 and a prior variance of 5 were used.
+
+\subsection{Posteriors}
 \[\def\arraystretch{1.4}
   \begin{array}{rclcl}
     \beta &|& \m y, \m\theta, \tau^2  &\sim& \text{N}(
@@ -101,9 +127,11 @@ where
 where $\m\mu_t=\m{y_t -\theta_t} $, $\eta$ is an auxiliary variable introduced
 to make the prior for $\alpha$ conjugate, $\gamma$ is the gamma density
 function with the mean and rate parameterization, and 
-$\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* -1}$.
+$\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* -1}$.\\
 
-\section{Posterior for $\m\theta$}
+\noindent
+As $\m\theta_t$ has prior conjugacy, we can use the algorithm provided by \cite{escobar}
+\subsection{Posterior for $\m\theta$}
 \def\mm{\m{y_t}-\m{1_n}\beta}
 \[\def\arraystretch{1.4}
   \begin{array}{rllcl}
@@ -117,17 +145,27 @@ $\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* 
 where $\m\Lambda = [\tau^{-2}\m I_n + \sigma^{-2} \m H_n^{-1}(\phi)]^{-1}$.
 
 
-\section{Data}
-\beginmyfig \includegraphics[scale=.5]{../graphs/july1989.pdf} \endmyfig
-\section{Results}
-\beginmyfig
-  \includegraphics[scale=.35]{../graphs/postpredmean.pdf}
-\endmyfig
-\beginmyfig
-  \includegraphics[scale=.35]{../graphs/postpredvar.pdf}
+\section{Data Analysis}
+\beginmyfig 
+  \includegraphics[scale=.5]{../graphs/july1989.pdf} 
+  \caption{Average maximum daily temperatures at various locations in the state of California in 1989. 
+  Warmer areas are dark red and cooler locations are dark blue.}
+  \label{fig:dat}
 \endmyfig
 
-\cite{sdp}. 
-\bibliographystyle{unsrt}
-\bibliography{sdp}
+\beginmyfig
+  \includegraphics[scale=.5]{../graphs/postpredmean.pdf}
+  \caption{}
+  \label{fig:postpred}
+\endmyfig
+
+\beginmyfig
+  \includegraphics[scale=.5]{../graphs/postpredvar.pdf}
+  \caption{}
+  \label{fig:datmean}
+\endmyfig
+
+%%% Bibliography
+\bibliographystyle{asabyu} % bibtex
+\bibliography{sdp}         % bibtex
 \end{document}
