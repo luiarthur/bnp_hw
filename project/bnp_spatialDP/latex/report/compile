@@ -1,0 +1,8 @@
+#!/bin/bash
+
+pdflatex sdp
+bibtex sdp
+pdflatex sdp
+pdflatex sdp
+
+rm -f sdp.{log,aux,nav,out,snm,toc,bbl,blg}
