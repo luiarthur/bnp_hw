@@ -98,11 +98,24 @@ normal with no correlation. That is, the covariance is $\tau^2 \m I_n$.
 The $\m y_t$'s are simply modeled as a mixture of multivariate normals.\\
 
 \subsection{Prior Specification}
-The grand mean $\beta$ modeled with a normal prior. In modeling maximum
+The overall mean $\beta$ modeled with a normal prior. In modeling maximum
 temperatures, it is appropriate to use a reasonably informative prior. In the
-following data analysis, a prior mean of 30 and a prior variance of 5 were used.
+following data analysis, a prior mean of 30 and a prior variance of 5 were
+used.  \cite{sdp} suggests for priors for $\sigma^2$ and $\tau^2$ Inverse-Gamma
+priors with parameters $(2,b_{\sigma^2}$ and $(2,b_{\tau^2})$ respectively.
+This corresponds to a prior mean of $b_{\sigma^2}$ and $b_{\tau^2}$ and
+infinite variance for the two parameters. For the data analysis below, 
+I used fixed variances as the model could not learn their values.
+With a $T$ of only 20, it appears that posterior learning could not occur.
+\cite{sdp} states that ``practical experience... suggests that there is
+posterior learning for $[\alpha]$ when sampling sizes are moderate to large''.
+Again $\phi$, which determines the rate of decay in the exponential decay function,
+was fixed. The prior for $\alpha$ chosen such that the prior mean and variance were 1 and 
+and 100 respectively.\\
 
-\subsection{Posteriors}
+\noindent
+Note that all the above priors except that for $\phi$ are conjugate. And yields
+the following complete conditionals that can be used in a Gibbs sampler.
 \[\def\arraystretch{1.4}
   \begin{array}{rclcl}
     \beta &|& \m y, \m\theta, \tau^2  &\sim& \text{N}(
@@ -131,7 +144,6 @@ $\epsilon = \ds\frac{a_\alpha +T^* - 1}{ n(b_\alpha-\log(\eta)) + a_\alpha +T^* 
 
 \noindent
 As $\m\theta_t$ has prior conjugacy, we can use the algorithm provided by \cite{escobar}
-\subsection{Posterior for $\m\theta$}
 \def\mm{\m{y_t}-\m{1_n}\beta}
 \[\def\arraystretch{1.4}
   \begin{array}{rllcl}
@@ -139,13 +151,81 @@ As $\m\theta_t$ has prior conjugacy, we can use the algorithm provided by \cite{
                && q0 &=& |\Lambda|^{1/2} \\
                %&&&& \times \exp\left\{.5\tau^{-2}(\mm)'(\m{I_n}-\tau^{-2}\m\Lambda)(\mm)\right\}\\
                &&&& \times \exp\left\{\frac{(\mm)'(\m{I_n}-\tau^{-2}\m\Lambda)(\mm)}{2\tau^2}\right\}\\
-               &&&& \times [(2\pi\tau^2\sigma^2)^{n/2} |\m H_n(\phi)|^{1/2}]^{-1}\\
+               &&&& \times [(2\pi\tau^2\sigma^2)^{n/2} |H_n(\phi)|^{1/2}]^{-1}\\
   \end{array}
 \]
-where $\m\Lambda = [\tau^{-2}\m I_n + \sigma^{-2} \m H_n^{-1}(\phi)]^{-1}$.
+where $\m\Lambda = [\tau^{-2}\m I_n + \sigma^{-2} H_n^{-1}(\phi)]^{-1}$.
 
+\subsection{Prediction at Unobserved Locations}
+Often, spatial modeling is used for prediction at unobserved locations
+(kriging). If we were able to observe the replicates at new locations, we
+get the following full Bayesian model
+\[
+  \prod_{t=1}^{T} [\m y_t|\m\theta_t,\beta,\tau^2]
+  \prod_{t=1}^{T} [\tilde{\m y_t}|\tilde{\m\theta_t},\beta,\tau^2]
+  \prod_{t=1}^{T} [(\m\theta_t,\tilde{\m\theta_t})|G^{(n+m)}][G^{(n+m)}|\alpha,\sigma^2,\phi]
+  [\tau^2][\alpha][\sigma^2][\phi]
+\]
+where $\tilde{\m y_t}$ and $\tilde{\m\theta_t}$ are the \textbf{unobserved}
+replicate and it's location specific mean at new locations
+$(y_t(\tilde{s_1}),...,y_t(\tilde{s_m}))$, for $t=1,...,T$. The second term can
+be integrated from the multivariate normal likelihood (this is done by simply
+taking the corresponding terms in our likelihood away from the model). Also, 
+after marginalizing over $G^{(n+m)}$ we obtain the following expression
+\[
+  \left(\prod_{t=1}^{T} [\m y_t|\m\theta_t,\beta,\tau^2]\right)
+  [(\theta_1,\tilde{\theta_1}),...,(\theta_T,\tilde{\theta_T})|\alpha,\sigma^2,\phi]
+  [\tau^2][\alpha][\sigma^2][\phi].
+\]
+This expression can be further rewritten as 
+\[
+  \left(\prod_{t=1}^{T} [\m y_t|\m\theta_t,\beta,\tau^2]\right)
+  [(\theta^*,\tilde{\theta^*})|T^*,\sigma^2,\phi][\m w, T^*|\alpha,\sigma^2,\phi]
+  [\tau^2][\alpha][\sigma^2][\phi],
+\]
+where the $(\theta^*,\tilde{\theta^*})$ are the unique $\m\theta_t$ which arise
+i.i.d. from $G_0^{(n+m)}$. That is
+$[(\theta^*,\tilde{\theta^*})|T^*,\sigma^2,\phi]
+=\prod_{j=1}^{T^*}\text{N}_{n+m}(\theta^*_j,\tilde{\theta^*_j}~|~\m
+0_{n+m},\sigma^2 H_{n+m}(\phi))$. Finally, the model can be expressed as
+\[
+  \left(\prod_{t=1}^{T} [\m y_t|\m\theta_t,\beta,\tau^2]\right)
+  \left(\prod_{t=1}^{T^*}[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]\right)
+  \left(\prod_{t=1}^{T^*}\text{N}_{n}(\theta^*_j~|~\m 0_{n},\sigma^2 H_n(\phi))\right)
+  [\m w, T^*|\alpha,\sigma^2,\phi] [\tau^2][\alpha][\sigma^2][\phi],
+\] or equivalently
+\[
+  \left(\prod_{t=1}^{T^*}[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]\right)
+  \left(\prod_{t=1}^{T} [\m y_t|\m\theta_t,\beta,\tau^2]\right)
+  \left(\prod_{t=1}^{T^*}\text{N}_{n}(\theta^*_j~|~\m 0_{n},\sigma^2 H_n(\phi))\right)
+  [\m w, T^*|\alpha,\sigma^2,\phi] [\tau^2][\alpha][\sigma^2][\phi].
+\]
+Based on the expression above, the joint posterior
+$[(\m\theta^*,\tilde{\m\theta^*}),\m w, T^*,\beta,\tau^2,\alpha,\sigma^2,\phi|\text{data}]$
+can be decomposed into 
+\[
+  \left(\prod_{t=1}^{T^*}[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]\right)
+  [~\m\theta^*,\m w, T^*,\beta,\tau^2,\alpha,\sigma^2,\phi|\text{data}~].
+\]
+The second term can be is the joint posterior in the SDP model. So, we can employ 
+the following algorithm to the MCMC outputs to obtain posterior draws for 
+$\prod_{t=1}^{T^*}[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]$: 
+for each $b = 1,...,B$, sample from $[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]$
+for each $j = 1,...,T^*$. Notice that 
+\[
+  \tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi \sim \text{N}_m
+\]
 
 \section{Data Analysis}
+The data used for this study was gathered from The Atmospheric Science Data
+Center at NASA. The script used to parse this dataset can be found at the
+referenced website
+\footnote{\url{https://github.com/luiarthur/bnp_hw/tree/master/project/bnp_spatialDP/data/retrieve}}.
+The data consists of daily averaged maximum temperatures at 10 meters for every
+July from 1985 to 2004, at 100 locations. (There was available every month
+average within the years and for more locations, but to save on computation,
+only a subset of the data was retrieved and used.) 
+
 \beginmyfig 
   \includegraphics[scale=.5]{../graphs/july1989.pdf} 
   \caption{Average maximum daily temperatures at various locations in the state of California in 1989. 
