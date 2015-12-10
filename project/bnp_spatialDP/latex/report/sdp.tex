@@ -55,8 +55,8 @@ properties of the model through a data analysis.
 To denote realizations from point-referenced spatial data, we use $\{y(s): s\in
 S\}, S \subset R^d$, where $d$ is the dimension of $S$. We observe data only at
 a subset of all possible points in $S$, $\m s^{(n)}=(s_1,...,s_n)$ . Typically,
-this type of data is modeled by a Guassian process (GP). However, the
-assumption that the data arises from a GP is often a restrictiveon.  we may
+this type of data is modeled by a Gaussian process (GP). However, the
+assumption that the data arises from a GP is often a restriction.  we may
 want to allow deviation from a Gaussian random field. An SDP prior can be put
 on the random field and have a Gaussian process as the baseline distribution.
 Required for the model are replicates at each point. That is we need the full
@@ -213,8 +213,16 @@ $\prod_{t=1}^{T^*}[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]$:
 for each $b = 1,...,B$, sample from $[\tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi]$
 for each $j = 1,...,T^*$. Notice that 
 \[
-  \tilde{\theta_j^*}| \theta_j^*,\sigma^2,\phi \sim \text{N}_m
+  \tilde{\theta_j^*}|\theta_j^*,\sigma^2,\phi \sim \text{N}_m(\m 0_m+\m S_{12}\m S_{22}^{-1}(\theta_j-\m 0_n),
+  ~~\m S_{11} - \m S_{12} \m S_{22}^{-1} \m S_{21})
 \]
+where $\m S = \sigma^2 H_{n+m}(\phi)$, and the subsequent submatrices are defined as follows:
+$\m S_{11} = \sigma^2 H_{1:m,~1:m}(\phi)$,
+$\m S_{12} = \sigma^2 H_{1:m,~m+1:m+n}(\phi)$,
+$\m S_{22} = \sigma^2 H_{m+1:m+n,~m+1:m+n}(\phi)$,
+$\m S_{21} = \sigma^2 H_{m+1:m+n,~1:m}(\phi)$.\\
+To obtain posterior predictives at the new locations, we further draw values for 
+$(\tilde{\m y_{0b}},\m y_{0b})$ from $\text{N}_{m+n}(\beta_b\m 1_{m+n}+(\tilde\theta_{0b},\theta_{0b}),\tau^2\m I_{m+n})$.
 
 \section{Data Analysis}
 The data used for this study was gathered from The Atmospheric Science Data
@@ -224,26 +232,67 @@ referenced website
 The data consists of daily averaged maximum temperatures at 10 meters for every
 July from 1985 to 2004, at 100 locations. (There was available every month
 average within the years and for more locations, but to save on computation,
-only a subset of the data was retrieved and used.) 
-
+only a subset of the data was retrieved and used.) Figure \ref{fig:dat} shows
+the average maximum daily temperatures at 100 locations in July 1989, with
+hotter regions in dark red and cooler regions in dark blue. It can be seen and expected that
+in the northern regions and along the coast, temperatures are lower; and in the
+southern and inland regions, temperatures are higher. We fit the mentioned model
+to our data using the suggested prior specification (with the exception of 
+fixing the variances).\\
 \beginmyfig 
-  \includegraphics[scale=.5]{../graphs/july1989.pdf} 
+  \includegraphics[scale=.6]{../graphs/july1989.pdf} 
   \caption{Average maximum daily temperatures at various locations in the state of California in 1989. 
   Warmer areas are dark red and cooler locations are dark blue.}
   \label{fig:dat}
 \endmyfig
 
+\noindent
+We plot the mean of the data (mean temperatures at each location) side by side
+with the posterior predictive mean in Figure \ref{fig:postmean}. We see that
+the model smoothly interpolates the temperatures between locations of known
+temperature. The model borrows information from closer locations and less
+information from grid points far away. Far from the locations with data, the
+temperatures return the the mean $\beta$.
+
 \beginmyfig
   \includegraphics[scale=.5]{../graphs/postpredmean.pdf}
-  \caption{}
-  \label{fig:postpred}
+  \caption{Left: Average of the average maximum daily temperatures at recorded locations
+  in California.
+  Right: Predicted average maximum daily temperatures at various locations in
+  the state of California for a new year.  Warmer areas are dark red and cooler
+  locations are dark blue.}
+  \label{fig:postmean}
 \endmyfig
+
+\noindent
+The posterior predictive variance in Figure \ref{fig:postvar}.  The variance in
+the posterior predictive is large (about 20 everywhere). I suspect this is due
+to the small amount of data ($T=20$). With more data, which is available this
+can be remedied. It should be noted that in $C++$ fitting the model with 2500
+MCMC iterations took 3 minutes.  Fitting the model with more data can be easily
+accommodated and quick. In predicting at new locations, matrix inversions can
+take a long time with large matrices, but this can be sped up by
+parallelization on larger systems.
 
 \beginmyfig
   \includegraphics[scale=.5]{../graphs/postpredvar.pdf}
-  \caption{}
-  \label{fig:datmean}
+  \caption{Left: Variance of the average maximum daily temperatures at recorded locations
+  in California.
+  Right: Predicted variance of the average maximum daily temperatures at various locations in
+  the state of California for a new year.  Areas with higher variance are dark red and areas 
+  with lower variance would be in dark blue. Almost all locations have high variance.}
+  \label{fig:postvar}
 \endmyfig
+
+\section{Conclusions}
+The spatial Dirichlet process provides a flexible framework for modeling
+spatial data when stationarity and Gaussianity is not desireable. Clustering
+can be induced (though not discussed here). Posterior predictive for new
+locations can be done easily \textit{after} fitting the model with only the
+locations in the data. So, predictions at new locations can be done in parallel
+after fitting the model. It is worth noting that further information can be
+harvested from the data by modeling the temporal structure. This topic 
+has been explored using the SDP by \cite{tsdp}.
 
 %%% Bibliography
 \bibliographystyle{asabyu} % bibtex
