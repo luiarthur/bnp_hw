@@ -66,7 +66,7 @@ bool r1GTr2(vec r1, vec r2, int c) { // The user should set c = 0.
   return gt;
 }
 
-mat sortRows(mat X) {
+mat sortRows(mat X) { // CHECK OUT: Lexiographical sorts
   int n = X.n_rows;
   bool swapped = true;
   int j = 0;
