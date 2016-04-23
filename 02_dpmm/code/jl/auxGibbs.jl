@@ -107,6 +107,7 @@ println("Begin auxGibbs in Julia...")
 end # for b in 1:B
 println("Printing results to 'temp/out.jl'.")
 
+run(`mkdir -p temp`)
 writedlm("temp/out.jl", t)
 #=
   include("auxGibbs.jl")
