@@ -1,3 +1,4 @@
+set.seed(241)
 library(LatticeKrig) # quilt.plot
 library(maps) # map()
 library(Rcpp)
