@@ -59,6 +59,7 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
 
   # Update θ | y
   # NEED TO DO THIS!!! LEFT OFF HERE!!!
+  # Can parallelize?
   ut = unique(theta_new)
   J = length( ut )
   for j in 1:J
