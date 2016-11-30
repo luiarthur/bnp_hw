@@ -20,7 +20,7 @@ a_t2, b_t2 = 3,6#3,6 # mean 3, var 9.5
 
 # Posterior Generator for parameters:
 # theta generator
-function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
+function r_theta(theta_curr::Vector{Float64}, alpha_curr::Float64, phi_curr::Float64, mu_curr::Float64, t2_curr::Float64)
   theta_new = theta_curr * 1.0
 
   # Update θ_i | θ_{-i}
@@ -76,14 +76,14 @@ function r_theta(theta_curr, alpha_curr, phi_curr, mu_curr, t2_curr)
 end
 
 # phi generator
-function r_phi(theta_curr) 
+function r_phi(theta_curr::Vector{Float64}) 
   new_a = n/2 + a_phi
   new_b = sum( (y - theta_curr) .^2 ) / 2 + b_phi
   rand( InverseGamma(new_a , new_b) ) # variance of data
 end
 
 # mu generator
-function r_mu(theta_curr, t2_curr)
+function r_mu(theta_curr::Vector{Float64}, t2_curr::Float64)
   ut = unique(theta_curr)
   nstar = length(ut)
   denom = nstar * b_mu + t2_curr
@@ -94,7 +94,7 @@ function r_mu(theta_curr, t2_curr)
 end
 
 # tau^2 generator
-function r_t2(theta_curr, mu_curr)
+function r_t2(theta_curr::Vector{Float64}, mu_curr::Float64)
   ut = unique(theta_curr)
   nstar = length(ut)
   new_a = nstar / 2 + a_t2
@@ -106,7 +106,7 @@ end
 r_eta(alpha_curr) = rand( Beta(alpha_curr+1,n) )
 
 # alpha generator
-function r_alpha(theta_curr, eta_curr) 
+function r_alpha(theta_curr::Vector{Float64}, eta_curr::Float64) 
   nstar = length( unique(theta_curr) )
   c = a_alpha + nstar
   d = b_alpha - log(eta_curr)
