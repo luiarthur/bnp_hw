@@ -78,7 +78,7 @@ end
 # phi generator
 function r_phi(theta_curr) 
   new_a = n/2 + a_phi
-  new_b = sum( (y - theta_curr') .^2 ) / 2 + b_phi
+  new_b = sum( (y - theta_curr) .^2 ) / 2 + b_phi
   rand( InverseGamma(new_a , new_b) ) # variance of data
 end
 
